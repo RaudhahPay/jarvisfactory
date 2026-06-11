@@ -49,15 +49,15 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | [~] | `AgentRunner` abstraction — one Claude Agent SDK session per project, provider-agnostic | 🔴 | **S2 — interface done** (`lib/agent/types.ts`); concrete `claude-runner` pending |
 | [ ] | Server orchestrator API route — find/create project, ensure sandbox, open session | 🔴 | S3 |
 | [ ] | Move builds **off the browser tab** to durable server execution | 🔴 | S3 |
-| [ ] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | S3 |
+| [~] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **S3 — schema drafted** (v12); orchestrator wiring pending |
 | [ ] | Delete the legacy `runBuildPipeline` scaffold once AgentRunner replaces it | 🟡 | S3 (after) |
 
 ## Layer 5 — Database 🟠
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [ ] | Add sandbox lifecycle fields to `apps` (`sandbox_id`, `sandbox_status`, `preview_url`, …) | 🟠 | S2/S3 |
-| [ ] | Add `build_jobs` table (see Layer 4) | 🔴 | S3 |
+| [~] | Add sandbox lifecycle fields to `apps` (`sandbox_id`, `sandbox_status`, `preview_url`, `snapshot_path`, …) | 🟠 | **S3 — drafted** `supabase-schema-v12-sandboxes.sql` (pending apply) |
+| [~] | Add `build_jobs` table (status + JSONB event tail + metering aggregates) | 🔴 | **S3 — drafted** `supabase-schema-v12-sandboxes.sql` (pending apply) |
 | [ ] | Drop shared shim tables `app_users` / `app_data` / `app_sessions` | 🟡 | S7 |
 | [ ] | Add migration tooling (today: manual `.sql` files, no ordering) | 🟠 | S7 |
 
@@ -116,7 +116,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [x] **S1 — Extract `builder/page.tsx`** ✅ done 2026-06-11 (`3bf4e45`→`e01e2ef`)
 - [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
   `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK (decided 2026-06-11); concrete driver pending**
-- [ ] **S3 — Server orchestrator + `build_jobs`** (durable/streamable/resumable)
+- [~] **S3 — Server orchestrator + `build_jobs`** — schema drafted (`supabase-schema-v12-sandboxes.sql`); orchestrator API route + apply pending
 - [ ] **S4 — Live preview** wired to sandbox dev server
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
