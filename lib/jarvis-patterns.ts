@@ -147,25 +147,85 @@ export function validateBuild(html: string, requiresAuth: boolean): ValidationRe
       }
     }
 
-    // ── Forbidden: localStorage for user/auth/credentials ──
-    // We allow localStorage for things like dark mode, but NOT for user accounts
-    const badLocalStoragePatterns = [
-      /localStorage\.(setItem|getItem)\s*\(\s*['"](users|accounts|credentials|currentUser|loggedInUser)['"]/i,
-      /JSON\.stringify\s*\(\s*users\s*\)/,
-      /['"]users['"]\s*,\s*JSON\.stringify/,
+    // ── v7.2: HARDENED — localStorage allowlist instead of narrow denylist ──
+    // Anything written to localStorage that isn't a known UI-pref key is a violation.
+    // This catches the previous slip-throughs: 'staffMembers', 'birthdays',
+    // 'sessionToken', 'isLoggedIn', 'companySettings', 'authenticated', etc.
+    const ALLOWED_KEYS = new Set([
+      'theme', 'darkmode', 'darkMode', 'colorScheme', 'colourScheme',
+      'language', 'lang', 'locale', 'i18n',
+      'fontSize', 'fontsize',
+      'sidebar', 'sidebarOpen', 'sidebarcollapsed',
+      'lastVisitedTab', 'activetab', 'activeTab', 'tab',
+      'consentAccepted', 'consent', 'cookieConsent',
+    ]);
+    const ALLOWED_PREFIXES = ['jarvis_', 'jf_', 'theme_', 'pref_', 'ui_'];
+    const isAllowedKey = (k: string): boolean => {
+      const lower = k.toLowerCase();
+      if (ALLOWED_KEYS.has(k)) return true;
+      if (ALLOWED_KEYS.has(lower)) return true;
+      return ALLOWED_PREFIXES.some(p => lower.startsWith(p));
+    };
+    const lsCallRe = /localStorage\.(setItem|getItem|removeItem)\s*\(\s*['"`]([^'"`]+)['"`]/g;
+    const violations = new Set<string>();
+    let m: RegExpExecArray | null;
+    while ((m = lsCallRe.exec(html)) !== null) {
+      const key = m[2];
+      if (!isAllowedKey(key)) violations.add(key);
+    }
+    if (violations.size > 0) {
+      const sample = Array.from(violations).slice(0, 5).join(', ');
+      errors.push(`localStorage abuse — keys not on the UI-pref allowlist: ${sample}${violations.size>5?` (+${violations.size-5} more)`:''}. ALL app data and auth state must go through window.Jarvis (Jarvis.signup, Jarvis.login, Jarvis.saveData, Jarvis.loadData).`);
+    }
+
+    // ── Catch self-rolled auth: code defining its own user array / hashing ──
+    const selfRolledAuth = [
+      /const\s+users\s*=\s*\[/,                     // const users = [...]
+      /let\s+users\s*=\s*\[/,
+      /var\s+users\s*=\s*\[/,
+      /JSON\.parse\s*\(\s*localStorage\.getItem\s*\(\s*['"`][^'"`]*user/i,
     ];
-    for (const pat of badLocalStoragePatterns) {
+    for (const pat of selfRolledAuth) {
       if (pat.test(html)) {
-        errors.push('localStorage used for user/account/credentials storage — must use Jarvis.saveData/loadData instead');
+        errors.push('Self-rolled user storage detected (own users array or localStorage user list) — auth MUST go through Jarvis.signup/login.');
         break;
       }
     }
 
-    // ── Required: signup form should call doSignup or Jarvis.signup ──
-    const hasSignupHandler = /(?:onclick|addEventListener|onsubmit)[\s\S]{0,40}(?:doSignup|Jarvis\.signup)/i.test(html);
+    // ── Required: signup form should call Jarvis.signup somewhere downstream ──
+    const hasSignupHandler = /(?:onclick|addEventListener|onsubmit)[\s\S]{0,80}(?:doSignup|Jarvis\.signup)/i.test(html);
     if (!hasSignupHandler) {
       warnings.push('Could not detect a signup handler wired to a button — verify signup flow works');
     }
+  }
+
+  // ── v7.5: Static check — every onclick="X(...)" must have a matching function defined.
+  // Catches the "Uncaught ReferenceError: X is not defined" class of build bugs. ──
+  // Extract function names from inline event handlers (onclick, onsubmit, onchange, etc.)
+  const handlerRe = /\bon(?:click|submit|change|input|focus|blur|keyup|keydown|mouseover|mouseout)\s*=\s*['"]\s*([a-zA-Z_$][\w$]*)\s*\(/gi;
+  const referenced = new Set<string>();
+  let hMatch: RegExpExecArray | null;
+  while ((hMatch = handlerRe.exec(html)) !== null) {
+    const name = hMatch[1];
+    // Skip noise: builtins, no-ops, this/return/alert/console, etc.
+    // Skip noise: JS keywords, builtins, no-ops. These appear inside expressions like
+    // onclick="if(x) doY()" or onclick="event.preventDefault()" where the first token
+    // captured by the regex is NOT actually a function call.
+    if (/^(if|else|for|while|switch|do|try|catch|finally|throw|return|new|typeof|delete|void|in|instanceof|var|let|const|function|class|this|window|document|globalThis|self|parent|top|alert|confirm|prompt|console|setTimeout|setInterval|clearTimeout|clearInterval|requestAnimationFrame|cancelAnimationFrame|fetch|Math|JSON|Date|Number|String|Boolean|Array|Object|Map|Set|Promise|Symbol|RegExp|Error|true|false|null|undefined|NaN|Infinity|event|e)$/.test(name)) continue;
+    referenced.add(name);
+  }
+  // Strip the auto-injected JARVIS lib block before scanning (those are library helpers, not user code)
+  const codeForScan = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?window\.Jarvis\s*=[\s\S]*?\}\s*\)\(\)\s*;?\s*<\/script>/g, '');
+  const undefinedFns: string[] = [];
+  for (const fn of referenced) {
+    // Look for: function X(, X = (, X = function, X = async, var/let/const X = ..., X: function (object methods)
+    const defRe = new RegExp(
+      `(?:function\\s+${fn}\\b|\\b${fn}\\s*=\\s*(?:async\\s+)?(?:function\\b|\\(|[a-zA-Z_$])|\\b(?:var|let|const)\\s+${fn}\\b|['"]?${fn}['"]?\\s*:\\s*(?:async\\s+)?function\\b|\\b${fn}\\s*:\\s*(?:async\\s*)?\\()`
+    );
+    if (!defRe.test(codeForScan)) undefinedFns.push(fn);
+  }
+  if (undefinedFns.length > 0) {
+    errors.push(`Undefined onclick handlers: ${undefinedFns.slice(0,5).join(', ')}${undefinedFns.length>5?` (+${undefinedFns.length-5} more)`:''} — these functions are referenced from HTML event attributes but never defined in the <script>. Will throw "ReferenceError: X is not defined" the moment the user clicks them. Define each one or change the handler.`);
   }
 
   // ── Soft warnings: not blocking but worth flagging ──
