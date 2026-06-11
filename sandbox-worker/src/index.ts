@@ -22,7 +22,11 @@ interface Env {
 }
 
 const WS = "/workspace";
-const abs = (p: string) => `${WS}/${String(p).replace(/^\/+/, "")}`;
+const abs = (p: string) => {
+  const r = String(p).replace(/^\/+/, "");
+  if (r.split("/").includes("..")) throw new Error("path traversal rejected");
+  return `${WS}/${r}`;
+};
 const rel = (p: string) => p.replace(new RegExp(`^${WS}/?`), "");
 
 const json = (data: unknown, status = 200) =>

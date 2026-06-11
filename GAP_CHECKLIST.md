@@ -78,8 +78,8 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | [ ] | Rotate PAT / encrypt OAuth tokens (see Gate 0) | 🔴 | G0 |
 | [x] | **LIVE EXPOSURE (found + FIXED 2026-06-11):** RLS was **DISABLED** in prod on `apps` (37 rows), `profiles` (4), `jarvis_profiles` (3) — public anon key could read/modify every row. **Fixed via `v13` (RLS enabled + owner-scoped policies); advisor cleared.** ⚠️ founder to confirm login→onboarding→dashboard still work. | 🔴 | done `v13` |
 | [ ] | Shim tables `app_users`/`app_data`/`app_sessions` use `USING(true)` RLS — full cross-tenant exposure; deleted by the rebuild but live now | 🔴 | S7 |
-| [ ] | Agent permission layer — gate destructive/sensitive ops (deletes, deploys, installs) | 🔴 | S2 |
-| [ ] | Sanitize/validate user prompts before the agent loop | 🟠 | S2 |
+| [x] | Agent permission layer — deny destructive/exfil/deploy commands + path-traversal + sudo before exec/write | 🔴 | **done** `lib/agent/policy.ts` (gated in `claude-runner`; bridge `abs()` hardened); policy test 33/33 |
+| [x] | Sanitize/validate user prompts before the agent loop | 🟠 | **done** — `validatePrompt()` in `/api/build` (type/empty/length, strips null bytes) |
 | [ ] | "One sandbox = one tenant, hostile to all others" enforced from first commit | 🔴 | S2 |
 
 ## Layer 8 — Integration 🟡

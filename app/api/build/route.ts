@@ -21,6 +21,7 @@ import { getSandboxDriver } from '@/lib/sandbox'
 import { getAgentRunner } from '@/lib/agent'
 import type { AgentEvent } from '@/lib/agent/types'
 import type { SandboxFile } from '@/lib/sandbox/types'
+import { validatePrompt } from '@/lib/agent/policy'
 
 export const runtime = 'nodejs'
 // Long-running agent turns; mirrors /api/chat. NOTE (CLAUDE.md §3): on Cloudflare this
@@ -54,8 +55,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
   const appId: string | undefined = body?.appId || body?.app_id
-  const prompt: string | undefined = body?.prompt
-  if (!appId || !prompt) return Response.json({ error: 'appId and prompt are required' }, { status: 400 })
+  if (!appId) return Response.json({ error: 'appId is required' }, { status: 400 })
+  const pv = validatePrompt(body?.prompt)
+  if (!pv.ok) return Response.json({ error: pv.reason }, { status: 400 })
+  const prompt = pv.value
 
   // RLS restricts to the owner; the explicit check just yields a cleaner 403/404.
   const { data: app } = await supabase

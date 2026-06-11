@@ -18,6 +18,7 @@
 
 import { query, tool, createSdkMcpServer } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
+import { evaluateCommand, evaluatePath } from './policy'
 import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -38,6 +39,11 @@ function buildSandboxTools(sandbox: SandboxHandle, emit: (e: AgentEvent) => void
     'Create or overwrite a file in the project sandbox. path is relative (e.g. "app/page.tsx").',
     { path: z.string(), content: z.string() },
     async (args: { path: string; content: string }) => {
+      const v = evaluatePath(args.path)
+      if (v.decision === 'deny') {
+        emit({ type: 'tool_result', tool: 'write_file', ok: false, summary: `BLOCKED: ${v.reason}` })
+        return { content: [{ type: 'text', text: `Blocked by policy: ${v.reason}` }], isError: true }
+      }
       const existed = await sandbox
         .listFiles()
         .then(fs => fs.includes(args.path))
@@ -50,6 +56,11 @@ function buildSandboxTools(sandbox: SandboxHandle, emit: (e: AgentEvent) => void
   )
 
   const readFile = tool('read_file', 'Read a file from the project sandbox.', { path: z.string() }, async (args: { path: string }) => {
+    const v = evaluatePath(args.path)
+    if (v.decision === 'deny') {
+      emit({ type: 'tool_result', tool: 'read_file', ok: false, summary: `BLOCKED: ${v.reason}` })
+      return { content: [{ type: 'text', text: `Blocked by policy: ${v.reason}` }], isError: true }
+    }
     try {
       const text = await sandbox.readFile(args.path)
       emit({ type: 'tool_result', tool: 'read_file', ok: true, summary: `read ${args.path}` })
@@ -61,6 +72,11 @@ function buildSandboxTools(sandbox: SandboxHandle, emit: (e: AgentEvent) => void
   })
 
   const execCmd = tool('exec', 'Run a shell command inside the project sandbox (installs, builds, scripts).', { command: z.string() }, async (args: { command: string }) => {
+    const v = evaluateCommand(args.command)
+    if (v.decision === 'deny') {
+      emit({ type: 'tool_result', tool: 'exec', ok: false, summary: `BLOCKED: ${v.reason}` })
+      return { content: [{ type: 'text', text: `Blocked by policy (${v.category}): ${v.reason}` }], isError: true }
+    }
     emit({ type: 'exec', command: args.command })
     const r = await sandbox.exec(args.command)
     emit({ type: 'tool_result', tool: 'exec', ok: r.exitCode === 0, summary: `exit ${r.exitCode}` })
