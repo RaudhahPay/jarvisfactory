@@ -1,0 +1,40 @@
+# Don't copy these into the Docker image — they slow builds and may leak secrets
+
+# Dependencies (will be installed fresh inside container)
+node_modules
+npm-debug.log*
+
+# Build output (will be regenerated)
+.next
+out
+dist
+build
+
+# Secrets — NEVER bake these into the image
+.env
+.env.local
+.env.*.local
+
+# Editor / OS files
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+
+# Docker files themselves don't need to be IN the image
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Tests / docs that aren't needed at runtime
+README.md
+docker-README.md
+test-*.js
+test-*.html

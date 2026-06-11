@@ -1,0 +1,48 @@
+[package]
+name = "jarvisdesktop"
+version = "0.1.0"
+description = "JarvisDesktop POC — Cowork-class agentic AI for vibe coders"
+authors = ["Coach Fadzil Hashim <beforeb76@gmail.com>"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "jarvisdesktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.1", features = [] }
+tauri-plugin-shell = "2.0"
+tauri-plugin-dialog = "2.0"
+
+# HTTP client for Anthropic API
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+tokio = { version = "1.40", features = ["macros", "rt-multi-thread", "sync", "process", "fs", "time"] }
+futures-util = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Secure key storage (macOS Keychain)
+keyring = { version = "3.6", features = ["apple-native"] }
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+directories = "5.0"
+dunce = "1.0"
+open = "5.3"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

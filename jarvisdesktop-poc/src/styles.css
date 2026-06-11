@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Custom scrollbar — slim, consumer-friendly */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(163, 170, 181, 0.2); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(163, 170, 181, 0.35); }
+}
+
+@layer components {
+  .glass {
+    background: rgba(63, 70, 84, 0.18);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal hover:bg-teal-glow text-white font-medium transition-all duration-200 hover:translate-y-[-1px] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal/20;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-mist hover:text-cloud hover:bg-white/5 transition-colors duration-200 disabled:opacity-50;
+  }
+  .input-pill {
+    @apply w-full bg-transparent border-0 outline-none text-cloud placeholder:text-mist/60 text-base resize-none;
+  }
+  .progress-shimmer {
+    background: linear-gradient(110deg, rgba(27, 168, 146, 0.15) 25%, rgba(27, 168, 146, 0.3) 50%, rgba(27, 168, 146, 0.15) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+}

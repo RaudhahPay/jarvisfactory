@@ -1,0 +1,25 @@
+# Frontend
+node_modules/
+dist/
+*.log
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/gen/
+
+# Tauri build outputs
+src-tauri/.tauri/
+
+# Local env / secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

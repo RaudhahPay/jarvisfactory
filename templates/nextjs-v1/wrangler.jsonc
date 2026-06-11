@@ -1,0 +1,29 @@
+/**
+ * Cloudflare Workers config — @opennextjs/cloudflare adapter per SOP §4.1.
+ *
+ * Per-app values (name, route, vars) replaced at build time by JarvisFactory.
+ * The anon / publishable Supabase key is PUBLIC by design (SOP §4.5) — fine here.
+ * The SERVICE_ROLE key must live in Cloudflare Secrets, NEVER in this file:
+ *   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jarvisfactory-app-template",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://REPLACE_ME.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_ME_public_anon_key_safe_to_commit"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}
