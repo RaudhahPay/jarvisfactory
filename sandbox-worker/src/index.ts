@@ -43,16 +43,18 @@ async function snapshotWorkspace(
   async function walk(dir: string) {
     let entries: any[] = [];
     try {
-      entries = await sandbox.listFiles(dir);
+      const res = await sandbox.listFiles(dir);
+      entries = res?.files || [];
     } catch {
       return;
     }
     for (const e of entries) {
-      if (e.isDirectory) await walk(e.path);
-      else {
+      const full = e.absolutePath || `${dir}/${e.name}`;
+      if (e.type === "directory") await walk(full);
+      else if (e.type === "file") {
         try {
-          const f = await sandbox.readFile(e.path);
-          out.push({ path: rel(e.path), content: f.content });
+          const f = await sandbox.readFile(full);
+          out.push({ path: rel(full), content: f.content });
         } catch {
           /* skip unreadable/binary */
         }
