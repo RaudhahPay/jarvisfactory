@@ -22,6 +22,7 @@ import { getAgentRunner } from '@/lib/agent'
 import type { AgentEvent } from '@/lib/agent/types'
 import type { SandboxFile } from '@/lib/sandbox/types'
 import { validatePrompt } from '@/lib/agent/policy'
+import { recordUsage, checkQuota } from '@/lib/metering'
 
 export const runtime = 'nodejs'
 // Long-running agent turns; mirrors /api/chat. NOTE (CLAUDE.md §3): on Cloudflare this
@@ -60,6 +61,10 @@ export async function POST(req: NextRequest) {
   if (!pv.ok) return Response.json({ error: pv.reason }, { status: 400 })
   const prompt = pv.value
 
+  // S6: enforce the per-user monthly spend cap BEFORE starting a session.
+  const quota = await checkQuota(supabase, user.id)
+  if (!quota.ok) return Response.json({ error: quota.reason }, { status: 402 })
+
   // RLS restricts to the owner; the explicit check just yields a cleaner 403/404.
   const { data: app } = await supabase
     .from('apps')
@@ -82,6 +87,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const collected: AgentEvent[] = []
+      const usageRows: any[] = []
       let inTok = 0
       let outTok = 0
       let cost = 0
@@ -91,6 +97,15 @@ export async function POST(req: NextRequest) {
           inTok += e.inputTokens
           outTok += e.outputTokens
           cost += e.costUsd
+          usageRows.push({
+            user_id: user.id,
+            app_id: appId,
+            build_job_id: job.id,
+            model: e.model,
+            input_tokens: e.inputTokens,
+            output_tokens: e.outputTokens,
+            cost_usd: e.costUsd,
+          })
         }
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`))
       }
@@ -151,6 +166,7 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', job.id)
       } finally {
+        await recordUsage(supabase, usageRows)
         controller.close()
       }
     },
