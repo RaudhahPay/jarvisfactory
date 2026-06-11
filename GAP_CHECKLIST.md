@@ -40,7 +40,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 |---|---|---|---|
 | [x] | Extract orchestration from `builder/page.tsx` at the `approveBuild()` seam | 🟡 | **S1 — DONE** `3bf4e45`→`e01e2ef` (pipeline in `lib/build-pipeline.ts`, wired via `useBuildPipeline`) |
 | [x] | Wire chat UI to streamed **agent events** from `/api/build` | 🟠 | **done** — `lib/build-client.ts` (SSE) + `useV2Build` hook, gated `NEXT_PUBLIC_V2_ENGINE`; parser 6/6, builder compiles |
-| [ ] | Three-pane layout (chat \| live preview \| files) for v2 | 🟡 | S4 |
+| [~] | Three-pane layout (chat \| live preview \| files) for v2 | 🟡 | **partial** — chat + live-preview panes done; dedicated files pane pending |
 
 ## Layer 4 — Backend 🔴 (core rebuild)
 
@@ -88,7 +88,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 |---|---|---|---|
 | [x] | Cloudflare Sandbox SDK integration via bridge Worker | 🔴 | **scaffolded** `sandbox-worker/` (typechecks); deploy pending (Containers account) |
 | [~] | Replace direct Anthropic fetch with the Agent SDK | 🟠 | **runner done**; v1 `/api/chat` proxy still used by the old client loop until the UI is rewired to `/api/build` |
-| [~] | Live preview wired to sandbox dev server (tunnels) | 🟠 | **S4** — bridge returns preview URLs (`tunnels.get`); UI preview-pane wiring pending |
+| [x] | Live preview wired to sandbox dev server (tunnels) | 🟠 | **done** — Preview pane shows real `preview_url` in an iframe (badge + open link), falls back to `srcDoc`; end-to-end needs the bridge deployed |
 | [ ] | Re-point GitHub deploy at the sandbox filesystem (reuse `save-v2`/`pull-v2`) | 🟡 | S5 |
 | [ ] | Build Cloudflare deploy route (schema columns exist, no route) | 🟡 | S5 |
 
@@ -118,7 +118,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
   `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK; concrete drivers DONE (stub + Cloudflare bridge)**
 - [~] **S3 — Server orchestrator + `build_jobs`** — schema applied (v12); `/api/build` route done on stub driver/runner (smoke-passed). Remaining: wire chat UI → `/api/build`, then swap stubs for concrete Cloudflare driver + Claude Agent SDK runner
-- [~] **S4 — Cloudflare driver + bridge Worker** scaffolded & typechecked (`sandbox-worker/`, `lib/sandbox/cloudflare-driver.ts`); remaining: deploy the bridge (Containers account) + wire the UI preview pane to `preview_url`
+- [~] **S4 — Cloudflare driver + bridge Worker** scaffolded & typechecked; **UI preview pane → `preview_url` DONE**. Remaining: deploy the bridge (Containers account) to light it up end-to-end
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
 - [ ] **S7 — Cleanup + hardening** (drop shim tables, migration tooling, CI, ops)
