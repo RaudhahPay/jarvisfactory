@@ -3,7 +3,7 @@
 > Persistent context for Claude Code. Read this first, every session.
 > JarvisFactory v2 is a Lovable-style AI app builder where the engine is the
 > **Claude Agent SDK** (the real Claude Code agent loop) running inside a
-> **per-user E2B sandbox**. v1 was a code-generation pipeline. v2 replaces that
+> **per-user Cloudflare sandbox**. v1 was a code-generation pipeline. v2 replaces that
 > engine; it keeps the shell.
 
 ---
@@ -36,7 +36,7 @@ before changing — do not refactor KEEP code just because you're nearby.
   before deleting anything.
 
 **ADD (the three new layers):**
-1. **Sandbox driver** — create/start/stop/destroy an E2B sandbox per project.
+1. **Sandbox driver** — create/start/stop/destroy a Cloudflare sandbox per project.
 2. **Agent runner** — one Claude Agent SDK session per project, executing inside
    that sandbox; stream its messages to the chat UI.
 3. **Preview proxy + token meter** — expose each sandbox dev server to a
@@ -55,7 +55,8 @@ before changing — do not refactor KEEP code just because you're nearby.
   service if/when long-running sessions outgrow serverless timeouts
 - **Engine:** Claude Agent SDK (TypeScript) — same agent loop, tools, and context
   management that power Claude Code
-- **Sandbox:** E2B (isolated microVM per project)
+- **Sandbox:** Cloudflare Sandbox SDK (Containers on Cloudflare — founder decision
+  2026-06-11). Abstracted behind `SandboxDriver` so we can swap to E2B / Firecracker later.
 - **DB / Auth:** Supabase (PostgreSQL + Supabase Auth)
 - **Hosting:** **Cloudflare only** (founder decision, 2026-06-11) — app on Cloudflare
   (Workers/Pages); user-app deploy target is Cloudflare. No Vercel. **Reality check:
@@ -75,7 +76,7 @@ before changing — do not refactor KEEP code just because you're nearby.
 
 ```
 User prompt (chat)
-  → Orchestrator (API route): find/create project, ensure E2B sandbox is running
+  → Orchestrator (API route): find/create project, ensure Cloudflare sandbox is running
   → Agent runner: open Agent SDK session bound to that sandbox's filesystem
   → Agent edits files / runs commands INSIDE the sandbox
   → Stream agent events back to chat UI (thinking, edits, tool calls)
@@ -97,11 +98,11 @@ so a project can be resumed (rehydrate the sandbox from saved files on resume).
 
 ---
 
-## 5. Sandbox rules (E2B)
+## 5. Sandbox rules (Cloudflare Sandbox SDK)
 
 - **Abstract the sandbox behind a single `SandboxDriver` interface** (create,
   writeFiles, exec, startDevServer, getPreviewUrl, snapshot, destroy). Never call
-  the E2B SDK directly from app code. This is non-negotiable: it's how we migrate
+  the Cloudflare Sandbox SDK directly from app code. This is non-negotiable: it's how we migrate
   to Fly Machines / self-hosted Firecracker later without touching the product.
 - One sandbox per active project. **Idle sandboxes must auto-suspend/teardown** —
   they are the main compute cost. Snapshot files to Supabase storage on suspend.
@@ -189,4 +190,4 @@ Framework: Raudhah Tech 10-Layer Build Framework — **Phase 0 (Audit) nearly do
   sandboxes, or does it need new tables (sandboxes, usage_ledger)?
 - Serverless timeout limits vs. long agent sessions — do we need a dedicated
   long-running runner service from day one?
-- E2B template: what base image / preinstalled toolchain do user projects need?
+- Cloudflare Sandbox: what base image / preinstalled toolchain do user projects need?

@@ -46,7 +46,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [ ] | `AgentRunner` abstraction — one Claude Agent SDK session per project, provider-agnostic | 🔴 | S2 |
+| [~] | `AgentRunner` abstraction — one Claude Agent SDK session per project, provider-agnostic | 🔴 | **S2 — interface done** (`lib/agent/types.ts`); concrete `claude-runner` pending |
 | [ ] | Server orchestrator API route — find/create project, ensure sandbox, open session | 🔴 | S3 |
 | [ ] | Move builds **off the browser tab** to durable server execution | 🔴 | S3 |
 | [ ] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | S3 |
@@ -65,9 +65,9 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [ ] | `SandboxDriver` interface over E2B (create/writeFiles/exec/startDevServer/getPreviewUrl/snapshot/destroy) | 🔴 | S2 |
+| [~] | `SandboxDriver` interface (create/writeFiles/exec/startDevServer/getPreviewUrl/snapshot/destroy) | 🔴 | **S2 — interface done** (`lib/sandbox/types.ts`); **provider: Cloudflare Sandbox SDK** (founder decision 2026-06-11) |
 | [ ] | Idle-sandbox auto-suspend + snapshot files to Supabase storage | 🔴 | S2 |
-| [ ] | E2B base template / preinstalled toolchain for user projects | 🟠 | S2 |
+| [ ] | Cloudflare Sandbox base image / preinstalled toolchain for user projects | 🟠 | S2 |
 | [ ] | CI/CD pipeline (typecheck + lint + smoke) — none today | 🟠 | S7 |
 | [ ] | Staging environment | 🟡 | S7 |
 
@@ -85,7 +85,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [ ] | E2B integration (net-new) | 🔴 | S2 |
+| [ ] | Cloudflare Sandbox SDK integration (net-new) | 🔴 | S2 |
 | [ ] | Replace direct Anthropic fetch with Agent SDK in-sandbox | 🟠 | S2/S3 |
 | [ ] | Live preview wired to sandbox dev server (replaces iframe `srcDoc` flattening) | 🟠 | S4 |
 | [ ] | Re-point GitHub deploy at the sandbox filesystem (reuse `save-v2`/`pull-v2`) | 🟡 | S5 |
@@ -114,7 +114,8 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 - [x] **Gate 0** — partial (`.env.local`, `v1-archive`, `.env.example` done; PAT/encrypt/dupe pending)
 - [x] **S1 — Extract `builder/page.tsx`** ✅ done 2026-06-11 (`3bf4e45`→`e01e2ef`)
-- [ ] **S2 — `SandboxDriver` (E2B) + `AgentRunner`** ← **NEXT**
+- [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
+  `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK (decided 2026-06-11); concrete driver pending**
 - [ ] **S3 — Server orchestrator + `build_jobs`** (durable/streamable/resumable)
 - [ ] **S4 — Live preview** wired to sandbox dev server
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
