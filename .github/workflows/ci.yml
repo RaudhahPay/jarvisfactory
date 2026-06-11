@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    name: App — typecheck + tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Unit + smoke tests
+        run: |
+          npx -y tsx scripts/test-policy.mjs
+          npx -y tsx scripts/test-metering.mjs
+          npx -y tsx scripts/test-build-client.mjs
+          npx -y tsx scripts/test-orchestrator.mjs
+        # NOTE: scripts/test-claude-runner.mjs is a LIVE test (needs ANTHROPIC_API_KEY) — run locally.
+        # scripts/test-builder-v2.mjs covers the v1 KEEP engine (1 pre-existing failure) and is
+        # intentionally excluded; it goes away when the v1 builder is deleted (S7-later).
+
+  worker:
+    name: Sandbox bridge — typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sandbox-worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sandbox-worker/package-lock.json
+      - run: npm ci
+      - name: Typecheck (vs @cloudflare/sandbox types)
+        run: npx tsc --noEmit

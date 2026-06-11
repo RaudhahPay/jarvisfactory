@@ -50,7 +50,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | [x] | Server orchestrator API route — `app/api/build` (auth → build_jobs → sandbox → AgentRunner → SSE) | 🔴 | **S3 — done (stub engine)**; 12/12 smoke, route compiles + 401-guards |
 | [x] | Move builds **off the browser tab** to durable server execution | 🔴 | **done** — UI → `/api/build` (flag-gated); v1 client loop deleted at S3-after |
 | [x] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **applied (v12)** + written by `/api/build` (status, JSONB event tail, metering) |
-| [ ] | Delete the legacy `runBuildPipeline` scaffold once AgentRunner replaces it | 🟡 | S3 (after) |
+| [ ] | Delete the legacy `runBuildPipeline` scaffold | 🟡 | **deferred** — v1 is still the default path (v2 behind `NEXT_PUBLIC_V2_ENGINE`); delete once v2 is flipped on (needs credits + bridge live) |
 
 ## Layer 5 — Database 🟠
 
@@ -58,7 +58,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 |---|---|---|---|
 | [x] | Add sandbox lifecycle fields to `apps` (`sandbox_id`, `sandbox_status`, `preview_url`, `snapshot_path`, …) | 🟠 | **applied (v12)** |
 | [x] | Add `build_jobs` table (status + JSONB event tail + metering aggregates) | 🔴 | **applied (v12)** |
-| [ ] | Drop shared shim tables `app_users` / `app_data` / `app_sessions` | 🟡 | S7 |
+| [ ] | Drop shim tables `app_users`/`app_data`/`app_sessions` | 🟡 | **deferred** — they hold live data for v1-generated apps (12/20/18 rows); dropping breaks those apps until they migrate |
 | [ ] | Add migration tooling (today: manual `.sql` files, no ordering) | 🟠 | S7 |
 
 ## Layer 6 — Infrastructure 🔴
@@ -68,7 +68,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | [x] | `SandboxDriver` + concrete drivers (stub + Cloudflare) | 🔴 | **done** — `lib/sandbox/cloudflare-driver.ts` (Node) ↔ `sandbox-worker/` bridge Worker; both typecheck vs real SDK; **unverified until bridge deployed** |
 | [~] | Idle-sandbox auto-suspend + snapshot files to Supabase storage | 🔴 | **partial** — `sleepAfter`/`suspend()`/`snapshot()` in driver+bridge; persisting snapshots to Supabase storage pending |
 | [x] | Cloudflare Sandbox base image / preinstalled toolchain | 🟠 | `sandbox-worker/Dockerfile` (`cloudflare/sandbox:0.12.1` — Node 20 + Python) |
-| [ ] | CI/CD pipeline (typecheck + lint + smoke) — none today | 🟠 | S7 |
+| [x] | CI pipeline (typecheck + smoke) | 🟠 | **done** `.github/workflows/ci.yml` — app tsc + 4 v2 suites (policy/metering/build-client/orchestrator) + worker tsc; dry-run green |
 | [ ] | Staging environment | 🟡 | S7 |
 
 ## Layer 7 — Security 🔴
@@ -121,6 +121,6 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [~] **S4 — Cloudflare driver + bridge Worker** scaffolded & typechecked; **UI preview pane → `preview_url` DONE**. Remaining: deploy the bridge (Containers account) to light it up end-to-end
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
-- [ ] **S7 — Cleanup + hardening** (drop shim tables, migration tooling, CI, ops)
+- [~] **S7 — Cleanup + hardening** — **CI done** (`.github/workflows/ci.yml`). Deferred (destructive, gated): delete v1 `runBuildPipeline` (v1 still default), drop shim tables (live data), migration tooling, ops monitoring
 
 > `[~]` = in progress · `[x]` = done · `[ ]` = not started
