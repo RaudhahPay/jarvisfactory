@@ -1,0 +1,7 @@
+# JarvisFactory keeps its own hand-formatting (single-quote, no-semicolon, compact).
+# The global lint-on-save hook runs `prettier --write`; without this, it rewrites the
+# entire codebase to Prettier defaults. Ignore source so refactors stay reviewable.
+app/
+lib/
+utils/
+middleware.ts
