@@ -34,17 +34,14 @@ export default function AuthPage() {
           onboarded: false,
           created_at: new Date().toISOString()
         })
-        router.push('/onboarding')
+        router.push('/studio')
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) { setError(error.message); setLoading(false); return }
       // Check if onboarded
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('onboarded').eq('id', user.id).single()
-        router.push(profile?.onboarded ? '/dashboard' : '/onboarding')
-      }
+      if (user) router.push('/studio')
     }
     setLoading(false)
   }
