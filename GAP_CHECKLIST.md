@@ -46,7 +46,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [~] | `AgentRunner` abstraction — one Claude Agent SDK session per project, provider-agnostic | 🔴 | **S2 — interface done** (`lib/agent/types.ts`); concrete `claude-runner` pending |
+| [x] | `AgentRunner` — real Claude Agent SDK runner; sandbox-backed MCP tools, built-in FS tools disallowed, ANTHROPIC_API_KEY auth | 🔴 | **done** `lib/agent/claude-runner.ts` — live-verified wiring (auth+stream+map); blocked only on account credits |
 | [x] | Server orchestrator API route — `app/api/build` (auth → build_jobs → sandbox → AgentRunner → SSE) | 🔴 | **S3 — done (stub engine)**; 12/12 smoke, route compiles + 401-guards |
 | [~] | Move builds **off the browser tab** to durable server execution | 🔴 | **route done**; chat UI still runs v1 client loop — wire to `/api/build` next |
 | [x] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **applied (v12)** + written by `/api/build` (status, JSONB event tail, metering) |
@@ -87,7 +87,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
 | [ ] | Cloudflare Sandbox SDK integration (net-new) | 🔴 | S2 |
-| [ ] | Replace direct Anthropic fetch with Agent SDK in-sandbox | 🟠 | S2/S3 |
+| [~] | Replace direct Anthropic fetch with the Agent SDK | 🟠 | **runner done**; v1 `/api/chat` proxy still used by the old client loop until the UI is rewired to `/api/build` |
 | [ ] | Live preview wired to sandbox dev server (replaces iframe `srcDoc` flattening) | 🟠 | S4 |
 | [ ] | Re-point GitHub deploy at the sandbox filesystem (reuse `save-v2`/`pull-v2`) | 🟡 | S5 |
 | [ ] | Build Cloudflare deploy route (schema columns exist, no route) | 🟡 | S5 |

@@ -13,7 +13,7 @@ const ok = (c, n) => (c ? (console.log(`${G}✓${X} ${n}`), pass++) : (console.l
 console.log(`${C}── orchestration core (stub) ──${X}`)
 
 const driver = getSandboxDriver()
-const runner = getAgentRunner()
+const runner = await getAgentRunner()
 
 const sandbox = await driver.create({ projectId: 'test-proj', files: [] })
 ok(typeof sandbox.id === 'string' && sandbox.id.length > 0, 'driver.create returns a sandbox handle with an id')

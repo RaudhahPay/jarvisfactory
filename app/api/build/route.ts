@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', appId)
 
-        const runner = getAgentRunner()
+        const runner = await getAgentRunner()
         await runner.start(sandbox, { projectId: appId, userId: user.id, prompt, onEvent: send })
 
         // Persist the resulting file tree (source of truth) + live preview URL.

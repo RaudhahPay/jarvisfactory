@@ -1,14 +1,22 @@
 // Agent runner factory — the single place product code resolves an AgentRunner.
-// Today: stub. Next step swaps in ClaudeAgentRunner (real Claude Agent SDK, backed
-// by the SandboxHandle, ANTHROPIC_API_KEY billing, Sonnet-default model routing).
+// Real ClaudeAgentRunner (Agent SDK) when ANTHROPIC_API_KEY is set; otherwise the
+// scripted StubAgentRunner (CI / local-without-key / forced via AGENT_RUNNER=stub).
+// Async + dynamic import so the Node-only Agent SDK never loads on the stub path.
 
 import type { AgentRunner } from './types'
-import { StubAgentRunner } from './stub-runner'
 
 let singleton: AgentRunner | null = null
 
-export function getAgentRunner(): AgentRunner {
-  if (!singleton) singleton = new StubAgentRunner()
+export async function getAgentRunner(): Promise<AgentRunner> {
+  if (singleton) return singleton
+  const useReal = !!process.env.ANTHROPIC_API_KEY && process.env.AGENT_RUNNER !== 'stub'
+  if (useReal) {
+    const { ClaudeAgentRunner } = await import('./claude-runner')
+    singleton = new ClaudeAgentRunner()
+  } else {
+    const { StubAgentRunner } = await import('./stub-runner')
+    singleton = new StubAgentRunner()
+  }
   return singleton
 }
 
