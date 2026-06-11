@@ -39,6 +39,11 @@ class StubSandboxHandle implements SandboxHandle {
     return this.files.get(path)!
   }
 
+  async readFileBase64(path: string): Promise<string> {
+    const c = await this.readFile(path)
+    return Buffer.from(c, 'utf-8').toString('base64')
+  }
+
   async listFiles(dir?: string): Promise<string[]> {
     const all = Array.from(this.files.keys())
     return dir ? all.filter(p => p.startsWith(dir.replace(/\/?$/, '/'))) : all

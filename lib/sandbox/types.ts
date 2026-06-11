@@ -78,6 +78,7 @@ export interface SandboxHandle {
   // ── Files ──
   writeFiles(files: SandboxFile[]): Promise<void>
   readFile(path: string): Promise<string>
+  readFileBase64(path: string): Promise<string>
   listFiles(dir?: string): Promise<string[]>
   deleteFile(path: string): Promise<void>
 

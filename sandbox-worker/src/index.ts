@@ -115,6 +115,10 @@ export default {
           const f = await sandbox.readFile(abs(body.path));
           return json({ content: f.content });
         }
+        case "/read-b64": {
+          const f = await sandbox.readFile(abs(body.path), { encoding: "base64" });
+          return json({ content: f.content, encoding: "base64" });
+        }
         case "/list": {
           const base = body.dir ? abs(body.dir) : WS;
           const snap = await snapshotWorkspace(sandbox);
