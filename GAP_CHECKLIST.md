@@ -76,7 +76,8 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
 | [ ] | Rotate PAT / encrypt OAuth tokens (see Gate 0) | 🔴 | G0 |
-| [ ] | RLS `USING(true)` on every table; per-user isolation as a hard invariant | 🔴 | S2/S7 |
+| [x] | **LIVE EXPOSURE (found + FIXED 2026-06-11):** RLS was **DISABLED** in prod on `apps` (37 rows), `profiles` (4), `jarvis_profiles` (3) — public anon key could read/modify every row. **Fixed via `v13` (RLS enabled + owner-scoped policies); advisor cleared.** ⚠️ founder to confirm login→onboarding→dashboard still work. | 🔴 | done `v13` |
+| [ ] | Shim tables `app_users`/`app_data`/`app_sessions` use `USING(true)` RLS — full cross-tenant exposure; deleted by the rebuild but live now | 🔴 | S7 |
 | [ ] | Agent permission layer — gate destructive/sensitive ops (deletes, deploys, installs) | 🔴 | S2 |
 | [ ] | Sanitize/validate user prompts before the agent loop | 🟠 | S2 |
 | [ ] | "One sandbox = one tenant, hostile to all others" enforced from first commit | 🔴 | S2 |
