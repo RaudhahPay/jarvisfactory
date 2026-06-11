@@ -16,7 +16,7 @@
 // ============================================================
 
 import { NextRequest } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { getAuthedDb } from '@/lib/supabase/authed'
 import { getSandboxDriver } from '@/lib/sandbox'
 import { getAgentRunner } from '@/lib/agent'
 import type { AgentEvent } from '@/lib/agent/types'
@@ -43,10 +43,7 @@ function appToFiles(app: any): SandboxFile[] {
 const now = () => new Date().toISOString()
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, db } = await getAuthedDb()
   if (!user) return Response.json({ error: 'Not authenticated' }, { status: 401 })
 
   let body: any
@@ -62,11 +59,11 @@ export async function POST(req: NextRequest) {
   const prompt = pv.value
 
   // S6: enforce the per-user monthly spend cap BEFORE starting a session.
-  const quota = await checkQuota(supabase, user.id)
+  const quota = await checkQuota(db, user.id)
   if (!quota.ok) return Response.json({ error: quota.reason }, { status: 402 })
 
   // RLS restricts to the owner; the explicit check just yields a cleaner 403/404.
-  const { data: app } = await supabase
+  const { data: app } = await db
     .from('apps')
     .select('id, user_id, sandbox_id, files_json, html_code, entry_point')
     .eq('id', appId)
@@ -74,7 +71,7 @@ export async function POST(req: NextRequest) {
   if (!app) return Response.json({ error: 'App not found' }, { status: 404 })
   if (app.user_id !== user.id) return Response.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { data: job, error: jobErr } = await supabase
+  const { data: job, error: jobErr } = await db
     .from('build_jobs')
     .insert({ app_id: appId, user_id: user.id, status: 'running', prompt, started_at: now() })
     .select('id')
@@ -116,7 +113,7 @@ export async function POST(req: NextRequest) {
           (app.sandbox_id && (await driver.get(app.sandbox_id))) ||
           (await driver.create({ projectId: appId, files: appToFiles(app) }))
 
-        await supabase
+        await db
           .from('apps')
           .update({
             sandbox_id: sandbox.id,
@@ -135,12 +132,12 @@ export async function POST(req: NextRequest) {
         for (const f of snap.files) filesJson[f.path] = f.content
         const previewUrl = await sandbox.getPreviewUrl(3000)
 
-        await supabase
+        await db
           .from('apps')
           .update({ files_json: filesJson, preview_url: previewUrl, sandbox_last_active_at: now() })
           .eq('id', appId)
 
-        await supabase
+        await db
           .from('build_jobs')
           .update({
             status: 'succeeded',
@@ -155,7 +152,7 @@ export async function POST(req: NextRequest) {
           .eq('id', job.id)
       } catch (err: any) {
         send({ type: 'error', message: err?.message || 'Build failed' })
-        await supabase
+        await db
           .from('build_jobs')
           .update({
             status: 'failed',
@@ -166,7 +163,7 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', job.id)
       } finally {
-        await recordUsage(supabase, usageRows)
+        await recordUsage(db, usageRows)
         controller.close()
       }
     },
