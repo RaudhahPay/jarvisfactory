@@ -69,9 +69,9 @@ export default function AuthPage() {
   return (
     <div style={c.page}>
       <div style={c.card}>
-        <span style={c.logo}>JARVISFACTORY.AI</span>
+        <span style={c.logo}>ezclaude</span>
         <div style={c.title}>{mode==='signup' ? 'Create Account' : 'Welcome Back'}</div>
-        <div style={c.sub}>{mode==='signup' ? 'Start building your JARVIS today.' : 'Sign in to your JarvisFactory.'}</div>
+        <div style={c.sub}>{mode==='signup' ? 'Make Claude easy — no code needed.' : 'Welcome back to ezclaude.'}</div>
 
         <div style={c.tabs}>
           <button style={{...c.tab, background: mode==='signup' ? '#00e5b0' : 'transparent', color: mode==='signup' ? '#000' : '#8888aa'}} onClick={()=>setMode('signup')}>Sign Up</button>

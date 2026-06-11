@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'JarvisFactory.ai — Your Own AI Developer',
-  description: 'Build apps without code. Your personal JARVIS plans, estimates, and builds your app — then deploys it live.',
+  title: 'ezclaude — Claude, made easy for non-coders',
+  description: 'Ask, create, and build with Claude — no code. Chat, make documents/decks/spreadsheets, and ship real apps, all in one place.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

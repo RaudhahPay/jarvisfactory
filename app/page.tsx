@@ -63,7 +63,7 @@ export default function Home() {
     <div style={s.body}>
       {/* NAV */}
       <nav style={s.nav}>
-        <div style={s.logo}>JARVISFACTORY.AI</div>
+        <div style={s.logo}>ezclaude</div>
         <div style={{display:'flex',gap:16,alignItems:'center'}}>
           <a href="#how" style={{color:'#8888aa',textDecoration:'none',fontFamily:"'Space Mono',monospace",fontSize:12}}>How It Works</a>
           <a href="#pricing" style={{color:'#8888aa',textDecoration:'none',fontFamily:"'Space Mono',monospace",fontSize:12}}>Pricing</a>
@@ -76,25 +76,21 @@ export default function Home() {
         <div style={{position:'absolute',top:-100,left:-100,width:600,height:600,background:'rgba(0,229,176,0.04)',borderRadius:'50%',filter:'blur(120px)'}}/>
         <div style={{position:'absolute',bottom:-100,right:-100,width:500,height:500,background:'rgba(123,111,255,0.05)',borderRadius:'50%',filter:'blur(120px)'}}/>
         <div style={{position:'relative',zIndex:2}}>
-          <div style={s.badge}>⚡ Now accepting early access — limited spots</div>
+          <div style={s.badge}>💬 Ask · ✨ Create · ⚡ Build — no code</div>
           <div style={s.title}>
-            YOUR OWN<br/>
-            <span style={s.accent}>AI DEVELOPER</span><br/>
-            <span style={s.dim}>NO CODE NEEDED</span>
+            CLAUDE,<br/>
+            <span style={s.accent}>MADE EASY</span><br/>
+            <span style={s.dim}>FOR NON-CODERS</span>
           </div>
           <p style={s.sub}>
-            Stop hiring developers. <strong style={{color:'#f0f0fa'}}>JarvisFactory</strong> creates your own personal JARVIS — an AI that learns who you are, asks the right questions, plans your app, estimates budget and time, then <strong style={{color:'#f0f0fa'}}>builds and deploys it live.</strong>
+            <strong style={{color:'#f0f0fa'}}>ezclaude</strong> makes Claude easy for people who don't code. <strong style={{color:'#f0f0fa'}}>Ask</strong> it anything, <strong style={{color:'#f0f0fa'}}>create</strong> real documents, decks and spreadsheets, or <strong style={{color:'#f0f0fa'}}>build and launch a real app</strong> — all by just describing what you want.
           </p>
-          {!joined ? (
-            <div style={s.form}>
-              <input style={s.input} type="email" placeholder="Enter your email address" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key==='Enter' && joinWaitlist()}/>
-              <button style={s.btn} onClick={joinWaitlist} disabled={loading}>{loading ? '...' : 'Get Early Access →'}</button>
-            </div>
-          ) : (
-            <div style={{marginTop:44,...s.success}}>✓ You're on the list! We'll reach out soon.</div>
-          )}
+          <div style={s.form}>
+            <button style={s.btn} onClick={() => router.push('/auth')}>Start free →</button>
+            <button style={{...s.btn, background:'transparent', border:'1px solid #2a2a45', color:'#f0f0fa'}} onClick={() => router.push('/studio')}>Open ezclaude</button>
+          </div>
           <div style={s.stats}>
-            {[['∞','Apps You Can Build'],['0','Lines of Code Needed'],['60s','Average Build Time'],['1','Your Personal JARVIS']].map(([n,l]) => (
+            {[['∞','Things You Can Make'],['0','Lines of Code'],['3','Ways to Use Claude'],['1','Simple App']].map(([n,l]) => (
               <div key={l} style={{textAlign:'center'}}>
                 <div style={s.statNum}>{n}</div>
                 <div style={s.statLabel}>{l}</div>
@@ -108,13 +104,12 @@ export default function Home() {
       <div style={{background:'#0a0a18',borderTop:'1px solid #1a1a35',borderBottom:'1px solid #1a1a35'}} id="how">
         <div style={s.section}>
           <div style={s.sectionTag}>How It Works</div>
-          <div style={s.sectionTitle}>FROM IDEA TO <span style={s.accent}>LIVE APP</span> IN 4 STEPS</div>
+          <div style={s.sectionTitle}>THREE WAYS TO USE <span style={s.accent}>CLAUDE</span> — NO CODE</div>
           <div style={s.grid4}>
             {[
-              ['01','🏭','Build Your JARVIS','JarvisFactory onboards you — learns your industry, style, and goals. Your JARVIS gets smarter every session.','→ personalised AI'],
-              ['02','💬','Describe Your App','Tell JARVIS what you want in plain language. English or Bahasa Melayu. No technical knowledge needed.','→ just talk naturally'],
-              ['03','📋','Review the Plan','JARVIS asks questions, presents a full plan with time and budget estimate. You approve before anything is built.','→ always in control'],
-              ['04','🚀','Live in Seconds','After approval, JARVIS builds and deploys your app — database, hosting, domain, GitHub sync all automatic.','→ you own everything'],
+              ['01','💬','Ask','Chat with Claude about anything — questions, drafts, research, explanations. Plain language, English or Bahasa Melayu.','→ just talk'],
+              ['02','✨','Create','Describe a document, slide deck, spreadsheet or PDF and Claude makes the real file for you to download.','→ no code'],
+              ['03','⚡','Build','Describe an app and Claude builds and launches it — database, hosting, the works. You own everything.','→ real, live apps'],
             ].map(([num,icon,title,desc,tag]) => (
               <div key={num} style={s.step}>
                 <div style={s.stepNum}>{num}</div>
@@ -177,8 +172,8 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer style={s.footer}>
-        <div style={{fontFamily:"'Space Mono',monospace",fontSize:14,color:'#00e5b0',fontWeight:700}}>JARVISFACTORY.AI</div>
-        <div style={{fontSize:11,color:'#5a5a78',fontFamily:"'Space Mono',monospace"}}>© 2026 JarvisFactory.ai — Built by Coach Fadzil</div>
+        <div style={{fontFamily:"'Space Mono',monospace",fontSize:14,color:'#00e5b0',fontWeight:700}}>ezclaude</div>
+        <div style={{fontSize:11,color:'#5a5a78',fontFamily:"'Space Mono',monospace"}}>© 2026 ezclaude — Make Claude easy. Built by Coach Fadzil</div>
         <button style={{...s.navBtn,fontSize:12}} onClick={() => router.push('/auth')}>Start Building →</button>
       </footer>
     </div>

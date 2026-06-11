@@ -135,15 +135,15 @@ export default function StudioPage() {
   if (!ready) return <div style={{ minHeight: '100vh', background: C.bg, color: C.teal, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: C.mono, fontSize: 14 }}>Loading Studio…</div>
 
   const tabs: { id: Mode; label: string; hint: string }[] = [
-    { id: 'chat', label: '💬 Chat', hint: 'Ask, brainstorm, draft' },
-    { id: 'cowork', label: '🧑‍💼 Cowork', hint: 'Make docs, decks, sheets, PDFs' },
-    { id: 'build', label: '⚡ Build', hint: 'Build & deploy an app' },
+    { id: 'chat', label: '💬 Ask', hint: 'Chat with Claude — ask anything' },
+    { id: 'cowork', label: '✨ Create', hint: 'Make documents, decks, sheets, PDFs — no code' },
+    { id: 'build', label: '⚡ Build', hint: 'Build & launch a real app — no code' },
   ]
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: C.mono, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ fontWeight: 700, color: C.teal, letterSpacing: 1 }}>⬡ JARVIS STUDIO</div>
+        <div style={{ fontWeight: 700, color: C.teal, letterSpacing: 1 }}>⬡ ezclaude</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {tabs.map(t => (
             <button
@@ -173,7 +173,7 @@ export default function StudioPage() {
           <div style={{ margin: 'auto', textAlign: 'center', color: C.dim, maxWidth: 460 }}>
             <div style={{ fontSize: 40, opacity: 0.2 }}>⬡</div>
             <div style={{ fontSize: 13, marginTop: 8 }}>
-              {mode === 'chat' ? 'Chat with Claude. Ask anything.' : 'Describe a deliverable — “make a 5-slide deck on X”, “turn this data into an xlsx”, “draft a contract as a .docx”. The agent builds it with skills in a sandbox.'}
+              {mode === 'chat' ? 'Ask Claude anything — questions, drafts, ideas, explanations.' : 'Describe what you want and Claude makes it: “a 5-slide deck on X”, “turn this data into a spreadsheet”, “draft a contract as a Word doc”. No code.'}
             </div>
           </div>
         )}
