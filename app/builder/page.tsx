@@ -30,6 +30,9 @@ function Builder() {
   const [prompt, setPrompt] = useState('')
   const [phase, setPhase] = useState<'idle'|'planning'|'questioning'|'approving'|'building'|'iterating'|'done'>('idle')
   const [builtCode, setBuiltCode] = useState('')
+  // v2/S4: live sandbox dev-server URL (set by a v2 build); when real, the Preview
+  // pane shows it in an iframe instead of the flattened srcDoc HTML.
+  const [previewUrl, setPreviewUrl] = useState('')
   const [activeTab, setActiveTab] = useState<'code'|'preview'>('code')
   const [pendingPlan, setPendingPlan] = useState<any>(null)
   const [questions, setQuestions] = useState<any[]>([])
@@ -209,7 +212,7 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
   const { runBuild } = useBuildPipeline({ setPhase, setAgentStatus, addLog, addChat, setTokens })
   // v2/Stage 4 S3: real server-side engine (Agent SDK in a sandbox via /api/build),
   // gated behind NEXT_PUBLIC_V2_ENGINE so the v1 client loop stays the default.
-  const { buildV2 } = useV2Build({ setPhase, setAgentStatus, addLog, addChat, setBuiltCode, setCurrentAppId })
+  const { buildV2 } = useV2Build({ setPhase, setAgentStatus, addLog, addChat, setBuiltCode, setCurrentAppId, setPreviewUrl })
 
   // v6: getKey() removed — Anthropic key now lives server-side in /api/chat.
 
@@ -236,6 +239,7 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
       code = injectBackend(code, app.id)
     }
     setBuiltCode(code)
+    setPreviewUrl(app.preview_url || '') // v2/S4: live preview if this project has one
     // v6: Restore the saved proposal if we have it
     setFinalPlan(app.proposal_data || { app_name: app.name, summary: app.description })
     setPrompt(app.description || '')
@@ -253,6 +257,7 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
   function newApp() {
     setCurrentAppId(null)
     setBuiltCode('')
+    setPreviewUrl('')
     setFinalPlan(null)
     setPendingPlan(null)
     setQuestions([])
@@ -2150,7 +2155,16 @@ RULES:
             ) : <pre id="codeDisplay" style={{fontFamily:"'Space Mono',monospace",fontSize:11,lineHeight:1.8,color:'#7ec8a0',whiteSpace:'pre-wrap' as const,wordBreak:'break-all' as const}}>{builtCode}</pre>}
           </div>
           <div style={{flex:1,overflow:'hidden',display:activeTab==='preview'?'flex':'none',flexDirection:'column' as const,background:'#fff'}}>
-            {!builtCode ? (
+            {previewUrl && /^https?:\/\//.test(previewUrl) && !previewUrl.includes('.preview.local') ? (
+              <>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',background:'#0c0d12',borderBottom:'1px solid #1a1c25',fontFamily:"'Space Mono',monospace",fontSize:10}}>
+                  <span style={{color:'#00e5b0'}}>⬡ LIVE SANDBOX</span>
+                  <span style={{color:'#6f7079',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{previewUrl}</span>
+                  <a href={previewUrl} target="_blank" rel="noreferrer" style={{color:'#8b7cf8',textDecoration:'none'}}>↗ open</a>
+                </div>
+                <iframe id="previewFrame" style={{flex:1,border:'none',width:'100%',height:'100%'}} src={previewUrl}/>
+              </>
+            ) : !builtCode ? (
               <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',background:'#0c0d12',gap:10,color:'#6f7079'}}>
                 <div style={{fontSize:36,opacity:0.2}}>◻</div>
                 <div style={{fontFamily:"'Space Mono',monospace",fontSize:12}}>Preview loads after build</div>

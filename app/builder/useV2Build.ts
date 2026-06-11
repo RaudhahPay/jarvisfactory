@@ -22,6 +22,7 @@ export interface V2BuildUI {
   addChat: (html: string) => void
   setBuiltCode: (code: string) => void
   setCurrentAppId: (id: string) => void
+  setPreviewUrl: (url: string) => void
 }
 
 // Agent text/messages are untrusted — escape before injecting into the HTML chat log.
@@ -102,6 +103,7 @@ export function useV2Build(ui: V2BuildUI) {
       }
 
       ui.setPhase('building')
+      ui.setPreviewUrl('') // clear any stale preview while the new build runs
       ui.setAgentStatus({
         builder: { status: 'working', note: 'agent starting…' },
       })
@@ -123,6 +125,7 @@ export function useV2Build(ui: V2BuildUI) {
         const entry = app.entry_point || 'index.html'
         const code = files[entry] || app.html_code || Object.values(files)[0] || ''
         ui.setBuiltCode(String(code))
+        ui.setPreviewUrl(app.preview_url || '')
       }
       ui.setAgentStatus({ builder: { status: 'done' } })
       ui.setPhase('done')
