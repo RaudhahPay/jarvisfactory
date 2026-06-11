@@ -65,7 +65,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [x] | `SandboxDriver` + concrete drivers (stub + Cloudflare) | 🔴 | **done** — `lib/sandbox/cloudflare-driver.ts` (Node) ↔ `sandbox-worker/` bridge Worker; both typecheck vs real SDK; **unverified until bridge deployed** |
+| [x] | `SandboxDriver` + concrete drivers (stub + Cloudflare) | 🔴 | **done + LIVE** — `cloudflare-driver.ts` ↔ deployed `sandbox-worker`; real-container e2e 6/6 |
 | [~] | Idle-sandbox auto-suspend + snapshot files to Supabase storage | 🔴 | **partial** — `sleepAfter`/`suspend()`/`snapshot()` in driver+bridge; persisting snapshots to Supabase storage pending |
 | [x] | Cloudflare Sandbox base image / preinstalled toolchain | 🟠 | `sandbox-worker/Dockerfile` (`cloudflare/sandbox:0.12.1` — Node 20 + Python) |
 | [x] | CI pipeline (typecheck + smoke) | 🟠 | **done** `.github/workflows/ci.yml` — app tsc + 4 v2 suites (policy/metering/build-client/orchestrator) + worker tsc; dry-run green |
@@ -86,7 +86,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [x] | Cloudflare Sandbox SDK integration via bridge Worker | 🔴 | **scaffolded** `sandbox-worker/` (typechecks); deploy pending (Containers account) |
+| [x] | Cloudflare Sandbox SDK integration via bridge Worker | 🔴 | **DEPLOYED + verified live** — `jarvisfactory-sandbox.ariavibecoderlab.workers.dev`; real container create/exec/write/snapshot/destroy 6/6 through the driver |
 | [~] | Replace direct Anthropic fetch with the Agent SDK | 🟠 | **runner done**; v1 `/api/chat` proxy still used by the old client loop until the UI is rewired to `/api/build` |
 | [x] | Live preview wired to sandbox dev server (tunnels) | 🟠 | **done** — Preview pane shows real `preview_url` in an iframe (badge + open link), falls back to `srcDoc`; end-to-end needs the bridge deployed |
 | [ ] | Re-point GitHub deploy at the sandbox filesystem (reuse `save-v2`/`pull-v2`) | 🟡 | S5 |
@@ -118,7 +118,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
   `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK; concrete drivers DONE (stub + Cloudflare bridge)**
 - [~] **S3 — Server orchestrator + `build_jobs`** — schema applied (v12); `/api/build` route done on stub driver/runner (smoke-passed). Remaining: wire chat UI → `/api/build`, then swap stubs for concrete Cloudflare driver + Claude Agent SDK runner
-- [~] **S4 — Cloudflare driver + bridge Worker** scaffolded & typechecked; **UI preview pane → `preview_url` DONE**. Remaining: deploy the bridge (Containers account) to light it up end-to-end
+- [x] **S4 — Cloudflare driver + bridge Worker** — **DEPLOYED + verified live** (real container 6/6 e2e); UI preview pane done. Only the *real agent* (Anthropic credit) remains to light up the full chain
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
 - [~] **S7 — Cleanup + hardening** — **CI done** (`.github/workflows/ci.yml`). Deferred (destructive, gated): delete v1 `runBuildPipeline` (v1 still default), drop shim tables (live data), migration tooling, ops monitoring
