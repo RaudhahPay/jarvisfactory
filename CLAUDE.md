@@ -110,6 +110,13 @@ so a project can be resumed (rehydrate the sandbox from saved files on resume).
   user-generated code directly.
 - Treat every sandbox as hostile to every other. No shared filesystem, no shared
   network, no shared secrets across projects/users.
+- **Runtime split (confirmed S3/S4):** the Agent SDK needs **Node**; the Cloudflare
+  Sandbox SDK runs **only in a Worker**. So they're separate processes bridged over
+  HTTP: `sandbox-worker/` (a thin Worker holding the `env.Sandbox` Durable Object,
+  wrapping the SDK behind `/exec`,`/write`,`/start-dev`,… endpoints + preview-URL
+  routing) ← called by `lib/sandbox/cloudflare-driver.ts` (Node, same process as the
+  AgentRunner). Driver selected by `SANDBOX_PROVIDER` env; stub otherwise. The bridge
+  needs a Workers **Paid** plan with Containers — see `sandbox-worker/README.md`.
 
 ---
 

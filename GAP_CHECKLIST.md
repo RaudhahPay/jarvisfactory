@@ -65,9 +65,9 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [~] | `SandboxDriver` interface (create/writeFiles/exec/startDevServer/getPreviewUrl/snapshot/destroy) | 🔴 | **S2 — interface done** (`lib/sandbox/types.ts`); **provider: Cloudflare Sandbox SDK** (founder decision 2026-06-11) |
-| [ ] | Idle-sandbox auto-suspend + snapshot files to Supabase storage | 🔴 | S2 |
-| [ ] | Cloudflare Sandbox base image / preinstalled toolchain for user projects | 🟠 | S2 |
+| [x] | `SandboxDriver` + concrete drivers (stub + Cloudflare) | 🔴 | **done** — `lib/sandbox/cloudflare-driver.ts` (Node) ↔ `sandbox-worker/` bridge Worker; both typecheck vs real SDK; **unverified until bridge deployed** |
+| [~] | Idle-sandbox auto-suspend + snapshot files to Supabase storage | 🔴 | **partial** — `sleepAfter`/`suspend()`/`snapshot()` in driver+bridge; persisting snapshots to Supabase storage pending |
+| [x] | Cloudflare Sandbox base image / preinstalled toolchain | 🟠 | `sandbox-worker/Dockerfile` (`cloudflare/sandbox:0.12.1` — Node 20 + Python) |
 | [ ] | CI/CD pipeline (typecheck + lint + smoke) — none today | 🟠 | S7 |
 | [ ] | Staging environment | 🟡 | S7 |
 
@@ -86,9 +86,9 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [ ] | Cloudflare Sandbox SDK integration (net-new) | 🔴 | S2 |
+| [x] | Cloudflare Sandbox SDK integration via bridge Worker | 🔴 | **scaffolded** `sandbox-worker/` (typechecks); deploy pending (Containers account) |
 | [~] | Replace direct Anthropic fetch with the Agent SDK | 🟠 | **runner done**; v1 `/api/chat` proxy still used by the old client loop until the UI is rewired to `/api/build` |
-| [ ] | Live preview wired to sandbox dev server (replaces iframe `srcDoc` flattening) | 🟠 | S4 |
+| [~] | Live preview wired to sandbox dev server (tunnels) | 🟠 | **S4** — bridge returns preview URLs (`tunnels.get`); UI preview-pane wiring pending |
 | [ ] | Re-point GitHub deploy at the sandbox filesystem (reuse `save-v2`/`pull-v2`) | 🟡 | S5 |
 | [ ] | Build Cloudflare deploy route (schema columns exist, no route) | 🟡 | S5 |
 
@@ -116,9 +116,9 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [x] **Gate 0** — partial (`.env.local`, `v1-archive`, `.env.example` done; PAT/encrypt/dupe pending)
 - [x] **S1 — Extract `builder/page.tsx`** ✅ done 2026-06-11 (`3bf4e45`→`e01e2ef`)
 - [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
-  `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK (decided 2026-06-11); concrete driver pending**
+  `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK; concrete drivers DONE (stub + Cloudflare bridge)**
 - [~] **S3 — Server orchestrator + `build_jobs`** — schema applied (v12); `/api/build` route done on stub driver/runner (smoke-passed). Remaining: wire chat UI → `/api/build`, then swap stubs for concrete Cloudflare driver + Claude Agent SDK runner
-- [ ] **S4 — Live preview** wired to sandbox dev server
+- [~] **S4 — Cloudflare driver + bridge Worker** scaffolded & typechecked (`sandbox-worker/`, `lib/sandbox/cloudflare-driver.ts`); remaining: deploy the bridge (Containers account) + wire the UI preview pane to `preview_url`
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
 - [ ] **S7 — Cleanup + hardening** (drop shim tables, migration tooling, CI, ops)
