@@ -39,7 +39,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
 | [x] | Extract orchestration from `builder/page.tsx` at the `approveBuild()` seam | 🟡 | **S1 — DONE** `3bf4e45`→`e01e2ef` (pipeline in `lib/build-pipeline.ts`, wired via `useBuildPipeline`) |
-| [ ] | Wire chat UI to streamed **agent events** (replaces local pipeline progress logs) | 🟠 | S2/S3 |
+| [ ] | Wire chat UI to streamed **agent events** from `/api/build` (replaces v1 client loop) | 🟠 | **S3 — NEXT** |
 | [ ] | Three-pane layout (chat \| live preview \| files) for v2 | 🟡 | S4 |
 
 ## Layer 4 — Backend 🔴 (core rebuild)
@@ -47,17 +47,17 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
 | [~] | `AgentRunner` abstraction — one Claude Agent SDK session per project, provider-agnostic | 🔴 | **S2 — interface done** (`lib/agent/types.ts`); concrete `claude-runner` pending |
-| [ ] | Server orchestrator API route — find/create project, ensure sandbox, open session | 🔴 | S3 |
-| [ ] | Move builds **off the browser tab** to durable server execution | 🔴 | S3 |
-| [~] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **S3 — schema drafted** (v12); orchestrator wiring pending |
+| [x] | Server orchestrator API route — `app/api/build` (auth → build_jobs → sandbox → AgentRunner → SSE) | 🔴 | **S3 — done (stub engine)**; 12/12 smoke, route compiles + 401-guards |
+| [~] | Move builds **off the browser tab** to durable server execution | 🔴 | **route done**; chat UI still runs v1 client loop — wire to `/api/build` next |
+| [x] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **applied (v12)** + written by `/api/build` (status, JSONB event tail, metering) |
 | [ ] | Delete the legacy `runBuildPipeline` scaffold once AgentRunner replaces it | 🟡 | S3 (after) |
 
 ## Layer 5 — Database 🟠
 
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
-| [~] | Add sandbox lifecycle fields to `apps` (`sandbox_id`, `sandbox_status`, `preview_url`, `snapshot_path`, …) | 🟠 | **S3 — drafted** `supabase-schema-v12-sandboxes.sql` (pending apply) |
-| [~] | Add `build_jobs` table (status + JSONB event tail + metering aggregates) | 🔴 | **S3 — drafted** `supabase-schema-v12-sandboxes.sql` (pending apply) |
+| [x] | Add sandbox lifecycle fields to `apps` (`sandbox_id`, `sandbox_status`, `preview_url`, `snapshot_path`, …) | 🟠 | **applied (v12)** |
+| [x] | Add `build_jobs` table (status + JSONB event tail + metering aggregates) | 🔴 | **applied (v12)** |
 | [ ] | Drop shared shim tables `app_users` / `app_data` / `app_sessions` | 🟡 | S7 |
 | [ ] | Add migration tooling (today: manual `.sql` files, no ordering) | 🟠 | S7 |
 
@@ -117,7 +117,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 - [x] **S1 — Extract `builder/page.tsx`** ✅ done 2026-06-11 (`3bf4e45`→`e01e2ef`)
 - [~] **S2 — `SandboxDriver` + `AgentRunner`** — interfaces done (`lib/sandbox/types.ts`,
   `lib/agent/types.ts`); **provider = Cloudflare Sandbox SDK (decided 2026-06-11); concrete driver pending**
-- [~] **S3 — Server orchestrator + `build_jobs`** — schema drafted (`supabase-schema-v12-sandboxes.sql`); orchestrator API route + apply pending
+- [~] **S3 — Server orchestrator + `build_jobs`** — schema applied (v12); `/api/build` route done on stub driver/runner (smoke-passed). Remaining: wire chat UI → `/api/build`, then swap stubs for concrete Cloudflare driver + Claude Agent SDK runner
 - [ ] **S4 — Live preview** wired to sandbox dev server
 - [ ] **S5 — Re-point GitHub deploy** at sandbox filesystem
 - [ ] **S6 — Token + compute metering + quotas**
