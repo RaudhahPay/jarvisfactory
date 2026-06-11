@@ -9,6 +9,7 @@ import { runBuilderAgent } from '@/lib/builder-agent'
 import { loadJarvisLessons, formatLessonsForPrompt, recordBuildOutcome, countLessons, extractLessonsFromQA } from '@/lib/jarvis-memory'
 import { createClaudeClient } from '@/lib/claude-client'
 import { useBuildPipeline } from './useBuildPipeline'
+import { useV2Build } from './useV2Build'
 import type { BuildInput, BuildDeps } from '@/lib/build-types'
 
 export default function BuilderPage() {
@@ -206,6 +207,9 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
   // This hook maps the pipeline's progress events onto the setters above; runBuild()
   // forwards to runBuildPipeline. The timer + persistence stay in approveBuild below.
   const { runBuild } = useBuildPipeline({ setPhase, setAgentStatus, addLog, addChat, setTokens })
+  // v2/Stage 4 S3: real server-side engine (Agent SDK in a sandbox via /api/build),
+  // gated behind NEXT_PUBLIC_V2_ENGINE so the v1 client loop stays the default.
+  const { buildV2 } = useV2Build({ setPhase, setAgentStatus, addLog, addChat, setBuiltCode, setCurrentAppId })
 
   // v6: getKey() removed — Anthropic key now lives server-side in /api/chat.
 
@@ -1448,6 +1452,12 @@ RULES:
   }
 
   async function approveBuild() {
+    // v2 engine: route the build to the server-side Agent SDK (/api/build) and skip
+    // the v1 in-browser pipeline entirely. Flag-gated so v1 remains the default.
+    if (process.env.NEXT_PUBLIC_V2_ENGINE === '1') {
+      await buildV2(prompt, currentAppId)
+      return
+    }
     if(!finalPlan) return
     setPhase('building')
     addChat(`✅ <strong>Plan approved.</strong> The team is starting work...`)

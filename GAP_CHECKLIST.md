@@ -39,7 +39,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 | ✓ | Item | Risk | Step |
 |---|---|---|---|
 | [x] | Extract orchestration from `builder/page.tsx` at the `approveBuild()` seam | 🟡 | **S1 — DONE** `3bf4e45`→`e01e2ef` (pipeline in `lib/build-pipeline.ts`, wired via `useBuildPipeline`) |
-| [ ] | Wire chat UI to streamed **agent events** from `/api/build` (replaces v1 client loop) | 🟠 | **S3 — NEXT** |
+| [x] | Wire chat UI to streamed **agent events** from `/api/build` | 🟠 | **done** — `lib/build-client.ts` (SSE) + `useV2Build` hook, gated `NEXT_PUBLIC_V2_ENGINE`; parser 6/6, builder compiles |
 | [ ] | Three-pane layout (chat \| live preview \| files) for v2 | 🟡 | S4 |
 
 ## Layer 4 — Backend 🔴 (core rebuild)
@@ -48,7 +48,7 @@ risk-tagged, mapped to the build order in `PHASE0_LAYER_AUDIT.md` §C. Tick item
 |---|---|---|---|
 | [x] | `AgentRunner` — real Claude Agent SDK runner; sandbox-backed MCP tools, built-in FS tools disallowed, ANTHROPIC_API_KEY auth | 🔴 | **done** `lib/agent/claude-runner.ts` — live-verified wiring (auth+stream+map); blocked only on account credits |
 | [x] | Server orchestrator API route — `app/api/build` (auth → build_jobs → sandbox → AgentRunner → SSE) | 🔴 | **S3 — done (stub engine)**; 12/12 smoke, route compiles + 401-guards |
-| [~] | Move builds **off the browser tab** to durable server execution | 🔴 | **route done**; chat UI still runs v1 client loop — wire to `/api/build` next |
+| [x] | Move builds **off the browser tab** to durable server execution | 🔴 | **done** — UI → `/api/build` (flag-gated); v1 client loop deleted at S3-after |
 | [x] | `build_jobs` run-log table — durable, streamable, resumable | 🔴 | **applied (v12)** + written by `/api/build` (status, JSONB event tail, metering) |
 | [ ] | Delete the legacy `runBuildPipeline` scaffold once AgentRunner replaces it | 🟡 | S3 (after) |
 
