@@ -1,7 +1,9 @@
 # STAGE 4 COMPLETE — JarvisFactory v2 engine
 
 **Date:** 2026-06-11 · **Branch:** `main` (pushed to `RaudhahPay/jarvisfactory`)
-**Status:** v2 engine is **code-complete and pushed**. Going live needs 2 human/infra steps (below).
+**Status:** v2 engine is **LIVE-VERIFIED end-to-end** — real Claude agent + real Cloudflare
+container, proven together (`scripts/test-full-live.mjs` → 5/5, $0.011). Bridge deployed,
+API credit added. Remaining: run it in the browser / deploy the app to a prod host.
 
 ---
 
@@ -70,3 +72,17 @@ builder UI (flag-gated, live-preview pane)
 
 ## Rollback
 `v1-archive` branch (pushed) is the pre-v2 snapshot. `main` before this work is `f915e70`.
+
+
+---
+
+## UPDATE — verified live (2026-06-11, same session)
+
+- **Cloudflare sandbox bridge DEPLOYED:** `https://jarvisfactory-sandbox.ariavibecoderlab.workers.dev` (Containers; `BRIDGE_TOKEN` secret set).
+- **API credit added** (new key in `.env.local`; old exposed key should be revoked).
+- **`.env.local` wired:** `NEXT_PUBLIC_V2_ENGINE=1`, `SANDBOX_PROVIDER=cloudflare`, bridge URL+token. (`AGENT_RUNNER=stub` removed → real agent.)
+- **Live proofs (real infra, cost real ¢):**
+  - `scripts/test-cloudflare-live.mjs` — driver ↔ real container: 6/6
+  - `scripts/test-claude-runner.mjs` — real agent writes a file: 6/6
+  - `scripts/test-full-live.mjs` — real agent → real container, 2 files incl. nested path: 5/5
+- **Left to do (yours):** (1) `npm run dev`, log in, run a build in the browser to see it in the UI; (2) deploy the Next app to a prod host with the same env vars; (3) rotate the API keys exposed in chat. These live tests hit real infra + cost money, so they're NOT in CI.

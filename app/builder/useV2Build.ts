@@ -43,7 +43,7 @@ export function useV2Build(ui: V2BuildUI) {
           if (e.text.trim()) ui.addChat(esc(e.text))
           break
         case 'tool_use':
-          ui.addLog(`🔧 ${e.tool}`, 'build')
+          ui.addLog(`🔧 ${e.tool.replace(/^mcp__sandbox__/, '')}`, 'build')
           ui.setAgentStatus((s: any) => ({
             ...s,
             builder: { status: 'working', note: e.tool },

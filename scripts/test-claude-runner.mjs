@@ -55,7 +55,7 @@ if (/Credit balance is too low|insufficient_quota|billing/i.test(blob)) {
 }
 
 const snap = await sandbox.snapshot()
-ok(events.some(e => e.type === 'tool_use' && e.tool === 'write_file'), 'agent called the write_file sandbox tool')
+ok(events.some(e => e.type === 'tool_use' && /write_file/.test(e.tool || '')), 'agent called the write_file sandbox tool')
 ok(events.some(e => e.type === 'file_edit' && e.path === 'index.html'), 'emitted file_edit for index.html')
 ok(snap.files.some(f => f.path === 'index.html'), 'index.html actually landed in the sandbox')
 ok(snap.files.some(f => f.path === 'index.html' && /Hello from the agent/.test(f.content)), 'file content matches the instruction')
