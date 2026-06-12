@@ -1,24 +1,32 @@
-import { it, expect, afterEach } from 'vitest';
+import { it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+
+// The Auth/Onboarding routes construct the Supabase browser client at render via
+// `getSupabase()`, which requires VITE_* env vars. Stub it so route rendering
+// stays an integration test of the router, not of Supabase config.
+vi.mock('@/web/src/lib/supabase', () => ({
+  getSupabase: () => ({}),
+}));
+
 import App from './App';
 
 afterEach(() => cleanup());
 
-it('renders the landing marker on /', () => {
+it('renders the Landing page on /', () => {
   render(
     <MemoryRouter initialEntries={['/']}>
       <App />
     </MemoryRouter>,
   );
-  expect(screen.getByTestId('landing-route')).toBeTruthy();
+  expect(screen.getByText('Build something real')).toBeTruthy();
 });
 
-it('renders the auth marker on /auth', () => {
+it('renders the Auth page on /auth', () => {
   render(
     <MemoryRouter initialEntries={['/auth']}>
       <App />
     </MemoryRouter>,
   );
-  expect(screen.getByTestId('auth-route')).toBeTruthy();
+  expect(screen.getByText('Create Account')).toBeTruthy();
 });
