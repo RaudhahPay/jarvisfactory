@@ -46,16 +46,16 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `vitest.config.ts`
 - Test: `web/src/__smoke__/runner.test.ts`
 
-- [ ] **Step 1 — Failing test:** `web/src/__smoke__/runner.test.ts` with
+- [x] **Step 1 — Failing test:** `web/src/__smoke__/runner.test.ts` with
       `it('runs', () => expect(1+1).toBe(2))`.
-- [ ] **Step 2 — Verify it fails:** `npx vitest run` → fails (no vitest installed).
-- [ ] **Step 3 — Implement:** add deps + `vitest.config.ts` (jsdom env for `web`). **Decide
+- [x] **Step 2 — Verify it fails:** `npx vitest run` → fails (no vitest installed).
+- [x] **Step 3 — Implement:** add deps + `vitest.config.ts` (jsdom env for `web`). **Decide
       the `@/` path alias now:** ported files keep `@/lib/...` imports and `web/` imports the
       shared `lib/build-types.ts` across a dir boundary. Define `@/` → repo root in both
       `web/tsconfig.json` + `web/vite.config.ts` (`resolve.alias`) and `server/tsconfig.json`,
       and mirror it in `vitest.config.ts` so tests resolve. Server `lib/` imports stay `@/lib/*`.
-- [ ] **Step 4 — Verify it passes:** `npx vitest run` → 1 passed.
-- [ ] **Step 5 — Commit:** `chore: add vitest + vite/react-router deps for migration`.
+- [x] **Step 4 — Verify it passes:** `npx vitest run` → 1 passed.
+- [x] **Step 5 — Commit:** `chore: add vitest + vite/react-router deps for migration`.
 
 ### Task A1: SPA shell — router + public routes render
 
