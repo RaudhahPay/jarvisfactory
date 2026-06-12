@@ -112,14 +112,14 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `web/src/routes/Onboarding.tsx` (from `app/onboarding/page.tsx`)
 - Test: `web/src/routes/Landing.test.tsx`
 
-- [ ] **Step 1 — Failing test:** render `Landing`; assert its primary CTA renders and a
+- [x] **Step 1 — Failing test:** render `Landing`; assert its primary CTA renders and a
       click calls `navigate` (mock `useNavigate`).
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** copy page bodies verbatim; replace `'use client'`/
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** copy page bodies verbatim; replace `'use client'`/
       `import { useRouter } from 'next/navigation'` with `import { useNavigate } from 'react-router-dom'`
       and `router.push` → `navigate`; inline styles unchanged.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(web): port landing, auth, onboarding pages`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(web): port landing, auth, onboarding pages`.
 
 ### Task A5: Port Studio + Builder + Dashboard pages
 
