@@ -11,6 +11,7 @@
 import { createClient as createSb } from '@supabase/supabase-js'
 import { createClient as createSsr } from '@/utils/supabase/server'
 import type { User } from '@supabase/supabase-js'
+import { headers } from 'next/headers'
 
 export interface AuthedContext {
   user: User | null
@@ -25,10 +26,20 @@ export async function getAuthedDb(): Promise<AuthedContext> {
   } = await ssr.auth.getUser()
   if (!user) return { user: null, db: ssr, ssr }
 
-  const {
-    data: { session },
-  } = await ssr.auth.getSession()
-  const accessToken = session?.access_token
+  // Prefer an explicit Bearer token the client sends (deterministic for RLS); fall back
+  // to the ssr session token (which @supabase/ssr doesn't always forward to data queries).
+  let accessToken: string | undefined
+  try {
+    const h = await headers()
+    const a = h.get('authorization') || ''
+    if (a.toLowerCase().startsWith('bearer ')) accessToken = a.slice(7)
+  } catch {}
+  if (!accessToken) {
+    const {
+      data: { session },
+    } = await ssr.auth.getSession()
+    accessToken = session?.access_token
+  }
   const db = accessToken
     ? createSb(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
         auth: { persistSession: false, autoRefreshToken: false },
