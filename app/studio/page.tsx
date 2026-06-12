@@ -571,10 +571,12 @@ export default function StudioPage() {
             <span style={{ fontSize: 11, color: C.dim }}>{cur.hint}</span>
             <a
               href="/dashboard"
-              title="Your previously built apps"
+              target="_blank"
+              rel="noreferrer"
+              title="Your previously built apps (opens in a new tab)"
               style={{ fontSize: 11, color: C.violet, textDecoration: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 9px", whiteSpace: "nowrap" }}
             >
-              ▤ My Apps
+              ▤ My Apps ↗
             </a>
             <select
               value={model}

@@ -260,6 +260,7 @@ export default function Dashboard() {
         {/* Nav items */}
         <div style={{display:'flex', flexDirection:'column' as const, gap:1}}>
           {[
+            { icon:'⬡', label:'Ask · Create · Build', active:false, onClick:()=>router.push('/studio') },
             { icon:'🏠', label:'Home', active:true, onClick:()=>{} },
             { icon:'📁', label:`Projects (${apps.length})`, active:false, onClick:()=>{ document.getElementById('apps-grid')?.scrollIntoView({behavior:'smooth'}) } },
             { icon:'🎨', label:'Templates', active:false, onClick:()=>alert('Templates — coming soon') },
