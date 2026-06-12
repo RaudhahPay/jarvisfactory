@@ -17,6 +17,7 @@ import { validatePrompt } from '@/lib/agent/policy'
 import { recordUsage, checkQuota } from '@/lib/metering'
 import type { AgentEvent } from '@/lib/agent/types'
 import type { SandboxFile } from '@/lib/sandbox/types'
+import { resolveModel } from '@/lib/models'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -43,6 +44,9 @@ export async function POST(req: NextRequest) {
   const pv = validatePrompt(body?.task || body?.prompt)
   if (!pv.ok) return Response.json({ error: pv.reason }, { status: 400 })
   const task = pv.value
+  const model = resolveModel(body?.model)
+  const attachments: any[] = Array.isArray(body?.attachments) ? body.attachments : []
+  const uploadsNote = attachments.length ? `\n\nThe user uploaded ${attachments.length} file(s) to /workspace/uploads/: ${attachments.map((a: any) => a.name).join(', ')}. Read/study them as needed.` : ''
 
   const quota = await checkQuota(db, user.id)
   if (!quota.ok) return Response.json({ error: quota.reason }, { status: 402 })
@@ -108,8 +112,11 @@ export async function POST(req: NextRequest) {
         const sandbox = (app.sandbox_id && (await driver.get(app.sandbox_id))) || (await driver.create({ projectId: appId, files: appToFiles(app) }))
         await db.from('apps').update({ sandbox_id: sandbox.id, sandbox_provider: driver.provider, sandbox_status: 'running', sandbox_last_active_at: now() }).eq('id', appId)
 
+        if (attachments.length) {
+          await sandbox.writeFilesBase64(attachments.map((a: any) => ({ path: 'uploads/' + a.name, content: a.data })))
+        }
         const runner = await getAgentRunner()
-        await runner.start(sandbox, { projectId: appId, userId: user.id, prompt: buildCoworkPrompt(task), onEvent: send })
+        await runner.start(sandbox, { projectId: appId, userId: user.id, model, prompt: buildCoworkPrompt(task) + uploadsNote, onEvent: send })
 
         // Persist the deliverables the agent produced.
         const snap = await sandbox.snapshot()

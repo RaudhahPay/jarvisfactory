@@ -39,6 +39,10 @@ class StubSandboxHandle implements SandboxHandle {
     return this.files.get(path)!
   }
 
+  async writeFilesBase64(files: { path: string; content: string }[]): Promise<void> {
+    for (const f of files) this.files.set(f.path, Buffer.from(f.content, 'base64').toString('utf-8'))
+  }
+
   async readFileBase64(path: string): Promise<string> {
     const c = await this.readFile(path)
     return Buffer.from(c, 'utf-8').toString('base64')

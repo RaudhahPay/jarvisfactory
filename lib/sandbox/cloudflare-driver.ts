@@ -74,6 +74,10 @@ class CloudflareSandboxHandle implements SandboxHandle {
     return r.content ?? ''
   }
 
+  async writeFilesBase64(files: { path: string; content: string }[]): Promise<void> {
+    await call('/write-b64', { id: this.id, files })
+  }
+
   async readFileBase64(path: string): Promise<string> {
     const r = await call('/read-b64', { id: this.id, path })
     return r.content || ''

@@ -119,6 +119,16 @@ export default {
           const f = await sandbox.readFile(abs(body.path), { encoding: "base64" });
           return json({ content: f.content, encoding: "base64" });
         }
+        case "/write-b64": {
+          for (const f of body.files || []) {
+            const a = abs(f.path);
+            const slash = a.lastIndexOf("/");
+            if (slash > WS.length)
+              await sandbox.mkdir(a.slice(0, slash), { recursive: true });
+            await sandbox.writeFile(a, f.content, { encoding: "base64" });
+          }
+          return json({ ok: true });
+        }
         case "/list": {
           const base = body.dir ? abs(body.dir) : WS;
           const snap = await snapshotWorkspace(sandbox);

@@ -12,9 +12,24 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { MODELS, DEFAULT_MODEL } from '@/lib/models'
 
 type Mode = 'chat' | 'cowork' | 'build'
 type Line = { role: 'user' | 'assistant' | 'log'; text: string }
+type Attachment = { name: string; type: string; data: string }
+
+// Read a browser File into the {name, type, base64} shape the routes expect.
+function fileToAttachment(file: File): Promise<Attachment> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader()
+    r.onload = () => {
+      const s = String(r.result)
+      resolve({ name: file.name, type: file.type || 'application/octet-stream', data: s.slice(s.indexOf(',') + 1) })
+    }
+    r.onerror = reject
+    r.readAsDataURL(file)
+  })
+}
 
 const C = {
   bg: '#06070b',
@@ -72,7 +87,10 @@ export default function StudioPage() {
   const [appId, setAppId] = useState<string | undefined>()
   const [deliverables, setDeliverables] = useState<string[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | undefined>()
+  const [model, setModel] = useState<string>(DEFAULT_MODEL)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -101,19 +119,28 @@ export default function StudioPage() {
 
   const addLine = (role: Line['role'], text: string) => setLines(l => [...l, { role, text }])
 
+  async function pickFiles(list: FileList | null) {
+    if (!list || !list.length) return
+    const next = await Promise.all(Array.from(list).map(fileToAttachment))
+    setAttachments(a => [...a, ...next])
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
   async function send() {
     const text = input.trim()
-    if (!text || busy) return
+    if ((!text && attachments.length === 0) || busy) return
+    const atts = attachments
     setInput('')
+    setAttachments([])
     setBusy(true)
-    addLine('user', text)
+    addLine('user', atts.length ? `${text}${text ? '\n' : ''}📎 ${atts.map(a => a.name).join(', ')}` : text)
     const tok = await token()
 
     try {
       if (mode === 'chat') {
         let asst = ''
         addLine('assistant', '')
-        await streamPost('/api/agent/chat', { conversationId, message: text }, tok, e => {
+        await streamPost('/api/agent/chat', { conversationId, message: text, model, attachments: atts }, tok, e => {
           if (e.type === 'conversation') setConversationId(e.conversationId)
           else if (e.type === 'text') {
             asst += e.text
@@ -121,7 +148,7 @@ export default function StudioPage() {
           } else if (e.type === 'error') addLine('log', '⚠ ' + e.message)
         })
       } else if (mode === 'cowork') {
-        await streamPost('/api/agent/cowork', { conversationId, appId, task: text }, tok, e => {
+        await streamPost('/api/agent/cowork', { conversationId, appId, task: text, model, attachments: atts }, tok, e => {
           if (e.type === 'meta') {
             setConversationId(e.conversationId)
             setAppId(e.appId)
@@ -153,7 +180,7 @@ export default function StudioPage() {
           id = data.id as string
           setAppId(id)
         }
-        await streamPost('/api/build', { appId: id, prompt: text }, tok, e => {
+        await streamPost('/api/build', { appId: id, prompt: text, model, attachments: atts }, tok, e => {
           if (e.type === 'tool_use') addLine('log', `🔧 ${String(e.tool).replace(/^mcp__sandbox__/, '')}`)
           else if (e.type === 'exec') addLine('log', `$ ${e.command}`)
           else if (e.type === 'file_edit') addLine('log', `📝 ${e.action} ${e.path}`)
@@ -207,7 +234,22 @@ export default function StudioPage() {
             </button>
           ))}
         </div>
-        <div style={{ marginLeft: 'auto', fontSize: 11, color: C.dim }}>{cur.hint}</div>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 11, color: C.dim }}>{cur.hint}</span>
+          <select
+            value={model}
+            onChange={e => setModel(e.target.value)}
+            disabled={busy}
+            title="Choose the Claude model"
+            style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 8px', fontFamily: C.mono, fontSize: 11, outline: 'none', cursor: busy ? 'default' : 'pointer' }}
+          >
+            {MODELS.map(m => (
+              <option key={m.id} value={m.id}>
+                {m.label} — {m.blurb}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -258,7 +300,29 @@ export default function StudioPage() {
         </div>
       )}
 
-      <div style={{ padding: 16, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10 }}>
+      {attachments.length > 0 && (
+        <div style={{ padding: '8px 16px 0', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {attachments.map((a, i) => (
+            <span key={i} style={{ fontSize: 11, color: C.violet, border: `1px solid ${C.border}`, borderRadius: 7, padding: '3px 8px', display: 'flex', gap: 6, alignItems: 'center' }}>
+              📎 {a.name}
+              <button onClick={() => setAttachments(list => list.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: C.dim, cursor: 'pointer', fontSize: 12, padding: 0 }}>
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div style={{ padding: 16, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+        <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.docx,.xlsx,.pptx,.zip" onChange={e => pickFiles(e.target.files)} style={{ display: 'none' }} />
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={busy}
+          title="Attach documents, images, or a zip for Claude to study"
+          style={{ padding: '0 14px', height: 46, borderRadius: 10, border: `1px solid ${C.border}`, background: C.panel, color: C.dim, cursor: busy ? 'default' : 'pointer', fontSize: 16 }}
+        >
+          📎
+        </button>
         <textarea
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -274,7 +338,7 @@ export default function StudioPage() {
         />
         <button
           onClick={send}
-          disabled={busy || !input.trim()}
+          disabled={busy || (!input.trim() && attachments.length === 0)}
           style={{ padding: '0 22px', borderRadius: 10, border: 'none', cursor: busy ? 'default' : 'pointer', background: busy ? C.border : C.teal, color: busy ? C.dim : '#000', fontFamily: C.mono, fontWeight: 700, fontSize: 13 }}
         >
           {busy ? '…' : 'Send ↑'}

@@ -23,6 +23,7 @@ import type { AgentEvent } from '@/lib/agent/types'
 import type { SandboxFile } from '@/lib/sandbox/types'
 import { validatePrompt } from '@/lib/agent/policy'
 import { recordUsage, checkQuota } from '@/lib/metering'
+import { resolveModel } from '@/lib/models'
 
 export const runtime = 'nodejs'
 // Long-running agent turns; mirrors /api/chat. NOTE (CLAUDE.md §3): on Cloudflare this
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
   const pv = validatePrompt(body?.prompt)
   if (!pv.ok) return Response.json({ error: pv.reason }, { status: 400 })
   const prompt = pv.value
+  const model = resolveModel(body?.model)
+  const attachments: any[] = Array.isArray(body?.attachments) ? body.attachments : []
+  const uploadsNote = attachments.length ? `\n\nThe user uploaded ${attachments.length} file(s) to /workspace/uploads/: ${attachments.map((a: any) => a.name).join(', ')}.` : ''
 
   // S6: enforce the per-user monthly spend cap BEFORE starting a session.
   const quota = await checkQuota(db, user.id)
@@ -123,8 +127,11 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', appId)
 
+        if (attachments.length) {
+          await sandbox.writeFilesBase64(attachments.map((a: any) => ({ path: 'uploads/' + a.name, content: a.data })))
+        }
         const runner = await getAgentRunner()
-        await runner.start(sandbox, { projectId: appId, userId: user.id, prompt, onEvent: send })
+        await runner.start(sandbox, { projectId: appId, userId: user.id, model, prompt: prompt + uploadsNote, onEvent: send })
 
         // Persist the resulting file tree (source of truth) + live preview URL.
         const snap = await sandbox.snapshot()

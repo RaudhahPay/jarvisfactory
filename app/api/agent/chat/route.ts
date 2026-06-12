@@ -11,12 +11,12 @@ import { NextRequest } from 'next/server'
 import { getAuthedDb } from '@/lib/supabase/authed'
 import { validatePrompt } from '@/lib/agent/policy'
 import { recordUsage, checkQuota } from '@/lib/metering'
+import { resolveModel } from '@/lib/models'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
-const CHAT_MODEL = 'claude-sonnet-4-6'
 // Rough Sonnet 4.6 pricing ($/token) for the usage ledger; refine centrally later.
 const IN_COST = 3 / 1_000_000
 const OUT_COST = 15 / 1_000_000
@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
   const pv = validatePrompt(body?.message)
   if (!pv.ok) return Response.json({ error: pv.reason }, { status: 400 })
   const message = pv.value
+  const model = resolveModel(body?.model)
+  const attachments = Array.isArray(body?.attachments) ? body.attachments : []
 
   const quota = await checkQuota(db, user.id)
   if (!quota.ok) return Response.json({ error: quota.reason }, { status: 402 })
@@ -65,6 +67,15 @@ export async function POST(req: NextRequest) {
   const messages = (history || [])
     .filter((m: any) => m.role === 'user' || m.role === 'assistant')
     .map((m: any) => ({ role: m.role, content: m.content }))
+  if (attachments.length && messages.length) {
+    const last = messages[messages.length - 1]
+    const blocks: any[] = [{ type: 'text', text: last.content }]
+    for (const a of attachments) {
+      if (typeof a?.type === 'string' && a.type.startsWith('image/') && a.data) blocks.push({ type: 'image', source: { type: 'base64', media_type: a.type, data: a.data } })
+      else if (a?.type === 'application/pdf' && a.data) blocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: a.data } })
+    }
+    last.content = blocks as any
+  }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
@@ -79,7 +90,7 @@ export async function POST(req: NextRequest) {
         const upstream = await fetch(ANTHROPIC_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({ model: CHAT_MODEL, max_tokens: 4096, messages, stream: true }),
+          body: JSON.stringify({ model: model, max_tokens: 4096, messages, stream: true }),
         })
         if (!upstream.ok || !upstream.body) {
           let msg = `Anthropic ${upstream.status}`
@@ -126,11 +137,11 @@ export async function POST(req: NextRequest) {
         if (full) {
           await db
             .from('messages')
-            .insert({ conversation_id: conversationId, user_id: user.id, role: 'assistant', content: full, meta: { model: CHAT_MODEL, input_tokens: inTok, output_tokens: outTok } })
+            .insert({ conversation_id: conversationId, user_id: user.id, role: 'assistant', content: full, meta: { model: model, input_tokens: inTok, output_tokens: outTok } })
         }
         await db.from('conversations').update({ updated_at: now() }).eq('id', conversationId)
         await recordUsage(db, [
-          { user_id: user.id, app_id: null, build_job_id: null, model: CHAT_MODEL, input_tokens: inTok, output_tokens: outTok, cost_usd: costUsd },
+          { user_id: user.id, app_id: null, build_job_id: null, model: model, input_tokens: inTok, output_tokens: outTok, cost_usd: costUsd },
         ])
         send({ type: 'done' })
         controller.close()
