@@ -186,7 +186,15 @@ Framework: Raudhah Tech 10-Layer Build Framework — **Phase 0 (Audit) nearly do
   S2 `SandboxDriver` + `AgentRunner` → S3 server orchestrator + `build_jobs` → S4 preview
   → S5 deploy re-point → S6 metering → S7 cleanup/hardening.
 - [ ] Stage 5 — QA / GO–NO-GO
-- [ ] Stage 6 — Deploy + ops
+- [~] Stage 6 — Deploy + ops — **app is LIVE on Cloudflare Containers (2026-06-12)** at
+  https://ezclaude.ariavibecoderlab.workers.dev (Worker `ezclaude` → `EzClaudeContainer`,
+  standard-2 instance running the Next.js standalone server + Agent SDK). The Agent SDK
+  needs Node, so the app runs in a Container, not a Worker — see `Dockerfile` +
+  `worker/container.ts` + `wrangler.jsonc`. Per-build sandboxes stay in `sandbox-worker/`
+  (bridge). Secrets set via `wrangler secret put` (ANTHROPIC_API_KEY,
+  GITHUB_OAUTH_CLIENT_SECRET, SANDBOX_BRIDGE_TOKEN). Verified end-to-end: `/`, `/studio`,
+  `/auth` → 200; `/api/agent/chat` → 401 guarded. Pending ops: custom domain; the
+  exposed Anthropic API keys + GitHub PAT still need rotation (GATE 0).
 
 ---
 
