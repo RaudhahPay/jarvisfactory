@@ -24,6 +24,7 @@ import type { SandboxFile } from '@/lib/sandbox/types'
 import { validatePrompt } from '@/lib/agent/policy'
 import { recordUsage, checkQuota } from '@/lib/metering'
 import { resolveModel } from '@/lib/models'
+import { buildBuildPrompt, PREVIEW_COMMAND, PREVIEW_PORT } from '@/lib/agent/build'
 
 export const runtime = 'nodejs'
 // Long-running agent turns; mirrors /api/chat. NOTE (CLAUDE.md §3): on Cloudflare this
@@ -131,17 +132,29 @@ export async function POST(req: NextRequest) {
           await sandbox.writeFilesBase64(attachments.map((a: any) => ({ path: 'uploads/' + a.name, content: a.data })))
         }
         const runner = await getAgentRunner()
-        await runner.start(sandbox, { projectId: appId, userId: user.id, model, prompt: prompt + uploadsNote, onEvent: send })
+        await runner.start(sandbox, { projectId: appId, userId: user.id, model, prompt: buildBuildPrompt(prompt) + uploadsNote, onEvent: send })
 
-        // Persist the resulting file tree (source of truth) + live preview URL.
+        // Persist the resulting file tree (source of truth).
         const snap = await sandbox.snapshot()
         const filesJson: Record<string, string> = {}
         for (const f of snap.files) filesJson[f.path] = f.content
-        const previewUrl = await sandbox.getPreviewUrl(3000)
 
+        // Serve the built static app for live preview. Port 3000 is reserved by the
+        // sandbox SDK, so we use a static server on PREVIEW_PORT (8080).
+        let previewUrl = ''
+        try {
+          const dev = await sandbox.startDevServer(PREVIEW_COMMAND, PREVIEW_PORT)
+          previewUrl = dev.previewUrl
+          send({ type: 'text', text: `\n\n🔗 Live preview: ${previewUrl}` })
+        } catch (e: any) {
+          send({ type: 'text', text: `\n\n(Preview server could not start: ${e?.message || 'unknown'})` })
+        }
+
+        // Mirror index.html into html_code so the app also shows in the dashboard/preview.
+        const indexHtml = filesJson['index.html'] || ''
         await db
           .from('apps')
-          .update({ files_json: filesJson, preview_url: previewUrl, sandbox_last_active_at: now() })
+          .update({ files_json: filesJson, html_code: indexHtml || null, builder_version: 'v11', preview_url: previewUrl || null, sandbox_last_active_at: now() })
           .eq('id', appId)
 
         await db
