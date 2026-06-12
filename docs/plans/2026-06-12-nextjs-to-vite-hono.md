@@ -81,13 +81,13 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `web/src/auth/session.ts` (`getAccessToken()`)
 - Test: `web/src/auth/session.test.ts`
 
-- [ ] **Step 1 — Failing test:** mock `supabase.auth.getSession`; assert
+- [x] **Step 1 — Failing test:** mock `supabase.auth.getSession`; assert
       `getAccessToken()` returns the session `access_token`, and `undefined` when no session.
-- [ ] **Step 2 — Verify it fails:** `npx vitest run web/src/auth/session.test.ts` → fail.
-- [ ] **Step 3 — Implement:** `supabase.ts` uses `createBrowserClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)`;
+- [x] **Step 2 — Verify it fails:** `npx vitest run web/src/auth/session.test.ts` → fail.
+- [x] **Step 3 — Implement:** `supabase.ts` uses `createBrowserClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)`;
       `session.ts` `getAccessToken()` wraps `auth.getSession()`.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(web): supabase browser client + getAccessToken`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(web): supabase browser client + getAccessToken`.
 
 ### Task A3: API fetch wrapper (attaches Bearer)
 
