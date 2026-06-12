@@ -29,7 +29,7 @@ const DEFAULT_MODEL = 'claude-sonnet-4-6'
 
 // Only our sandbox-backed tools are allowed; every built-in FS/exec tool is denied.
 const SANDBOX_TOOLS = ['mcp__sandbox__write_file', 'mcp__sandbox__read_file', 'mcp__sandbox__exec', 'mcp__sandbox__list_files']
-const BLOCKED_BUILTINS = ['Write', 'Edit', 'MultiEdit', 'Bash', 'Read', 'Glob', 'Grep', 'NotebookEdit']
+const BLOCKED_BUILTINS = ['Write', 'Edit', 'MultiEdit', 'Bash', 'Read', 'Glob', 'Grep', 'NotebookEdit', 'ToolSearch', 'WebSearch', 'WebFetch', 'Task', 'TodoWrite']
 
 // Build the in-process MCP server whose tools proxy to the sandbox. The handlers
 // emit tool_result / file_edit / exec events so the UI + metering see real activity.

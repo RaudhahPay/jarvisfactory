@@ -111,7 +111,8 @@ export default {
     const id: string = body.id;
     if (!id) return json({ error: "id required" }, 400);
 
-    const sandbox = getSandbox(env.Sandbox, id, { sleepAfter: "30m" });
+    // transport: "rpc" — sandbox.tunnels.* (preview URLs) requires the RPC transport.
+    const sandbox = getSandbox(env.Sandbox, id, { sleepAfter: "30m", transport: "rpc" });
 
     try {
       switch (url.pathname) {

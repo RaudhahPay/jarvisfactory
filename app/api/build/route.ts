@@ -76,6 +76,20 @@ export async function POST(req: NextRequest) {
   if (!app) return Response.json({ error: 'App not found' }, { status: 404 })
   if (app.user_id !== user.id) return Response.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Thread the build in conversations (mode 'code') so it shows in Studio history.
+  let conversationId: string | undefined = body?.conversationId
+  if (!conversationId) {
+    const { data: conv } = await db
+      .from('conversations')
+      .insert({ user_id: user.id, mode: 'code', title: prompt.slice(0, 80), app_id: appId })
+      .select('id')
+      .single()
+    conversationId = conv?.id
+  }
+  if (conversationId) {
+    await db.from('messages').insert({ conversation_id: conversationId, user_id: user.id, role: 'user', content: prompt })
+  }
+
   const { data: job, error: jobErr } = await db
     .from('build_jobs')
     .insert({ app_id: appId, user_id: user.id, status: 'running', prompt, started_at: now() })
@@ -93,8 +107,10 @@ export async function POST(req: NextRequest) {
       let inTok = 0
       let outTok = 0
       let cost = 0
+      let summary = ''
       const send = (e: AgentEvent) => {
         collected.push(e)
+        if (e.type === 'text') summary += e.text
         if (e.type === 'usage') {
           inTok += e.inputTokens
           outTok += e.outputTokens
@@ -111,6 +127,7 @@ export async function POST(req: NextRequest) {
         }
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(e)}\n\n`))
       }
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'meta', conversationId, appId })}\n\n`))
 
       try {
         const driver = getSandboxDriver()
@@ -183,6 +200,12 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', job.id)
       } finally {
+        if (conversationId) {
+          if (summary.trim()) {
+            await db.from('messages').insert({ conversation_id: conversationId, user_id: user.id, role: 'assistant', content: summary.slice(0, 8000), meta: { app_id: appId } })
+          }
+          await db.from('conversations').update({ updated_at: now() }).eq('id', conversationId)
+        }
         await recordUsage(db, usageRows)
         controller.close()
       }
