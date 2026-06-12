@@ -17,6 +17,7 @@ import { MODELS, DEFAULT_MODEL } from '@/lib/models'
 type Mode = 'chat' | 'cowork' | 'build'
 type Line = { role: 'user' | 'assistant' | 'log'; text: string }
 type Attachment = { name: string; type: string; data: string }
+type Convo = { id: string; mode: Mode; title: string; app_id?: string; updated_at: string }
 
 // Read a browser File into the {name, type, base64} shape the routes expect.
 function fileToAttachment(file: File): Promise<Attachment> {
@@ -89,13 +90,18 @@ export default function StudioPage() {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>()
   const [model, setModel] = useState<string>(DEFAULT_MODEL)
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [convos, setConvos] = useState<Convo[]>([])
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/auth')
-      else setReady(true)
+      else {
+        setReady(true)
+        fetchConvos()
+      }
     })
   }, [])
   useEffect(() => {
@@ -115,6 +121,46 @@ export default function StudioPage() {
   async function token(): Promise<string | undefined> {
     const { data } = await supabase.auth.getSession()
     return data.session?.access_token
+  }
+
+  async function fetchConvos() {
+    const tok = await token()
+    try {
+      const res = await fetch('/api/conversations', { headers: tok ? { Authorization: `Bearer ${tok}` } : {} })
+      if (res.ok) setConvos((await res.json()).conversations || [])
+    } catch {}
+  }
+
+  function newChat() {
+    setLines([])
+    setConversationId(undefined)
+    setAppId(undefined)
+    setDeliverables([])
+    setPreviewUrl(undefined)
+    setInput('')
+    setAttachments([])
+  }
+
+  // Reload a past thread: restore mode, ids, messages, and any deliverable links.
+  async function loadConvo(c: Convo) {
+    if (busy) return
+    const tok = await token()
+    try {
+      const res = await fetch(`/api/conversations/${c.id}`, { headers: tok ? { Authorization: `Bearer ${tok}` } : {} })
+      if (!res.ok) return
+      const data = await res.json()
+      setMode((data.mode as Mode) || c.mode)
+      setConversationId(c.id)
+      setAppId(data.app_id || c.app_id)
+      setPreviewUrl(undefined)
+      const msgs: Line[] = (data.messages || [])
+        .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+        .map((m: any) => ({ role: m.role, text: m.content }))
+      setLines(msgs)
+      // Repopulate Cowork download chips from the latest assistant message's manifest.
+      const lastMeta = [...(data.messages || [])].reverse().find((m: any) => m.role === 'assistant' && m.meta?.deliverables)
+      setDeliverables(lastMeta?.meta?.deliverables || [])
+    } catch {}
   }
 
   const addLine = (role: Line['role'], text: string) => setLines(l => [...l, { role, text }])
@@ -196,6 +242,7 @@ export default function StudioPage() {
       addLine('log', '❌ ' + (err?.message || 'failed'))
     } finally {
       setBusy(false)
+      fetchConvos()
     }
   }
 
@@ -209,8 +256,38 @@ export default function StudioPage() {
   const cur = tabs.find(t => t.id === mode)!
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: C.mono, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', background: C.bg, color: C.text, fontFamily: C.mono, display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+      {sidebarOpen && (
+        <aside style={{ width: 240, flexShrink: 0, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', background: C.panel }}>
+          <div style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
+            <button onClick={newChat} style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: `1px solid ${C.teal}`, background: 'rgba(0,229,176,0.12)', color: C.teal, fontFamily: C.mono, fontSize: 12, cursor: 'pointer' }}>
+              + New
+            </button>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {convos.length === 0 && <div style={{ color: C.dim, fontSize: 11, padding: 8 }}>No history yet.</div>}
+            {convos.map(c => {
+              const icon = c.mode === 'cowork' ? '✨' : c.mode === 'build' ? '⚡' : '💬'
+              const active = c.id === conversationId
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => loadConvo(c)}
+                  title={c.title}
+                  style={{ textAlign: 'left', padding: '8px 10px', borderRadius: 8, border: `1px solid ${active ? C.teal : 'transparent'}`, background: active ? 'rgba(0,229,176,0.10)' : 'transparent', color: active ? C.teal : C.text, fontFamily: C.mono, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                >
+                  {icon} {c.title || 'Untitled'}
+                </button>
+              )
+            })}
+          </div>
+        </aside>
+      )}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <button onClick={() => setSidebarOpen(o => !o)} title="Toggle history" style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, color: C.dim, cursor: 'pointer', padding: '4px 9px', fontSize: 14 }}>
+          ☰
+        </button>
         <div style={{ fontWeight: 700, color: C.teal, letterSpacing: 1 }}>⬡ ezclaude</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {tabs.map(t => (
@@ -343,6 +420,7 @@ export default function StudioPage() {
         >
           {busy ? '…' : 'Send ↑'}
         </button>
+      </div>
       </div>
     </div>
   )

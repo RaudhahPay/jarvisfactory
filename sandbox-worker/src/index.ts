@@ -19,6 +19,7 @@ export { Sandbox } from "@cloudflare/sandbox";
 interface Env {
   Sandbox: DurableObjectNamespace<Sandbox>;
   BRIDGE_TOKEN: string;
+  DELIVERABLES: R2Bucket;
 }
 
 const WS = "/workspace";
@@ -28,6 +29,19 @@ const abs = (p: string) => {
   return `${WS}/${r}`;
 };
 const rel = (p: string) => p.replace(new RegExp(`^${WS}/?`), "");
+
+const b64ToBytes = (b64: string): Uint8Array => {
+  const bin = atob(b64);
+  const a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return a;
+};
+const bytesToB64 = (buf: ArrayBuffer): string => {
+  const a = new Uint8Array(buf);
+  let bin = "";
+  for (let i = 0; i < a.length; i++) bin += String.fromCharCode(a[i]);
+  return btoa(bin);
+};
 
 const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -86,6 +100,14 @@ export default {
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
+    // Sandbox-independent: fetch a persisted deliverable from R2. Returns
+    // { content: null } on miss so the Node driver gets null (not a thrown 404).
+    if (url.pathname === "/r2-get") {
+      const obj = await env.DELIVERABLES.get(String(body.key || ""));
+      if (!obj) return json({ content: null });
+      return json({ content: bytesToB64(await obj.arrayBuffer()) });
+    }
+
     const id: string = body.id;
     if (!id) return json({ error: "id required" }, 400);
 
@@ -128,6 +150,39 @@ export default {
             await sandbox.writeFile(a, f.content, { encoding: "base64" });
           }
           return json({ ok: true });
+        }
+        case "/persist": {
+          // Copy every deliverable in the workspace to R2 under <prefix>/<relpath>,
+          // so binary outputs (docx/pptx/xlsx/pdf) survive sandbox sleep. Skips inputs.
+          const prefix = String(body.prefix || "deliverables").replace(/\/+$/, "");
+          const out: { path: string; size: number }[] = [];
+          const walk = async (dir: string) => {
+            let entries: any[] = [];
+            try {
+              const res = await sandbox.listFiles(dir);
+              entries = res?.files || [];
+            } catch {
+              return;
+            }
+            for (const e of entries) {
+              const full = e.absolutePath || `${dir}/${e.name}`;
+              const r = rel(full);
+              if (r.startsWith("uploads/") || r.startsWith("node_modules/") || r.startsWith(".git/")) continue;
+              if (e.type === "directory") await walk(full);
+              else if (e.type === "file") {
+                try {
+                  const f = await sandbox.readFile(full, { encoding: "base64" });
+                  const bytes = b64ToBytes(f.content);
+                  await env.DELIVERABLES.put(`${prefix}/${r}`, bytes);
+                  out.push({ path: r, size: bytes.length });
+                } catch {
+                  /* skip unreadable */
+                }
+              }
+            }
+          };
+          await walk(WS);
+          return json({ files: out });
         }
         case "/list": {
           const base = body.dir ? abs(body.dir) : WS;

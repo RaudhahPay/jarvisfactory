@@ -10,6 +10,7 @@
 import { NextRequest } from 'next/server'
 import { getAuthedDb } from '@/lib/supabase/authed'
 import { getSandboxDriver } from '@/lib/sandbox'
+import { fetchDeliverable } from '@/lib/sandbox/cloudflare-driver'
 
 export const runtime = 'nodejs'
 
@@ -41,24 +42,33 @@ export async function GET(req: NextRequest) {
   const { data: app } = await db.from('apps').select('id, user_id, sandbox_id').eq('id', appId).single()
   if (!app) return Response.json({ error: 'Not found' }, { status: 404 })
   if (app.user_id !== user.id) return Response.json({ error: 'Forbidden' }, { status: 403 })
-  if (!app.sandbox_id) return Response.json({ error: 'No sandbox for this project' }, { status: 404 })
 
+  const ext = (path.split('.').pop() || '').toLowerCase()
+  const name = path.split('/').pop() || 'download'
+  const headers = (len: number) => ({
+    'Content-Type': TYPES[ext] || 'application/octet-stream',
+    'Content-Disposition': `attachment; filename="${name}"`,
+    'Content-Length': String(len),
+  })
+
+  // 1) Durable copy in R2 (survives sandbox sleep) — the normal path post-run.
+  try {
+    const durable = await fetchDeliverable(`deliverables/${appId}/${path}`)
+    if (durable) return new Response(new Uint8Array(durable), { headers: headers(durable.length) })
+  } catch {
+    /* fall through to the live sandbox */
+  }
+
+  // 2) Fallback: read from the live sandbox (in-progress run / not yet persisted).
+  if (!app.sandbox_id) return Response.json({ error: 'File not found' }, { status: 404 })
   try {
     const driver = getSandboxDriver()
     const sandbox = await driver.get(app.sandbox_id)
-    if (!sandbox) return Response.json({ error: 'Sandbox unavailable' }, { status: 410 })
+    if (!sandbox) return Response.json({ error: 'File expired (sandbox gone, no durable copy)' }, { status: 410 })
     const b64 = await sandbox.readFileBase64(path)
     const bytes = Buffer.from(b64, 'base64')
-    const ext = (path.split('.').pop() || '').toLowerCase()
-    const name = path.split('/').pop() || 'download'
-    return new Response(bytes, {
-      headers: {
-        'Content-Type': TYPES[ext] || 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${name}"`,
-        'Content-Length': String(bytes.length),
-      },
-    })
+    return new Response(new Uint8Array(bytes), { headers: headers(bytes.length) })
   } catch (err: any) {
-    return Response.json({ error: `Could not read file (sandbox may have expired): ${err?.message || 'unknown'}` }, { status: 410 })
+    return Response.json({ error: `Could not read file: ${err?.message || 'unknown'}` }, { status: 410 })
   }
 }

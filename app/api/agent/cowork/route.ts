@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
       const collected: AgentEvent[] = []
       const usageRows: any[] = []
       let summary = ''
+      let deliverablePaths: string[] = []
       let inTok = 0
       let outTok = 0
       let cost = 0
@@ -124,6 +125,14 @@ export async function POST(req: NextRequest) {
         for (const f of snap.files) filesJson[f.path] = f.content
         await db.from('apps').update({ files_json: filesJson, sandbox_last_active_at: now() }).eq('id', appId)
 
+        // Durably persist deliverables to R2 so binary outputs survive sandbox sleep.
+        try {
+          const persisted = await sandbox.persistDeliverables(`deliverables/${appId}`)
+          deliverablePaths = persisted.files.map(f => f.path)
+        } catch {
+          /* non-fatal: downloads fall back to the live sandbox */
+        }
+
         if (job?.id) {
           await db.from('build_jobs').update({ status: 'succeeded', events: collected, sandbox_id: sandbox.id, input_tokens: inTok, output_tokens: outTok, cost_usd: cost, finished_at: now(), updated_at: now() }).eq('id', job.id)
         }
@@ -132,7 +141,7 @@ export async function POST(req: NextRequest) {
         if (job?.id) await db.from('build_jobs').update({ status: 'failed', events: collected, error: err?.message || 'unknown', finished_at: now(), updated_at: now() }).eq('id', job.id)
       } finally {
         if (summary.trim()) {
-          await db.from('messages').insert({ conversation_id: conversationId, user_id: user.id, role: 'assistant', content: summary.slice(0, 8000), meta: { app_id: appId } })
+          await db.from('messages').insert({ conversation_id: conversationId, user_id: user.id, role: 'assistant', content: summary.slice(0, 8000), meta: { app_id: appId, deliverables: deliverablePaths } })
         }
         await db.from('conversations').update({ updated_at: now() }).eq('id', conversationId)
         await recordUsage(db, usageRows)

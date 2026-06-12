@@ -78,6 +78,7 @@ export interface SandboxHandle {
   // ── Files ──
   writeFiles(files: SandboxFile[]): Promise<void>
   writeFilesBase64(files: { path: string; content: string }[]): Promise<void>
+  persistDeliverables(prefix: string): Promise<{ files: { path: string; size: number }[] }>
   readFile(path: string): Promise<string>
   readFileBase64(path: string): Promise<string>
   listFiles(dir?: string): Promise<string[]>

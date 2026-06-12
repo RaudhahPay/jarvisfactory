@@ -43,6 +43,14 @@ async function call(path: string, body: any): Promise<any> {
   return json
 }
 
+// Fetch a persisted deliverable from R2 via the bridge. Returns null on miss or when
+// the bridge isn't configured (e.g. stub provider) so callers can fall back gracefully.
+export async function fetchDeliverable(key: string): Promise<Buffer | null> {
+  if (!baseUrl()) return null
+  const j = await call('/r2-get', { key })
+  return j?.content ? Buffer.from(j.content, 'base64') : null
+}
+
 // Derive a DNS/subdomain-safe sandbox id from the project id (preview URLs use it).
 function sandboxIdFor(projectId: string): string {
   return ('proj-' + projectId)
@@ -76,6 +84,10 @@ class CloudflareSandboxHandle implements SandboxHandle {
 
   async writeFilesBase64(files: { path: string; content: string }[]): Promise<void> {
     await call('/write-b64', { id: this.id, files })
+  }
+
+  async persistDeliverables(prefix: string): Promise<{ files: { path: string; size: number }[] }> {
+    return call('/persist', { id: this.id, prefix })
   }
 
   async readFileBase64(path: string): Promise<string> {

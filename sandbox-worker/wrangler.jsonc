@@ -16,6 +16,8 @@
   "durable_objects": {
     "bindings": [{ "class_name": "Sandbox", "name": "Sandbox" }]
   },
+  // Durable storage for Cowork deliverables (binary docx/pptx/xlsx/pdf survive sandbox sleep).
+  "r2_buckets": [{ "binding": "DELIVERABLES", "bucket_name": "ezclaude-deliverables" }],
   "migrations": [{ "new_sqlite_classes": ["Sandbox"], "tag": "v1" }]
   // BRIDGE_TOKEN is set as a secret, not here:  wrangler secret put BRIDGE_TOKEN
 }
