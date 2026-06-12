@@ -132,20 +132,20 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   Builder; calls `/api/chat`)
 - Test: `web/src/routes/Studio.test.tsx`
 
-- [ ] **Step 1 — Failing test:** render `Studio`; mock `apiFetch`; assert the conversations
+- [x] **Step 1 — Failing test:** render `Studio`; mock `apiFetch`; assert the conversations
       list fetch goes through `apiFetch` (so the Bearer wrapper is used, replacing studio's
       hand-rolled `getSession`/Bearer at `app/studio/page.tsx:166-198`).
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** port all three; swap `useRouter`/`useSearchParams`
-      (`next/navigation`) → `react-router-dom`; route every `/api/*` call through `apiFetch`;
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** ported all three; swapped `useRouter`/`useSearchParams`
+      (`next/navigation`) → `react-router-dom`; routed every `/api/*` call through `apiFetch`;
       `useV2Build.ts` reads `import.meta.env.VITE_V2_ENGINE` (was `NEXT_PUBLIC_V*`);
-      `build-client.ts` `streamBuild` posts via `apiFetch`. **`claude-client.ts` moves with
-      Builder** — its `@/lib/claude-client` import becomes a `web/`-local module; its
-      `fetch('/api/chat')` calls (`claude-client.ts:60,125`) go through `apiFetch` so the
-      v1 browser build path carries the Bearer token. (Dashboard GitHub-token fix is Phase C —
-      here just route through `apiFetch`.)
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(web): port studio, builder, dashboard + move build-client`.
+      `build-client.ts` `streamBuild` posts via `apiFetch`. **`claude-client.ts` and
+      `build-client.ts` were COPIED into `web/src/lib/`** (originals frozen, deleted at D4 —
+      `app/` still imports them); their `fetch('/api/chat')`/`fetch('/api/build')` calls go
+      through `apiFetch` so the v1 browser build path carries the Bearer token. (Dashboard
+      GitHub-token fix is Phase C — here just routed through `apiFetch`.)
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(web): port studio, builder, dashboard + copy build/claude clients`.
 
 ---
 
