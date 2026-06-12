@@ -95,14 +95,14 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `web/src/lib/api.ts`
 - Test: `web/src/lib/api.test.ts`
 
-- [ ] **Step 1 — Failing test:** stub `getAccessToken` → `'tok'` and global `fetch`;
+- [x] **Step 1 — Failing test:** stub `getAccessToken` → `'tok'` and global `fetch`;
       call `apiFetch('/api/x')`; assert outgoing headers include `Authorization: Bearer tok`;
       assert no header when no token.
-- [ ] **Step 2 — Verify it fails:** fail (module missing).
-- [ ] **Step 3 — Implement:** `apiFetch(path, init)` merges `Authorization` from
+- [x] **Step 2 — Verify it fails:** fail (module missing).
+- [x] **Step 3 — Implement:** `apiFetch(path, init)` merges `Authorization` from
       `getAccessToken()`; passes through `init` (incl. `signal`, streaming bodies).
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(web): apiFetch wrapper attaches supabase bearer token`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(web): apiFetch wrapper attaches supabase bearer token`.
 
 ### Task A4: Port Landing + Auth + Onboarding pages
 
