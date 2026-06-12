@@ -1,4 +1,4 @@
-import { supabase } from '@/web/src/lib/supabase';
+import { getSupabase } from '@/web/src/lib/supabase';
 
 /**
  * Returns the current Supabase session's `access_token`, or `undefined` when
@@ -6,6 +6,6 @@ import { supabase } from '@/web/src/lib/supabase';
  * `Authorization: Bearer <jwt>` header on API calls.
  */
 export async function getAccessToken(): Promise<string | undefined> {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await getSupabase().auth.getSession();
   return data.session?.access_token;
 }
