@@ -64,15 +64,15 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `web/src/main.tsx`, `web/src/App.tsx`
 - Test: `web/src/App.test.tsx`
 
-- [ ] **Step 1 — Failing test:** render `<MemoryRouter initialEntries={['/']}><App/></MemoryRouter>`;
+- [x] **Step 1 — Failing test:** render `<MemoryRouter initialEntries={['/']}><App/></MemoryRouter>`;
       assert a landing marker is in the document; assert `/auth` route renders an Auth marker.
-- [ ] **Step 2 — Verify it fails:** `npx vitest run web/src/App.test.tsx` → module not found.
-- [ ] **Step 3 — Implement:** `App.tsx` with `<Routes>` for `/`, `/auth`, `/studio`,
+- [x] **Step 2 — Verify it fails:** `npx vitest run web/src/App.test.tsx` → module not found.
+- [x] **Step 3 — Implement:** `App.tsx` with `<Routes>` for `/`, `/auth`, `/studio`,
       `/builder`, `/dashboard`, `/onboarding` using placeholder components; `main.tsx`
       mounts `<BrowserRouter>`; `vite.config.ts` sets `server.proxy['/api']` →
       `http://localhost:3000` (the Next dev server) for Phase A.
-- [ ] **Step 4 — Verify it passes:** `npx vitest run web/src/App.test.tsx` → PASS.
-- [ ] **Step 5 — Commit:** `feat(web): vite SPA shell + react-router routes`.
+- [x] **Step 4 — Verify it passes:** `npx vitest run web/src/App.test.tsx` → PASS.
+- [x] **Step 5 — Commit:** `feat(web): vite SPA shell + react-router routes`.
 
 ### Task A2: Supabase browser client + session helper
 
