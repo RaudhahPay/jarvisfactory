@@ -38,3 +38,11 @@ README.md
 docker-README.md
 test-*.js
 test-*.html
+
+# Sub-projects deployed separately / not part of the app image (each has its own
+# node_modules — excluding keeps the build context small and the image lean).
+sandbox-worker
+jarvisdesktop-poc
+v1-archive
+jarvisfactory 2
+.architect

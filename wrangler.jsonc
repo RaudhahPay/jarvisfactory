@@ -1,0 +1,45 @@
+{
+  // ezclaude — Next.js app on a Cloudflare Container (the Agent SDK needs Node).
+  // The separate sandbox-worker/ holds the per-build sandboxes; this is the app host.
+  "name": "ezclaude",
+  "main": "worker/container.ts",
+  "compatibility_date": "2026-06-12",
+  "observability": { "enabled": true },
+
+  "containers": [
+    {
+      "class_name": "EzClaudeContainer",
+      "image": "./Dockerfile",
+      // standard-2 = 1 vCPU / 6 GiB / 12 GB disk. Image (Next + ~220MB claude
+      // binary) must fit within the instance disk; 12 GB leaves ample headroom.
+      "instance_type": "standard-2",
+      "max_instances": 3,
+      // Build-time only (inlined by `next build`). All client-public by design.
+      "image_vars": {
+        "NEXT_PUBLIC_SUPABASE_URL": "https://jtvhhpnmpdduxlmikqtq.supabase.co",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0dmhocG5tcGRkdXhsbWlrcXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTkwMDQsImV4cCI6MjA5MzQ5NTAwNH0.tc44OE_xuRavg_siV8AtL9jthR1Gt3TEiKob_4JZ7SE",
+        "NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID": "Ov23liF2ztIpFCSxVvQh",
+        "NEXT_PUBLIC_V2_ENGINE": "1"
+      }
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [{ "name": "APP", "class_name": "EzClaudeContainer" }]
+  },
+
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["EzClaudeContainer"] }],
+
+  // Runtime, non-secret. Secrets (ANTHROPIC_API_KEY, GITHUB_OAUTH_CLIENT_SECRET,
+  // SANDBOX_BRIDGE_TOKEN) are set with `wrangler secret put` — never in this file.
+  "vars": {
+    "SANDBOX_PROVIDER": "cloudflare",
+    "SANDBOX_BRIDGE_URL": "https://jarvisfactory-sandbox.ariavibecoderlab.workers.dev",
+    "GITHUB_OAUTH_CLIENT_ID": "Ov23liF2ztIpFCSxVvQh",
+    "DEFAULT_MONTHLY_COST_LIMIT_USD": "20",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://jtvhhpnmpdduxlmikqtq.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0dmhocG5tcGRkdXhsbWlrcXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTkwMDQsImV4cCI6MjA5MzQ5NTAwNH0.tc44OE_xuRavg_siV8AtL9jthR1Gt3TEiKob_4JZ7SE",
+    "NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID": "Ov23liF2ztIpFCSxVvQh",
+    "NEXT_PUBLIC_V2_ENGINE": "1"
+  }
+}

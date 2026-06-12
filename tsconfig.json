@@ -24,6 +24,7 @@
     "node_modules",
     "sandbox-worker",
     "jarvisdesktop-poc",
-    "templates"
+    "templates",
+    "worker"
   ]
 }
