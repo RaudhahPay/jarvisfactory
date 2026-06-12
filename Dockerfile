@@ -48,15 +48,20 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends git ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-# Standalone server + assets.
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Standalone server + assets. Owned by the non-root `node` user — the Claude agent
+# binary REFUSES bypassPermissions as root ("cannot be used with root/sudo privileges",
+# exit 1), so the whole app must run unprivileged.
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
 # Belt-and-suspenders: ensure the Agent SDK + its platform binary are present in the
 # standalone node_modules even if file tracing missed the dynamically-spawned binary.
-COPY --from=deps /app/node_modules/@anthropic-ai/claude-agent-sdk ./node_modules/@anthropic-ai/claude-agent-sdk
-COPY --from=deps /app/node_modules/@anthropic-ai/claude-agent-sdk-linux-x64 ./node_modules/@anthropic-ai/claude-agent-sdk-linux-x64
+COPY --from=deps --chown=node:node /app/node_modules/@anthropic-ai/claude-agent-sdk ./node_modules/@anthropic-ai/claude-agent-sdk
+COPY --from=deps --chown=node:node /app/node_modules/@anthropic-ai/claude-agent-sdk-linux-x64 ./node_modules/@anthropic-ai/claude-agent-sdk-linux-x64
+
+USER node
+ENV HOME=/home/node
 
 EXPOSE 3000
 CMD ["node", "server.js"]
