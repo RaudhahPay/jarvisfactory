@@ -79,7 +79,7 @@ export default function Dashboard() {
       setGithubBanner({ kind: 'error', text: 'GitHub OAuth not configured. Add VITE_GITHUB_OAUTH_CLIENT_ID to .env' })
       return
     }
-    const redirect = `${window.location.origin}/api/github/oauth/callback`
+    const redirect = `${window.location.origin}/auth/github/callback`
     const url = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(clientId)}&scope=public_repo&redirect_uri=${encodeURIComponent(redirect)}`
     window.location.href = url
   }

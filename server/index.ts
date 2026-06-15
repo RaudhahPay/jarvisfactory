@@ -10,6 +10,7 @@ import { agentFileApp } from './routes/agent.file';
 import { buildApp } from './routes/build';
 import { chatApp } from './routes/chat';
 import { conversationsApp } from './routes/conversations';
+import { githubOauthApp } from './routes/github.oauth';
 import { githubPullApp } from './routes/github.pull';
 import { githubSaveApp } from './routes/github.save';
 
@@ -42,6 +43,7 @@ app.route('/', agentCoworkApp);
 app.route('/', buildApp);
 app.route('/', githubSaveApp);
 app.route('/', githubPullApp);
+app.route('/', githubOauthApp);
 
 // ─── Static assets + SPA fallback (must stay last) ──────────────────────────
 // Serve built assets (JS/CSS/etc.) from web/dist. Missing files fall through.

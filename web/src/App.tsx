@@ -5,6 +5,7 @@ import Onboarding from './routes/Onboarding';
 import Studio from './routes/Studio';
 import Builder from './routes/Builder';
 import Dashboard from './routes/Dashboard';
+import GithubCallback from './routes/GithubCallback';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/builder" element={<Builder />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/auth/github/callback" element={<GithubCallback />} />
     </Routes>
   );
 }
