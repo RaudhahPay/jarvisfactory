@@ -19,13 +19,22 @@ const FALLBACK_HTML = `<!doctype html>
 
 const app = new Hono();
 
+// ─── API routes ───────────────────────────────────────────────────────────
+// INVARIANT: register every /api/* route ABOVE the static/SPA block below.
+// Hono matches in registration order, so the catch-all must stay last or it
+// will shadow API routes.
 app.get('/api/health', (c) => c.json({ ok: true }));
 
-// Serve built static assets (JS/CSS/etc.) from web/dist.
+// ─── Static assets + SPA fallback (must stay last) ──────────────────────────
+// Serve built assets (JS/CSS/etc.) from web/dist. Missing files fall through.
 app.use('/*', serveStatic({ root: DIST_ROOT }));
 
-// SPA fallback: any unmatched route returns the index.html shell.
+// Catch-all: unmatched /api/* is a real 404 (never the SPA shell); everything
+// else returns the index.html shell so client-side routing can take over.
 app.get('*', (c) => {
+  if (c.req.path.startsWith('/api/')) {
+    return c.json({ error: 'Not found' }, 404);
+  }
   const html = existsSync(INDEX_HTML)
     ? readFileSync(INDEX_HTML, 'utf-8')
     : FALLBACK_HTML;

@@ -15,4 +15,11 @@ describe('hono server', () => {
     expect(body).toContain('<!doctype html>');
     expect(body).toContain('<div id="root">');
   });
+
+  it('unmatched /api/* returns a 404 JSON, not the SPA shell', async () => {
+    const res = await app.request('/api/does-not-exist');
+    expect(res.status).toBe(404);
+    const body = await res.text();
+    expect(body).not.toContain('<div id="root">');
+  });
 });
