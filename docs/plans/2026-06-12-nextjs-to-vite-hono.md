@@ -163,14 +163,14 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `server/index.ts`
 - Test: `server/index.test.ts`
 
-- [ ] **Step 1 — Failing test:** `app.request('/api/health')` → 200 `{ ok: true }`;
+- [x] **Step 1 — Failing test:** `app.request('/api/health')` → 200 `{ ok: true }`;
       `app.request('/unknown')` → serves `index.html` fallback (assert 200 + html marker).
-- [ ] **Step 2 — Verify it fails:** fail (no `server/index.ts`).
-- [ ] **Step 3 — Implement:** Hono app; `GET /api/health`; `serveStatic({ root: web/dist })`;
+- [x] **Step 2 — Verify it fails:** fail (no `server/index.ts`).
+- [x] **Step 3 — Implement:** Hono app; `GET /api/health`; `serveStatic({ root: web/dist })`;
       catch-all `* → index.html` registered **after** `/api/*`; `serve({ fetch: app.fetch, port: 3000 })`
       guarded so tests import the app without binding the port.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): hono app, health route, static SPA serving`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): hono app, health route, static SPA serving`.
 
 ### Task B2: SSE streaming smoke route (de-risk streaming)
 
