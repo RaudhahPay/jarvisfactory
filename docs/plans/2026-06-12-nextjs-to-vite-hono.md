@@ -195,16 +195,16 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `conversations/[id]/route.ts`), `server/routes/chat.ts` (from `app/api/chat/route.ts`)
 - Test: `server/routes/conversations.test.ts`
 
-- [ ] **Step 1 — Failing test:** with a mocked authed `db`, `GET /api/conversations`
+- [x] **Step 1 — Failing test:** with a mocked authed `db`, `GET /api/conversations`
       returns the user's rows as JSON; `GET /api/conversations/:id` returns one thread.
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** port handler bodies; `req.json()`→`c.req.json()`,
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** port handler bodies; `req.json()`→`c.req.json()`,
       `Response.json(x,{status})`→`c.json(x,status)`; `[id]` param → `c.req.param('id')`;
       mount on the Hono app. **`chat.ts`** is the Anthropic proxy (`app/api/chat/route.ts`) —
       port the upstream-forward logic as-is here; auth + metering are added in C2 (Q1 resolved:
       it is **not** public). Keep `ANTHROPIC_API_KEY` server-side.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): port conversations + chat routes to hono`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): port conversations + chat routes to hono`.
 
 ### Task B4: Port agent/file route
 
