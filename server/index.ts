@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { agentFileApp } from './routes/agent.file';
 import { chatApp } from './routes/chat';
 import { conversationsApp } from './routes/conversations';
 
@@ -30,6 +31,7 @@ app.get('/api/health', (c) => c.json({ ok: true }));
 // Sub-apps define their own full /api/... paths.
 app.route('/', conversationsApp);
 app.route('/', chatApp);
+app.route('/', agentFileApp);
 
 // ─── Static assets + SPA fallback (must stay last) ──────────────────────────
 // Serve built assets (JS/CSS/etc.) from web/dist. Missing files fall through.
