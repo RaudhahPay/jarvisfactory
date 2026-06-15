@@ -212,13 +212,13 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `server/routes/agent.file.ts` (from `app/api/agent/file/route.ts`)
 - Test: `server/routes/agent.file.test.ts`
 
-- [ ] **Step 1 — Failing test:** mocked authed `db` + stub sandbox; assert the route
+- [x] **Step 1 — Failing test:** mocked authed `db` + stub sandbox; assert the route
       returns the expected JSON for a file read/write request, and 401 without auth.
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** port handler; same `c.req`/`c.json` mechanics; `lib/` imports
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** port handler; same `c.req`/`c.json` mechanics; `lib/` imports
       unchanged.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): port agent/file route to hono`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): port agent/file route to hono`.
 
 ### Task B5: Port streaming routes — agent/chat, agent/cowork, build
 
