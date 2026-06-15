@@ -227,18 +227,18 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `server/routes/build.ts` (from the matching `app/api/...` routes)
 - Test: `server/routes/agent.chat.test.ts`, `server/routes/build.test.ts`
 
-- [ ] **Step 1 — Failing test:** `agent.chat`: mock the Anthropic upstream fetch to emit
+- [x] **Step 1 — Failing test:** `agent.chat`: mock the Anthropic upstream fetch to emit
       two SSE deltas; assert the route streams a `conversation` frame then `text` frames then
       `done`, in order. `build`: with the **stub** sandbox driver (`SANDBOX_PROVIDER` unset)
       + a stub agent runner, assert it streams `meta` → agent events → `done` and writes a
       `build_jobs` row (mocked `db`).
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** port the three handlers; reuse the exact `ReadableStream`
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** port the three handlers; reuse the exact `ReadableStream`
       bodies (they are already framework-agnostic), returning via `c.body(stream, { headers })`;
       `lib/agent` / `lib/sandbox` imports unchanged; the `for await (query(...))` loop in
       `lib/agent/claude-runner.ts` runs as-is.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): port agent/chat, cowork, build streaming routes`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): port agent/chat, cowork, build streaming routes`.
 
 ---
 
