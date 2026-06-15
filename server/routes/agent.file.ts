@@ -1,7 +1,7 @@
 // JARVISFACTORY v2 — serve a Cowork deliverable for download (ported from Next.js).
 // GET /api/agent/file?appId=...&path=report.docx
 // Durable copy (R2) first; falls back to reading the live sandbox while it is warm.
-// NOTE (B4): getAuthedDb stays as-is here; Task C2 swaps it to requireUser(c).
+// Auth: Bearer-only via requireUser(c); RLS-scoped db forwards the verified token.
 
 import { Hono } from 'hono';
 import { requireUser } from '@/server/middleware/auth';

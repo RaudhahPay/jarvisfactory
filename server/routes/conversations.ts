@@ -3,9 +3,7 @@
 // ============================================================
 // GET /api/conversations       → list the signed-in user's threads (newest first)
 // GET /api/conversations/:id    → load one thread { mode, app_id, messages }
-// RLS-scoped via getAuthedDb; a user only ever sees their own threads.
-// NOTE (B3): auth still flows through getAuthedDb (next/headers under the hood).
-// Task C1/C2 rewrites this to requireUser(c). Tests mock getAuthedDb.
+// RLS-scoped via requireUser(c) (Bearer-only); a user only ever sees their own threads.
 // ============================================================
 
 import { Hono } from 'hono';

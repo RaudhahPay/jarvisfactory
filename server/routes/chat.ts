@@ -169,9 +169,17 @@ chatApp.post('/api/chat', async (c) => {
             cost_usd: costUsd,
           },
         ]);
-      } catch {
-        /* swallow — metering must not break the proxy response */
+      } catch (meterErr: any) {
+        // Best-effort: metering must not break the proxy response — but a dropped
+        // ledger insert is lost billing data, so make the failure observable (§6).
+        console.error('[chat] recordUsage failed:', meterErr?.message || meterErr);
       }
+    } else if (blocks.some(Boolean) && !upstreamErr) {
+      // A successful turn that returned content but no usage frame would otherwise
+      // go un-metered silently (§6: no usage may be un-metered). Surface the gap.
+      console.error(
+        `[chat] metering gap: completed turn for user ${user.id} (model ${requestBody.model}) produced content but no usage; not metered.`,
+      );
     }
 
     if (upstreamErr) {
