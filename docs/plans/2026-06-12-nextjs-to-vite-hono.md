@@ -296,15 +296,15 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `server/routes/github.pull.ts` (pull + pull-v2)
 - Test: `server/routes/github.save.test.ts`
 
-- [ ] **Step 1 — Failing test:** no Bearer → 401; valid Bearer + mocked
+- [x] **Step 1 — Failing test:** no Bearer → 401; valid Bearer + mocked
       `user_github_connections` + GitHub API → repo create/update path returns
       `{ ok: true, repo_url }` (mirrors `app/api/github/save/route.ts:185`).
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** port the four GitHub handlers; replace
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** port the four GitHub handlers; replace
       `createClient()` (cookie ssr, `utils/supabase/server.ts`) with `requireUser(c)` for
       identity + RLS `db`; GitHub fetch logic unchanged.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): port github save/pull routes to bearer auth`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): port github save/pull routes to bearer auth`.
 
 ### Task C4: Rewrite GitHub OAuth callback (cookie redirect → SPA + Bearer exchange)
 
