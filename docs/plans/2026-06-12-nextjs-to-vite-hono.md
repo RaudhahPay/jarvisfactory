@@ -278,16 +278,16 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `conversations.ts`, `chat.ts`
 - Test: `server/routes/auth-enforcement.test.ts`
 
-- [ ] **Step 1 — Failing test:** parametrized over the six routes (incl. `chat.ts`) — no/invalid
+- [x] **Step 1 — Failing test:** parametrized over the six routes (incl. `chat.ts`) — no/invalid
       Bearer → 401; valid Bearer → not 401.
-- [ ] **Step 2 — Verify it fails:** fail (routes still use the old `getAuthedDb` signature;
+- [x] **Step 2 — Verify it fails:** fail (routes still use the old `getAuthedDb` signature;
       `chat.ts` has no auth yet).
-- [ ] **Step 3 — Implement:** replace each route's `getAuthedDb()` call with
+- [x] **Step 3 — Implement:** replace each route's `getAuthedDb()` call with
       `requireUser(c)`; keep the `{ user, db }` destructure identical downstream. For `chat.ts`
       (Q1): add `requireUser(c)` and record usage via `lib/metering.ts` (mirror the agent
       routes) so the Anthropic proxy is authenticated **and** metered, not an open credit drain.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(server): enforce bearer auth on all protected routes`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `feat(server): enforce bearer auth on all protected routes`.
 
 ### Task C3: Rewrite GitHub save/pull routes to Bearer
 
