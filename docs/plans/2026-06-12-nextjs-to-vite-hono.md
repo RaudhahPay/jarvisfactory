@@ -178,15 +178,15 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `server/routes/_smoke.stream.ts` (temporary; deleted in Task D4)
 - Test: `server/routes/_smoke.stream.test.ts`
 
-- [ ] **Step 1 — Failing test:** call the smoke route; read the response body as a stream;
+- [x] **Step 1 — Failing test:** call the smoke route; read the response body as a stream;
       assert it yields ≥2 `data:` frames **incrementally** (not one buffered blob) and the
       stream closes — proving SSE works under `@hono/node-server`.
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** route returns `c.body(new ReadableStream(...))` with
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** route returns `c.body(new ReadableStream(...))` with
       `text/event-stream` headers, enqueuing two `data: {...}\n\n` frames with a tick between —
       the exact pattern from `app/api/agent/chat/route.ts:80-155`.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `test(server): SSE streaming smoke proves hono preserves chunking`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `test(server): SSE streaming smoke proves hono preserves chunking`.
 
 ### Task B3: Port non-streaming routes — conversations + chat
 
