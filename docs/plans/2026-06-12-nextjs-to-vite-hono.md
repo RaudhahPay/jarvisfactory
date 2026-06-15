@@ -260,16 +260,16 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `server/middleware/auth.ts` (`requireUser(c)`)
 - Test: `server/middleware/auth.test.ts`
 
-- [ ] **Step 1 — Failing test:** `requireUser` with a valid Bearer → `{ user, db }` (db
+- [x] **Step 1 — Failing test:** `requireUser` with a valid Bearer → `{ user, db }` (db
       forwards the token); missing/empty header → 401; malformed (`Authorization: foo`) → 401.
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** rewrite `authed.ts` to take the `Authorization` header value
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** rewrite `authed.ts` to take the `Authorization` header value
       (not `next/headers`), validate via `supabase.auth.getUser(token)`, build the RLS-scoped
       `db` with `global.headers.Authorization` (logic already at `authed.ts:43-48`); read
       `process.env.SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`. `requireUser(c)` extracts
       `c.req.header('authorization')` and returns `{ user, db }` or throws a 401.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `refactor(auth): bearer-only authed db; add requireUser middleware`.
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit:** `refactor(auth): bearer-only authed db; add requireUser middleware`.
 
 ### Task C2: Route all protected Hono routes through `requireUser`
 
