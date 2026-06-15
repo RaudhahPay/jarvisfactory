@@ -16,7 +16,7 @@
 // ============================================================
 
 import { Hono } from 'hono'
-import { getAuthedDb } from '@/lib/supabase/authed'
+import { requireUser } from '@/server/middleware/auth'
 import { getSandboxDriver } from '@/lib/sandbox'
 import { getAgentRunner } from '@/lib/agent'
 import type { AgentEvent } from '@/lib/agent/types'
@@ -42,8 +42,7 @@ const now = () => new Date().toISOString()
 const buildApp = new Hono()
 
 buildApp.post('/api/build', async (c) => {
-  const { user, db } = await getAuthedDb()
-  if (!user) return c.json({ error: 'Not authenticated' }, 401)
+  const { user, db } = await requireUser(c)
 
   let body: any
   try {

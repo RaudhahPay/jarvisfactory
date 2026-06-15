@@ -4,7 +4,7 @@
 // NOTE (B4): getAuthedDb stays as-is here; Task C2 swaps it to requireUser(c).
 
 import { Hono } from 'hono';
-import { getAuthedDb } from '@/lib/supabase/authed';
+import { requireUser } from '@/server/middleware/auth';
 import { getSandboxDriver } from '@/lib/sandbox';
 import { fetchDeliverable } from '@/lib/sandbox/cloudflare-driver';
 
@@ -27,8 +27,7 @@ const TYPES: Record<string, string> = {
 const agentFileApp = new Hono();
 
 agentFileApp.get('/api/agent/file', async (c) => {
-  const { user, db } = await getAuthedDb();
-  if (!user) return c.json({ error: 'Not authenticated' }, 401);
+  const { user, db } = await requireUser(c);
 
   const appId = c.req.query('appId');
   const path = c.req.query('path');

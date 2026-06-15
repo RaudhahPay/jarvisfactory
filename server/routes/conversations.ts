@@ -9,13 +9,12 @@
 // ============================================================
 
 import { Hono } from 'hono';
-import { getAuthedDb } from '@/lib/supabase/authed';
+import { requireUser } from '@/server/middleware/auth';
 
 const conversationsApp = new Hono();
 
 conversationsApp.get('/api/conversations', async (c) => {
-  const { user, db } = await getAuthedDb();
-  if (!user) return c.json({ error: 'Not authenticated' }, 401);
+  const { db } = await requireUser(c);
 
   const { data, error } = await db
     .from('conversations')
@@ -28,8 +27,7 @@ conversationsApp.get('/api/conversations', async (c) => {
 
 conversationsApp.get('/api/conversations/:id', async (c) => {
   const id = c.req.param('id');
-  const { user, db } = await getAuthedDb();
-  if (!user) return c.json({ error: 'Not authenticated' }, 401);
+  const { user, db } = await requireUser(c);
 
   const { data: convo } = await db
     .from('conversations')

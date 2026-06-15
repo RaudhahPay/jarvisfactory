@@ -4,14 +4,21 @@
 // NOTE (B3): no auth/metering yet — Task C2 adds requireUser + the token meter.
 
 import { Hono } from 'hono';
+import { requireUser } from '@/server/middleware/auth';
+import { recordUsage } from '@/lib/metering';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const DEFAULT_MAX_TOKENS = 10000;
+// Rough Sonnet 4.6 pricing ($/token) for the usage ledger; mirror agent.chat.ts.
+const IN_COST = 3 / 1_000_000;
+const OUT_COST = 15 / 1_000_000;
 
 const chatApp = new Hono();
 
 chatApp.post('/api/chat', async (c) => {
+  const { user, db } = await requireUser(c);
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return c.json(
@@ -140,6 +147,30 @@ chatApp.post('/api/chat', async (c) => {
         } catch {
           /* ignore malformed event */
         }
+      }
+    }
+
+    // Meter every model call (CLAUDE.md §6). Best-effort: never block the response
+    // or crash if usage is absent / the insert fails. Runs on success AND on the
+    // upstream-error paths where Anthropic still reported usage.
+    if (usage) {
+      try {
+        const inTok = usage.input_tokens || 0;
+        const outTok = usage.output_tokens || 0;
+        const costUsd = inTok * IN_COST + outTok * OUT_COST;
+        await recordUsage(db, [
+          {
+            user_id: user.id,
+            app_id: null,
+            build_job_id: null,
+            model: requestBody.model,
+            input_tokens: inTok,
+            output_tokens: outTok,
+            cost_usd: costUsd,
+          },
+        ]);
+      } catch {
+        /* swallow — metering must not break the proxy response */
       }
     }
 

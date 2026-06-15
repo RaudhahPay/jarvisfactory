@@ -9,7 +9,7 @@
 // ============================================================
 
 import { Hono } from 'hono'
-import { getAuthedDb } from '@/lib/supabase/authed'
+import { requireUser } from '@/server/middleware/auth'
 import { validatePrompt } from '@/lib/agent/policy'
 import { recordUsage, checkQuota } from '@/lib/metering'
 import { resolveModel } from '@/lib/models'
@@ -24,8 +24,7 @@ const now = () => new Date().toISOString()
 const agentChatApp = new Hono()
 
 agentChatApp.post('/api/agent/chat', async (c) => {
-  const { user, db } = await getAuthedDb()
-  if (!user) return c.json({ error: 'Not authenticated' }, 401)
+  const { user, db } = await requireUser(c)
 
   let body: any
   try {
