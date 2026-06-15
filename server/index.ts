@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { chatApp } from './routes/chat';
+import { conversationsApp } from './routes/conversations';
 
 const DIST_ROOT = 'web/dist';
 const INDEX_HTML = resolve(process.cwd(), DIST_ROOT, 'index.html');
@@ -24,6 +26,10 @@ const app = new Hono();
 // Hono matches in registration order, so the catch-all must stay last or it
 // will shadow API routes.
 app.get('/api/health', (c) => c.json({ ok: true }));
+
+// Sub-apps define their own full /api/... paths.
+app.route('/', conversationsApp);
+app.route('/', chatApp);
 
 // ─── Static assets + SPA fallback (must stay last) ──────────────────────────
 // Serve built assets (JS/CSS/etc.) from web/dist. Missing files fall through.
