@@ -11,6 +11,12 @@ import { useBuildPipeline } from './builder/useBuildPipeline'
 import { useV2Build } from './builder/useV2Build'
 import type { BuildInput, BuildDeps } from '@/lib/build-types'
 import { theme } from '@/web/src/lib/theme'
+import { Icon } from '@/web/src/lib/icon'
+import {
+  Eye, Code2, Terminal as TerminalIcon, ChevronDown, ChevronUp, ExternalLink,
+  FolderOpen, Plus, FileText, Palette, ArrowLeft, Paperclip, Wand2, Download,
+  Bot, ArrowUp, Save, MessageSquare, Sparkles,
+} from 'lucide-react'
 
 export default function Builder() {
   const [user, setUser] = useState<any>(null)
@@ -25,7 +31,10 @@ export default function Builder() {
   // v2/S4: live sandbox dev-server URL (set by a v2 build); when real, the Preview
   // pane shows it in an iframe instead of the flattened srcDoc HTML.
   const [previewUrl, setPreviewUrl] = useState('')
-  const [activeTab, setActiveTab] = useState<'code'|'preview'>('code')
+  // Default to Preview, never raw code — awam must see their app, not HTML.
+  const [activeTab, setActiveTab] = useState<'code'|'preview'>('preview')
+  // Logs/terminal hidden by default; revealed via an "Advanced" toggle.
+  const [showLogs, setShowLogs] = useState(false)
   const [pendingPlan, setPendingPlan] = useState<any>(null)
   const [questions, setQuestions] = useState<any[]>([])
   const [qAnswers, setQAnswers] = useState<Record<number,string>>({})
@@ -35,8 +44,7 @@ export default function Builder() {
   const [jarvisMsg, setJarvisMsg] = useState('')
   const [chatLog, setChatLog] = useState<{html:string,isUser:boolean}[]>([])
   const [logs, setLogs] = useState<{t:string,msg:string,type:string}[]>([
-    {t:'00:00:00',msg:'JARVISFACTORY v6 — Few-shot example + validator + auto-retry',type:'info'},
-    {t:'00:00:00',msg:'Claude Sonnet 4.6 backend ready.',type:'ok'}
+    {t:'00:00:00',msg:'Ready.',type:'ok'}
   ])
   // Sprint 1: feedback chat
   const [feedbackInput, setFeedbackInput] = useState('')
@@ -55,6 +63,7 @@ export default function Builder() {
   const [showBrandPanel, setShowBrandPanel] = useState(false)
   // ── v6: Deep-discovery intake & full proposal modal ──
   const [showDiscovery, setShowDiscovery] = useState(false)
+  const [discoveryExpanded, setDiscoveryExpanded] = useState(false) // progressive disclosure
   const [showProposal, setShowProposal] = useState(false)
   const [discovery, setDiscovery] = useState<{
     vision: string
@@ -258,7 +267,7 @@ ${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the promp
     setTokens('—')
     setBuildTime('—')
     setPhase('idle')
-    setActiveTab('code')
+    setActiveTab('preview')
     setChatLog([])
     setQaReport(null)
     setShowAppsPicker(false)
@@ -1638,11 +1647,10 @@ RULES:
           <div style={{width:'100%',maxWidth:780,maxHeight:'92vh',overflowY:'auto' as const,background:'#ffffff',border:'1px solid rgba(16,185,129,0.25)',borderRadius:16,boxShadow:'0 24px 60px -24px rgba(40,30,80,0.28), 0 2px 6px rgba(0,0,0,0.04)'}}>
             <div style={{padding:'18px 24px',borderBottom:'1px solid #ececf3',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky' as const,top:0,background:'#ffffff',zIndex:1}}>
               <div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:3}}>Step 1 of 3 · Deep Discovery</div>
-                <div style={{fontSize:18,fontWeight:700,color:'#0a0a18'}}>Tell JARVIS more about your project</div>
-                <div style={{fontSize:13,color:'#5a5a72',marginTop:3}}>Every field is optional — the more you share, the better the proposal.</div>
+                <div style={{fontSize:18,fontWeight:700,color:'#0a0a18'}}>Tell me a bit more (optional)</div>
+                <div style={{fontSize:13,color:'#5a5a72',marginTop:3}}>One line is enough — or just skip and I'll figure it out.</div>
               </div>
-              <button onClick={()=>setShowDiscovery(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #e3e3ee',color:'#5a5a72',fontSize:16,cursor:'pointer'}}>×</button>
+              <button onClick={()=>setShowDiscovery(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #e3e3ee',color:'#5a5a72',cursor:'pointer',display:'grid',placeItems:'center'}}><X size={16}/></button>
             </div>
 
             <div style={{padding:24,display:'flex',flexDirection:'column' as const,gap:20}}>
@@ -1654,6 +1662,14 @@ RULES:
                 <textarea value={discovery.vision} onChange={e=>setDiscovery({...discovery,vision:e.target.value})} placeholder="e.g. I want a loyalty app for my coffee shop in Shah Alam so customers earn points and come back more often." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
+              {/* Progressive disclosure — advanced detail hidden until requested */}
+              {!discoveryExpanded && (
+                <button onClick={()=>setDiscoveryExpanded(true)} style={{display:'inline-flex',alignItems:'center',gap:6,alignSelf:'flex-start',padding:'9px 14px',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:12.5,cursor:'pointer'}}>
+                  <ChevronDown size={14}/> Add more detail (style, features, integrations…)
+                </button>
+              )}
+
+              {discoveryExpanded && <>
               {/* Target users */}
               <div>
                 <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>👥 Target Users</label>
@@ -1762,12 +1778,13 @@ RULES:
                 <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💭 Anything Else?</label>
                 <textarea value={discovery.notes} onChange={e=>setDiscovery({...discovery,notes:e.target.value})} placeholder="Anything JARVIS should know — constraints, deadlines, the story behind why you're building this..." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
+              </>}
             </div>
 
             {/* Footer with action buttons */}
             <div style={{padding:'16px 24px',borderTop:'1px solid #ececf3',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'#ffffff'}}>
-              <button onClick={()=>{ setShowDiscovery(false); launch() }} style={{padding:'12px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer',letterSpacing:0.5}}>Skip — JARVIS will infer</button>
-              <button onClick={launch} style={{flex:1,padding:'12px 18px',background:'#10b981',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(16,185,129,0.25)'}}>Continue to clarifying questions →</button>
+              <button onClick={launch} style={{flex:1,padding:'12px 18px',background:'#0a0a18',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer'}}>Skip — let ezclaude handle it</button>
+              {discoveryExpanded && <button onClick={launch} style={{padding:'12px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Continue with details →</button>}
             </div>
           </div>
         </div>
@@ -2020,10 +2037,10 @@ RULES:
         </div>
         <div style={{display:'flex',gap:10,alignItems:'center',position:'relative' as const}}>
           {currentAppId && finalPlan?.app_name && (
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',padding:'4px 8px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:6,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>📂 {finalPlan.app_name}</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5,fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',padding:'4px 8px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:6,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}><FolderOpen size={12}/> {finalPlan.app_name}</span>
           )}
-          <button onClick={()=>setShowAppsPicker(!showAppsPicker)} style={{padding:'4px 10px',background:showAppsPicker?'rgba(123,111,255,0.15)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#7b6fff',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>📁 My Apps ({myApps.length})</button>
-          <button onClick={newApp} style={{padding:'4px 10px',background:'transparent',border:'1px solid rgba(16,185,129,0.3)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>+ New App</button>
+          <button onClick={()=>setShowAppsPicker(!showAppsPicker)} style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',background:showAppsPicker?'rgba(123,111,255,0.15)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#7b6fff',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}><FolderOpen size={12}/> My Apps ({myApps.length})</button>
+          <button onClick={newApp} style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',background:'transparent',border:'1px solid rgba(16,185,129,0.3)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}><Plus size={12}/> New App</button>
           <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#5a5a72'}}>{jarvis?.jarvis_name||'JARVIS'}</span>
           {currentAppId && finalPlan && (
             <button onClick={async()=>{
@@ -2039,10 +2056,10 @@ RULES:
                 setFinalPlan(app.proposal_data)
               }
               setShowProposal(true)
-            }} style={{padding:'4px 10px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer',fontWeight:600}}>📋 View Proposal</button>
+            }} style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer',fontWeight:600}}><FileText size={12}/> View Proposal</button>
           )}
-          <button onClick={()=>setShowBrandPanel(!showBrandPanel)} style={{padding:'4px 10px',background:showBrandPanel?'rgba(16,185,129,0.1)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>🎨 Brand</button>
-          <button style={{padding:'4px 10px',background:'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}} onClick={()=>navigate('/dashboard')}>← Dashboard</button>
+          <button onClick={()=>setShowBrandPanel(!showBrandPanel)} style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',background:showBrandPanel?'rgba(16,185,129,0.1)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}><Palette size={12}/> Brand</button>
+          <button style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 10px',background:'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}} onClick={()=>navigate('/dashboard')}><ArrowLeft size={12}/> Dashboard</button>
 
           {/* My Apps dropdown */}
           {showAppsPicker && (
@@ -2100,8 +2117,8 @@ RULES:
             )}
 
             <div style={{display:'flex',gap:6}}>
-              <button onClick={()=>fileInputRef.current?.click()} style={{flex:1,padding:'6px 0',background:'#faf9f6',border:'1px dashed #e3e3ee',borderRadius:6,color:'#5a5a72',fontSize:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-                📎 Attach reference
+              <button onClick={()=>fileInputRef.current?.click()} style={{flex:1,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,padding:'6px 0',background:'#faf9f6',border:'1px dashed #e3e3ee',borderRadius:6,color:'#5a5a72',fontSize:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                <Paperclip size={12}/> Attach reference
               </button>
               {attachments.length > 0 && <button onClick={()=>setAttachments([])} style={{padding:'6px 8px',background:'transparent',border:'1px solid #e3e3ee',borderRadius:6,color:'#9a9aac',fontSize:10,cursor:'pointer'}}>Clear</button>}
             </div>
@@ -2111,26 +2128,29 @@ RULES:
               <button key={p} onClick={()=>setPrompt(p)} style={{padding:'7px 9px',background:'#faf9f6',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontSize:10,textAlign:'left' as const,cursor:'pointer',lineHeight:1.4}}>{p}</button>
             ))}
 
+            {/* Metrics (tokens/build time) are engine internals — Advanced only */}
+            {showLogs && (
             <div style={{background:'#ffffff',border:'1px solid #ececf3',borderRadius:8,padding:10}}>
               <div style={{fontSize:9,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',textTransform:'uppercase' as const,letterSpacing:1,marginBottom:6}}>Metrics</div>
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72',marginBottom:3}}><span>Tokens</span><span style={{color:'#0a0a18'}}>{tokens}</span></div>
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72',marginBottom:3}}><span>Build time</span><span style={{color:'#0a0a18'}}>{buildTime}</span></div>
               <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72'}}><span>Attachments</span><span style={{color:attachments.length>0?'#10b981':'#0a0a18'}}>{attachments.length}</span></div>
             </div>
+            )}
           </div>
-          <button style={{...c.launchBtn,opacity:isWorking?0.5:1}} onClick={()=>{ if(!prompt.trim()) return; setShowDiscovery(true) }} disabled={isWorking}>
-            <span>⚡</span>{phase==='done'?'Rebuild':'Launch '+(jarvis?.jarvis_name||'JARVIS')}
+          <button style={{...c.launchBtn,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,opacity:isWorking?0.5:1}} onClick={()=>{ if(!prompt.trim()) return; setShowDiscovery(true) }} disabled={isWorking}>
+            <Wand2 size={15}/>{phase==='done'?'Rebuild my app':'Build my app'}
           </button>
           {isWorking && builtCode && (
-            <button onClick={()=>{setPhase('done');setFeedbackPhase('idle');setIsFeedbackLoading(false);setPendingFeedback('');setDiagnosisResult(null);addLog('Reset: unstuck.','ok');addChat('🔄 Stuck state cleared. You can give feedback again.')}} style={{margin:'-4px 10px 10px',padding:8,background:'rgba(255,107,157,0.1)',color:'#ff6b9d',border:'1px solid rgba(255,107,157,0.3)',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>
-              🔄 Stuck? Click to reset
+            <button onClick={()=>{setPhase('done');setFeedbackPhase('idle');setIsFeedbackLoading(false);setPendingFeedback('');setDiagnosisResult(null);addLog('Reset: unstuck.','ok');addChat('Reset — you can give feedback again.')}} style={{margin:'-4px 10px 10px',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,padding:8,background:'rgba(255,107,157,0.1)',color:'#ff6b9d',border:'1px solid rgba(255,107,157,0.3)',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>
+              <RefreshCw size={12}/> Stuck? Click to reset
             </button>
           )}
           {builtCode && (
             <div style={{margin:'-4px 10px 10px',display:'flex',gap:6}}>
-              <button onClick={download} style={{flex:1,padding:8,background:'#faf9f6',color:'#5a5a72',border:'1px solid #ececf3',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>⬇ Download</button>
-              <button onClick={()=>runQA()} disabled={isRunningQA} style={{flex:1,padding:8,background:isRunningQA?'#ececf3':qaReport?.certified?'rgba(16,185,129,0.15)':'rgba(255,209,102,0.15)',color:isRunningQA?'#9a9aac':qaReport?.certified?'#10b981':'#ffd166',border:`1px solid ${qaReport?.certified?'rgba(16,185,129,0.3)':'rgba(255,209,102,0.3)'}`,borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:isRunningQA?'not-allowed':'pointer'}}>
-                {isRunningQA?'QA...':`🔬 QA ${qaReport?qaReport.score+'/100':''}`}
+              <button onClick={download} style={{flex:1,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,padding:8,background:'#faf9f6',color:'#5a5a72',border:'1px solid #ececf3',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}><Download size={12}/> Download</button>
+              <button onClick={()=>runQA()} disabled={isRunningQA} style={{flex:1,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,padding:8,background:isRunningQA?'#ececf3':qaReport?.certified?'rgba(16,185,129,0.15)':'rgba(255,209,102,0.15)',color:isRunningQA?'#9a9aac':qaReport?.certified?'#10b981':'#ffd166',border:`1px solid ${qaReport?.certified?'rgba(16,185,129,0.3)':'rgba(255,209,102,0.3)'}`,borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:isRunningQA?'not-allowed':'pointer'}}>
+                <Sparkles size={12}/> {isRunningQA?'Checking…':`Quality check${qaReport?' '+qaReport.score+'/100':''}`}
               </button>
             </div>
           )}
@@ -2138,16 +2158,23 @@ RULES:
 
         {/* CENTER */}
         <div style={c.center}>
-          <div style={c.tabs}>
-            <div style={{...c.tab,color:activeTab==='code'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='code'?'#10b981':'transparent'}} onClick={()=>setActiveTab('code')}>index.html</div>
-            <div style={{...c.tab,color:activeTab==='preview'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='preview'?'#10b981':'transparent'}} onClick={()=>setActiveTab('preview')}>⬡ Live Preview</div>
+          <div style={{...c.tabs, justifyContent:'space-between'}}>
+            <div style={{display:'flex'}}>
+              {/* Preview is the primary tab — awam see their app first */}
+              <div style={{...c.tab,display:'flex',alignItems:'center',gap:6,color:activeTab==='preview'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='preview'?'#10b981':'transparent'}} onClick={()=>setActiveTab('preview')}><Eye size={14}/> Preview</div>
+              <div style={{...c.tab,display:'flex',alignItems:'center',gap:6,color:activeTab==='code'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='code'?'#10b981':'transparent'}} onClick={()=>setActiveTab('code')}><Code2 size={14}/> View code</div>
+            </div>
+            {/* Advanced: reveal the build log/terminal (hidden by default) */}
+            <button onClick={()=>setShowLogs(v=>!v)} title="Advanced — build logs" style={{display:'flex',alignItems:'center',gap:5,background:'transparent',border:'none',color:'#9a9aac',fontFamily:theme.font.body,fontSize:11,cursor:'pointer',padding:'0 12px'}}>
+              <TerminalIcon size={13}/> Logs {showLogs ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+            </button>
           </div>
           <div style={{flex:1,overflow:'auto',display:activeTab==='code'?'flex':'none',flexDirection:'column' as const,background:'#faf9f6',padding:14}}>
             {!builtCode ? (
               <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',gap:12,color:'#9a9aac'}}>
-                <div style={{fontSize:36,opacity:0.2}}>⬡</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>// Waiting for instructions</div>
-                <div style={{fontSize:11,textAlign:'center' as const,maxWidth:260,lineHeight:1.7,color:'#9a9aac'}}>Attach reference images, set your brand kit, then describe your app. JARVIS will plan first — then build only after you approve.</div>
+                <Icon as={Code2} size={34} tone="faint" />
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>Your app's code will appear here</div>
+                <div style={{fontSize:11,textAlign:'center' as const,maxWidth:260,lineHeight:1.7,color:'#9a9aac'}}>Describe your app on the right and it gets built. You normally never need this tab — the Preview shows your live app.</div>
               </div>
             ) : <pre id="codeDisplay" style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,lineHeight:1.8,color:'#3a3a52',whiteSpace:'pre-wrap' as const,wordBreak:'break-all' as const}}>{builtCode}</pre>}
           </div>
@@ -2155,25 +2182,26 @@ RULES:
             {previewUrl && /^https?:\/\//.test(previewUrl) && !previewUrl.includes('.preview.local') ? (
               <>
                 <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',background:'#ffffff',borderBottom:'1px solid #ececf3',fontFamily:"'DM Sans',sans-serif",fontSize:10}}>
-                  <span style={{color:'#10b981'}}>⬡ LIVE SANDBOX</span>
+                  <span style={{color:'#10b981',display:'flex',alignItems:'center',gap:4}}><span style={{width:6,height:6,borderRadius:'50%',background:'#10b981'}}/> Live</span>
                   <span style={{color:'#9a9aac',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{previewUrl}</span>
-                  <a href={previewUrl} target="_blank" rel="noreferrer" style={{color:'#7b6fff',textDecoration:'none'}}>↗ open</a>
+                  <a href={previewUrl} target="_blank" rel="noreferrer" style={{color:'#7b6fff',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:3}}><ExternalLink size={11}/> open</a>
                 </div>
                 <iframe id="previewFrame" style={{flex:1,border:'none',width:'100%',height:'100%'}} src={previewUrl}/>
               </>
             ) : !builtCode ? (
               <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',background:'#ffffff',gap:10,color:'#9a9aac'}}>
-                <div style={{fontSize:36,opacity:0.2}}>◻</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>Preview loads after build</div>
+                <Icon as={Eye} size={34} tone="faint" />
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>Your live app will appear here</div>
               </div>
             ) : <iframe id="previewFrame" style={{flex:1,border:'none',width:'100%',height:'100%'}} srcDoc={builtCode}/>}
           </div>
-          {/* TERMINAL */}
+          {/* Build logs — hidden by default, revealed via the "Logs" toggle (Advanced) */}
+          {showLogs && (
           <div style={c.term}>
             <div style={c.termH}>
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <div style={{display:'flex',gap:4}}><div style={{width:10,height:10,borderRadius:'50%',background:'#ff5f57'}}/><div style={{width:10,height:10,borderRadius:'50%',background:'#febc2e'}}/><div style={{width:10,height:10,borderRadius:'50%',background:'#28c840'}}/></div>
-                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:1}}>TERMINAL</span>
+                <Icon as={TerminalIcon} size={13} tone="muted" />
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:1}}>BUILD LOGS</span>
               </div>
               <button onClick={()=>setLogs([])} style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',background:'none',border:'none',cursor:'pointer'}}>Clear</button>
             </div>
@@ -2183,12 +2211,13 @@ RULES:
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* RIGHT: JARVIS CHAT + FEEDBACK */}
         <div style={c.right}>
           <div style={c.chatH}>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'#5a5a72'}}>🤖 <span style={{color:'#10b981',fontWeight:700}}>{jarvis?.jarvis_name||'JARVIS'}</span></span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'#5a5a72'}}><Bot size={15} color="#10b981"/> <span style={{color:'#10b981',fontWeight:700}}>{jarvis?.jarvis_name||'JARVIS'}</span> <span style={{fontSize:10,color:'#9a9aac'}}>· your ezclaude assistant</span></span>
             <span style={{fontSize:10,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif",letterSpacing:1,textTransform:'uppercase' as const}}>{phase}</span>
           </div>
           <div style={c.chatBody} ref={chatRef}>
@@ -2406,8 +2435,9 @@ RULES:
 
           {/* ── SPRINT 1: FEEDBACK INPUT ── */}
           <div style={c.feedbackArea}>
-            <div style={{fontSize:9,fontFamily:"'DM Sans',sans-serif",color:builtCode&&!isWorking?'#7b6fff':'#9a9aac',marginBottom:5,letterSpacing:0.5}}>
-              {builtCode && !isWorking ? '💬 JARVIS IS LISTENING — TYPE FEEDBACK TO IMPROVE THE APP' : '⚡ BUILD AN APP FIRST — THEN GIVE FEEDBACK HERE'}
+            <div style={{display:'flex',alignItems:'center',gap:6,fontSize:11,fontFamily:"'DM Sans',sans-serif",color:builtCode&&!isWorking?'#5a5a72':'#9a9aac',marginBottom:5}}>
+              <MessageSquare size={13}/>
+              {builtCode && !isWorking ? 'Nak tukar apa-apa? Just type it here / Want changes? Tell me.' : 'Build your app first, then tell me what to change.'}
             </div>
             <textarea
               style={{...c.feedbackInput, opacity: builtCode&&!isWorking?1:0.35, borderColor: builtCode&&!isWorking?'rgba(123,111,255,0.4)':'#e3e3ee'}}
@@ -2418,7 +2448,7 @@ RULES:
               onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&builtCode&&!isWorking){e.preventDefault();sendFeedback()}}}
             />
             <div style={c.feedbackRow}>
-              <button onClick={()=>fileInputRef.current?.click()} style={c.attachBtn} title="Attach reference image">📎</button>
+              <button onClick={()=>fileInputRef.current?.click()} style={{...c.attachBtn,display:'grid',placeItems:'center'}} title="Attach reference image"><Paperclip size={14}/></button>
               <button
                 onClick={async()=>{
                   if(!builtCode||!user) return
@@ -2450,14 +2480,14 @@ RULES:
                   }
                 }}
                 disabled={!builtCode}
-                style={{padding:'6px 10px',background:'transparent',border:'1px solid #e3e3ee',borderRadius:6,color:builtCode?'#10b981':'#9a9aac',fontSize:10,cursor:builtCode?'pointer':'not-allowed',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}
-              >💾 Save</button>
+                style={{display:'inline-flex',alignItems:'center',gap:5,padding:'6px 10px',background:'transparent',border:'1px solid #e3e3ee',borderRadius:6,color:builtCode?'#10b981':'#9a9aac',fontSize:10,cursor:builtCode?'pointer':'not-allowed',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}
+              ><Save size={12}/> Save</button>
               <button
                 onClick={sendFeedback}
                 disabled={!feedbackInput.trim()||!builtCode||isWorking||feedbackPhase!=='idle'}
-                style={{...c.sendBtn, flex:1, background:(!feedbackInput.trim()||!builtCode||isWorking)?'#e3e3ee':'#7b6fff', color:(!feedbackInput.trim()||!builtCode||isWorking)?'#9a9aac':'#fff'}}
+                style={{...c.sendBtn, flex:1, display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6, background:(!feedbackInput.trim()||!builtCode||isWorking)?'#e3e3ee':'#7b6fff', color:(!feedbackInput.trim()||!builtCode||isWorking)?'#9a9aac':'#fff'}}
               >
-                {isFeedbackLoading?'Updating...':'Send ↑'}
+                {isFeedbackLoading?'Updating...':<>Send <ArrowUp size={13}/></>}
               </button>
             </div>
           </div>        </div>

@@ -4,6 +4,12 @@ import { apiFetch } from '@/web/src/lib/api'
 import { useNavigate } from 'react-router-dom'
 import { countLessons } from '@/lib/jarvis-memory'
 import { theme, ui } from '@/web/src/lib/theme'
+import { Icon } from '@/web/src/lib/icon'
+import {
+  Plus, Home, FolderOpen, MessageSquare, LogOut, ArrowUp, RefreshCw,
+  Check, AlertTriangle, X, FileText, Github, MoreHorizontal,
+  Globe, Smartphone, Palette, BarChart3, Bot, Wrench, Sparkles,
+} from 'lucide-react'
 
 // ── v9 Dashboard — Replit-style layout: left sidebar + prompt-first hero + apps grid ──
 // All existing data flows preserved (apps list, JARVIS profile, PDF download, sign out).
@@ -22,6 +28,7 @@ export default function Dashboard() {
   const [githubConn, setGithubConn] = useState<{ github_username: string } | null>(null)
   const [savingAppId, setSavingAppId] = useState<string | null>(null)
   const [githubBanner, setGithubBanner] = useState<{ kind: 'success'|'error', text: string } | null>(null)
+  const [menuAppId, setMenuAppId] = useState<string | null>(null) // per-card "More" menu
   const navigate = useNavigate()
   const supabase = getSupabase()
 
@@ -241,44 +248,23 @@ export default function Dashboard() {
             {firstName[0]?.toUpperCase()}
           </span>
           <span style={{flex:1, textAlign:'left' as const, fontSize:13.5, fontWeight:600}}>{workspaceName}</span>
-          <span style={{color:palette.textDim, fontSize:11}}>▾</span>
-        </button>
-
-        {/* Search (decorative for now) */}
-        <button className="icon-btn" style={{
-          background:'transparent', border:`1px solid ${palette.border}`, borderRadius:9, padding:'9px 12px',
-          display:'flex', alignItems:'center', gap:9, cursor:'pointer', color:palette.textDim, marginBottom:14, fontSize:13,
-        }}>
-          <span>🔍</span> <span>Search</span>
-          <span style={{marginLeft:'auto', fontSize:10, padding:'2px 6px', border:`1px solid ${palette.border}`, borderRadius:4, color:palette.textFaint}}>⌘K</span>
         </button>
 
         {/* Primary CTA — solid ink (Landing's primary button) */}
         <button onClick={startBuild} style={{
           background:palette.text, color:'#fff', border:'none', borderRadius:theme.radius.button, padding:'11px 14px',
-          fontWeight:600, fontSize:13.5, cursor:'pointer', marginBottom:8,
+          fontWeight:600, fontSize:13.5, cursor:'pointer', marginBottom:8, marginTop:14,
           display:'flex', alignItems:'center', gap:8, justifyContent:'center',
         }}>
-          <span style={{fontSize:15}}>+</span> Create something new
-        </button>
-
-        {/* Secondary action */}
-        <button className="icon-btn" style={{
-          background:'transparent', border:`1px solid ${palette.border}`, borderRadius:9, padding:'9px 14px',
-          color:palette.textMid, fontSize:13, cursor:'pointer', marginBottom:18,
-          display:'flex', alignItems:'center', gap:8,
-        }}>
-          <span>↓</span> Import code or design
+          <Icon as={Plus} size={16} tone="white" /> Buat baru / New
         </button>
 
         {/* Nav items */}
-        <div style={{display:'flex', flexDirection:'column' as const, gap:1}}>
+        <div style={{display:'flex', flexDirection:'column' as const, gap:1, marginTop:10}}>
           {[
-            { icon:'⬡', label:'Ask · Create · Build', active:false, onClick:()=>navigate('/studio') },
-            { icon:'🏠', label:'Home', active:true, onClick:()=>{} },
-            { icon:'📁', label:`Projects (${apps.length})`, active:false, onClick:()=>{ document.getElementById('apps-grid')?.scrollIntoView({behavior:'smooth'}) } },
-            { icon:'🎨', label:'Templates', active:false, onClick:()=>alert('Templates — coming soon') },
-            { icon:'⚙️', label:'Settings', active:false, onClick:()=>alert('Settings — coming soon') },
+            { icon:MessageSquare, label:'Chat with Claude', active:false, soon:false, onClick:()=>navigate('/studio') },
+            { icon:Home, label:'Home', active:true, soon:false, onClick:()=>{} },
+            { icon:FolderOpen, label:`Projects (${apps.length})`, active:false, soon:false, onClick:()=>{ document.getElementById('apps-grid')?.scrollIntoView({behavior:'smooth'}) } },
           ].map(n => (
             <button key={n.label} onClick={n.onClick} className="nav-item" style={{
               background: n.active ? palette.bgHover : 'transparent',
@@ -286,7 +272,7 @@ export default function Dashboard() {
               color: n.active ? palette.text : palette.textMid, fontSize:13.5, cursor:'pointer',
               display:'flex', alignItems:'center', gap:10,
             }}>
-              <span style={{fontSize:14, opacity: n.active ? 1 : 0.7}}>{n.icon}</span>
+              <Icon as={n.icon} size={16} tone={n.active ? 'ink' : 'muted'} />
               <span style={{fontWeight: n.active ? 600 : 400}}>{n.label}</span>
             </button>
           ))}
@@ -308,43 +294,12 @@ export default function Dashboard() {
               <div style={{height:'100%', width:`${buildPct}%`, background:palette.accent, transition:'width 0.3s'}}/>
             </div>
           </div>
-          <div>
-            <div style={{display:'flex', justifyContent:'space-between', fontSize:12, color:palette.textMid, marginBottom:4}}>
-              <span>JARVIS lessons</span>
-              <span style={{color:palette.accent, fontWeight:500}}>{lessonCount} learned</span>
-            </div>
-            <div style={{height:4, background:palette.border, borderRadius:2, overflow:'hidden'}}>
-              <div style={{height:'100%', width:`${Math.min(100, lessonCount)}%`, background:palette.accent2, transition:'width 0.3s'}}/>
-            </div>
-          </div>
           {plan === 'starter' && (
             <button style={{
               width:'100%', marginTop:12, padding:'8px 0', background:palette.text, color:'#fff',
-              border:'none', borderRadius:theme.radius.button, fontSize:12, fontWeight:600, cursor:'pointer'
-            }}>↑ Upgrade plan</button>
-          )}
-        </div>
-
-        {/* v10 Phase 5: GitHub block */}
-        <div style={{padding:'12px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:theme.radius.card, marginBottom:10, boxShadow:palette.shadow}}>
-          <div style={{fontSize:11, color:palette.textDim, fontWeight:600, letterSpacing:0.5, textTransform:'uppercase' as const, marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
-            <span>🐙 GitHub</span>
-          </div>
-          {githubConn ? (
-            <div>
-              <div style={{fontSize:12, color:palette.text, marginBottom:6}}>
-                ✓ Connected as <strong style={{color:palette.accent}}>@{githubConn.github_username}</strong>
-              </div>
-              <div style={{fontSize:11, color:palette.textDim, lineHeight:1.5}}>Click <strong>Save to GitHub</strong> on any app to push it to a real repo you own.</div>
-            </div>
-          ) : (
-            <div>
-              <div style={{fontSize:11.5, color:palette.textMid, marginBottom:8, lineHeight:1.5}}>Save your apps to your own GitHub. Real code, real ownership.</div>
-              <button onClick={startGithubConnect} style={{
-                width:'100%', padding:'8px 0', background:'#24292e', color:'#fff',
-                border:'none', borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer'
-              }}>Connect GitHub →</button>
-            </div>
+              border:'none', borderRadius:theme.radius.button, fontSize:12, fontWeight:600, cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+            }}><Icon as={Sparkles} size={13} tone="white" /> Upgrade plan</button>
           )}
         </div>
 
@@ -357,7 +312,7 @@ export default function Dashboard() {
             <div style={{fontSize:12, color:palette.text, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' as const}}>{firstName}</div>
             <div style={{fontSize:10, color:palette.textDim, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' as const}}>{user?.email}</div>
           </div>
-          <button onClick={signOut} title="Sign out" style={{background:'transparent', border:'none', color:palette.textDim, cursor:'pointer', padding:6, borderRadius:6, fontSize:12}}>↗</button>
+          <button onClick={signOut} title="Sign out" style={{background:'transparent', border:'none', color:palette.textDim, cursor:'pointer', padding:6, borderRadius:6, display:'grid', placeItems:'center'}}><Icon as={LogOut} size={15} tone="muted" /></button>
         </div>
       </aside>
 
@@ -382,8 +337,10 @@ export default function Dashboard() {
             color: githubBanner.kind === 'success' ? palette.accent : palette.danger,
             display:'flex', justifyContent:'space-between', alignItems:'center', gap:12,
           }}>
-            <span>{githubBanner.kind === 'success' ? '✓' : '⚠'} {githubBanner.text}</span>
-            <button onClick={()=>setGithubBanner(null)} style={{background:'transparent', border:'none', color:'inherit', cursor:'pointer', fontSize:14}}>×</button>
+            <span style={{display:'flex', alignItems:'center', gap:7}}>
+              {githubBanner.kind === 'success' ? <Check size={15}/> : <AlertTriangle size={15}/>} {githubBanner.text}
+            </span>
+            <button onClick={()=>setGithubBanner(null)} style={{background:'transparent', border:'none', color:'inherit', cursor:'pointer', display:'grid', placeItems:'center'}}><X size={15}/></button>
           </div>
         )}
 
@@ -414,7 +371,7 @@ export default function Dashboard() {
               }}
             />
             <div style={{position:'absolute' as const, bottom:14, left:16, display:'flex', gap:6, alignItems:'center'}}>
-              <button title="Attach reference" style={{background:'#fff', border:`1px solid ${palette.borderH}`, borderRadius:'50%', width:34, height:34, color:palette.textDim, cursor:'pointer', fontSize:18, lineHeight:1, display:'grid', placeItems:'center'}}>+</button>
+              <button title="Attach reference" style={{background:'#fff', border:`1px solid ${palette.borderH}`, borderRadius:'50%', width:34, height:34, color:palette.textDim, cursor:'pointer', display:'grid', placeItems:'center'}}><Icon as={Plus} size={17} tone="muted" /></button>
             </div>
             <button
               onClick={startBuild}
@@ -429,26 +386,26 @@ export default function Dashboard() {
               }}
             >
               <span>Build</span>
-              <span style={{fontSize:11}}>↑</span>
+              <Icon as={ArrowUp} size={13} tone={heroPrompt.trim() ? 'white' : 'muted'} />
             </button>
           </div>
 
           {/* Category chips */}
           <div style={{display:'flex', justifyContent:'center', gap:8, marginTop:22, flexWrap:'wrap' as const}}>
             {[
-              { icon:'🌐', label:'Web App', tag:'web' },
-              { icon:'📱', label:'Mobile-friendly', tag:'mobile' },
-              { icon:'🎨', label:'Marketing Site', tag:'marketing' },
-              { icon:'📊', label:'Dashboard', tag:'dashboard' },
-              { icon:'🤖', label:'AI Tool', tag:'ai' },
-              { icon:'🛠', label:'Internal Tool', tag:'internal' },
+              { icon:Globe, label:'Web App', tag:'web' },
+              { icon:Smartphone, label:'Mobile-friendly', tag:'mobile' },
+              { icon:Palette, label:'Marketing Site', tag:'marketing' },
+              { icon:BarChart3, label:'Dashboard', tag:'dashboard' },
+              { icon:Bot, label:'AI Tool', tag:'ai' },
+              { icon:Wrench, label:'Internal Tool', tag:'internal' },
             ].map(c => (
               <button key={c.tag} className="chip" onClick={() => navigate(`/builder?type=${c.tag}`)} style={{
                 background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:9, padding:'8px 13px',
                 color:palette.textMid, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', gap:7,
                 transition:'all 0.15s',
               }}>
-                <span style={{fontSize:14}}>{c.icon}</span>
+                <Icon as={c.icon} size={15} tone="muted" />
                 <span>{c.label}</span>
               </button>
             ))}
@@ -468,7 +425,7 @@ export default function Dashboard() {
             >
               {examples[exampleIdx]}
             </button>
-            <button onClick={() => setExampleIdx(i => (i+1) % examples.length)} title="Next example" style={{background:'transparent', border:'none', color:palette.textDim, cursor:'pointer', fontSize:14}}>↻</button>
+            <button onClick={() => setExampleIdx(i => (i+1) % examples.length)} title="Next example" style={{background:'transparent', border:'none', color:palette.textDim, cursor:'pointer', display:'grid', placeItems:'center'}}><Icon as={RefreshCw} size={14} tone="muted" /></button>
           </div>
         </div>
 
@@ -490,7 +447,7 @@ export default function Dashboard() {
               background:palette.bgPanel, border:`1px dashed ${palette.borderH}`, borderRadius:theme.radius.card,
               padding:'56px 32px', textAlign:'center' as const,
             }}>
-              <div style={{fontSize:36, marginBottom:14, opacity:0.5}}>⬡</div>
+              <div style={{marginBottom:14, display:'grid', placeItems:'center'}}><Icon as={Sparkles} size={34} tone="faint" /></div>
               <div style={{fontSize:15, color:palette.text, fontWeight:600, marginBottom:6}}>No projects yet</div>
               <div style={{fontSize:13, color:palette.textDim, lineHeight:1.6, maxWidth:380, margin:'0 auto 22px'}}>
                 Type your idea above. {jarvis?.jarvis_name || 'JARVIS'} will plan, estimate the budget, and build your first app.
@@ -525,76 +482,63 @@ export default function Dashboard() {
                       {app.description?.substring(0, 120) || 'No description'}
                     </div>
                   </div>
-                  <div style={{display:'flex', gap:6, paddingTop:12, borderTop:`1px solid ${palette.border}`, flexWrap:'wrap' as const}}>
+                  <div style={{display:'flex', gap:6, paddingTop:12, borderTop:`1px solid ${palette.border}`, position:'relative' as const}}>
                     <button
                       onClick={(e)=>{ e.stopPropagation(); navigate(`/builder?app=${app.id}`) }}
                       style={{
                         flex:1, padding:'8px 10px', background:palette.text, color:'#fff',
-                        border:'none', borderRadius:theme.radius.pill, fontSize:12, fontWeight:600, cursor:'pointer'
+                        border:'none', borderRadius:theme.radius.pill, fontSize:12, fontWeight:600, cursor:'pointer',
+                        display:'flex', alignItems:'center', justifyContent:'center', gap:6,
                       }}
-                    >Open →</button>
+                    >Open <Icon as={ArrowUp} size={12} tone="white" style={{transform:'rotate(90deg)'}} /></button>
+                    {/* Secondary actions tucked behind a single "More" menu (PDF + GitHub) */}
                     <button
-                      title={app.proposal_data ? 'Download proposal as PDF' : 'JARVIS will generate a proposal first (~30s)'}
-                      onClick={(e)=>{ e.stopPropagation(); navigate(`/builder?app=${app.id}&action=pdf`) }}
+                      title="More"
+                      onClick={(e)=>{ e.stopPropagation(); setMenuAppId(menuAppId === app.id ? null : app.id) }}
                       style={{
                         padding:'7px 10px', background:'transparent', color:palette.textMid,
-                        border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600, cursor:'pointer'
+                        border:`1px solid ${palette.border}`, borderRadius:9, cursor:'pointer',
+                        display:'grid', placeItems:'center',
                       }}
-                    >📄 PDF</button>
-                    {/* v10 Phase 5+6: GitHub view + pull (if linked) OR save (if not yet) */}
-                    {app.github_repo_url ? (
-                      <>
-                        <a
-                          href={app.github_repo_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={e=>e.stopPropagation()}
-                          title={`On GitHub: ${app.github_repo_full_name || ''}`}
-                          style={{
-                            padding:'7px 10px', background:'#1a1a24', color:'#fff', textDecoration:'none' as const,
-                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600, cursor:'pointer',
-                            display:'inline-flex', alignItems:'center', gap:4
-                          }}
-                        >🐙 View</a>
+                    ><Icon as={MoreHorizontal} size={15} tone="muted" /></button>
+                    {menuAppId === app.id && (
+                      <div onClick={e=>e.stopPropagation()} style={{
+                        position:'absolute' as const, right:0, bottom:'calc(100% + 6px)', zIndex:20,
+                        background:'#fff', border:`1px solid ${palette.border}`, borderRadius:theme.radius.card,
+                        boxShadow:theme.shadow.panel, padding:6, minWidth:200, display:'flex', flexDirection:'column' as const, gap:2,
+                      }}>
                         <button
-                          disabled={savingAppId === app.id}
-                          title="Pull latest index.html from your GitHub repo — overwrites local code"
-                          onClick={(e)=>{ e.stopPropagation(); pullAppFromGithub(app.id, app.name || 'app') }}
-                          style={{
-                            padding:'7px 10px',
-                            background: palette.bgHover, color: palette.textMid,
-                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
-                            cursor: savingAppId === app.id ? 'not-allowed' : 'pointer',
-                            opacity: savingAppId === app.id ? 0.6 : 1,
-                          }}
-                        >{savingAppId === app.id ? '⤓ Pulling…' : '⤓ Pull'}</button>
-                        <button
-                          disabled={savingAppId === app.id}
-                          title="Push the current JarvisFactory code to your linked repo (updates index.html)"
-                          onClick={(e)=>{ e.stopPropagation(); saveAppToGithub(app.id) }}
-                          style={{
-                            padding:'7px 10px',
-                            background: palette.bgHover, color: palette.textMid,
-                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
-                            cursor: savingAppId === app.id ? 'not-allowed' : 'pointer',
-                            opacity: savingAppId === app.id ? 0.6 : 1,
-                          }}
-                        >{savingAppId === app.id ? '⤴ Pushing…' : '⤴ Push'}</button>
-                      </>
-                    ) : (
-                      <button
-                        disabled={!githubConn || savingAppId === app.id}
-                        title={githubConn ? 'Push this app to a new public GitHub repo' : 'Connect GitHub first (sidebar)'}
-                        onClick={(e)=>{ e.stopPropagation(); saveAppToGithub(app.id) }}
-                        style={{
-                          padding:'7px 10px',
-                          background: githubConn ? '#24292e' : palette.bgHover,
-                          color: githubConn ? '#fff' : palette.textDim,
-                          border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
-                          cursor: githubConn && savingAppId !== app.id ? 'pointer' : 'not-allowed',
-                          opacity: savingAppId === app.id ? 0.6 : 1,
-                        }}
-                      >🐙 {savingAppId === app.id ? 'Saving…' : 'GitHub'}</button>
+                          onClick={()=>{ setMenuAppId(null); navigate(`/builder?app=${app.id}&action=pdf`) }}
+                          title={app.proposal_data ? 'Download proposal as PDF' : 'A proposal is generated first (~30s)'}
+                          style={{display:'flex', alignItems:'center', gap:9, padding:'9px 10px', background:'transparent', border:'none', borderRadius:8, fontSize:12.5, color:palette.text, cursor:'pointer', textAlign:'left' as const}}
+                          className="nav-item"
+                        ><Icon as={FileText} size={15} tone="muted" /> Download PDF</button>
+
+                        {app.github_repo_url ? (
+                          <>
+                            <a href={app.github_repo_url} target="_blank" rel="noreferrer" onClick={()=>setMenuAppId(null)}
+                              style={{display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:8, fontSize:12.5, color:palette.text, textDecoration:'none' as const}}
+                              className="nav-item"
+                            ><Icon as={Github} size={15} tone="muted" /> View on GitHub</a>
+                            <button disabled={savingAppId === app.id}
+                              onClick={()=>{ setMenuAppId(null); saveAppToGithub(app.id) }}
+                              style={{display:'flex', alignItems:'center', gap:9, padding:'9px 10px', background:'transparent', border:'none', borderRadius:8, fontSize:12.5, color:palette.text, cursor:'pointer', textAlign:'left' as const, opacity: savingAppId===app.id?0.6:1}}
+                              className="nav-item"
+                            ><Icon as={ArrowUp} size={15} tone="muted" /> {savingAppId === app.id ? 'Saving backup…' : 'Save a backup copy'}</button>
+                            <button disabled={savingAppId === app.id}
+                              onClick={()=>{ setMenuAppId(null); pullAppFromGithub(app.id, app.name || 'app') }}
+                              style={{display:'flex', alignItems:'center', gap:9, padding:'9px 10px', background:'transparent', border:'none', borderRadius:8, fontSize:12.5, color:palette.textMid, cursor:'pointer', textAlign:'left' as const, opacity: savingAppId===app.id?0.6:1}}
+                              className="nav-item"
+                            ><Icon as={RefreshCw} size={15} tone="muted" /> Restore from backup</button>
+                          </>
+                        ) : (
+                          <button disabled={savingAppId === app.id}
+                            onClick={()=>{ setMenuAppId(null); githubConn ? saveAppToGithub(app.id) : startGithubConnect() }}
+                            style={{display:'flex', alignItems:'center', gap:9, padding:'9px 10px', background:'transparent', border:'none', borderRadius:8, fontSize:12.5, color:palette.text, cursor:'pointer', textAlign:'left' as const, opacity: savingAppId===app.id?0.6:1}}
+                            className="nav-item"
+                          ><Icon as={Github} size={15} tone="muted" /> {savingAppId === app.id ? 'Saving…' : (githubConn ? 'Save a backup copy' : 'Connect GitHub to back up')}</button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
