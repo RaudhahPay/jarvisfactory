@@ -90,7 +90,7 @@ export default function AuthPage() {
           </>
         )}
         <label style={c.label}>Email Address</label>
-        <input style={c.input} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/>
+        <input style={c.input} type="email" placeholder="you@exampple.com" value={email} onChange={e=>setEmail(e.target.value)}/>
         <label style={c.label}>Password</label>
         <input style={c.input} type="password" placeholder="Min 8 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAuth()}/>
 
