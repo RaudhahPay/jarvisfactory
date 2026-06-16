@@ -46,25 +46,30 @@ before changing — do not refactor KEEP code just because you're nearby.
 
 ## 3. Stack
 
-- **Frontend:** Next.js 14 (App Router) + React 18 + TypeScript. **Reality
-  check (from scan): the existing shell uses inline-style objects — NO Tailwind,
-  NO component lib.** Decision pending: keep inline styles for the KEEP shell and
-  introduce Tailwind only on new v2 surfaces, or restyle. Do not assume Tailwind
-  exists — read the file.
-- **Backend:** Next.js API routes / route handlers; a dedicated agent-runner
-  service if/when long-running sessions outgrow serverless timeouts
+- **Frontend:** **Vite SPA + React 18 + React Router (`react-router-dom` v6) +
+  TypeScript** (migrated off Next.js — completed 2026-06-12, see
+  `docs/plans/2026-06-12-nextjs-to-vite-hono.md`; Next.js fully removed from the
+  repo). Source lives in `web/`; routes in `web/src/routes/` (`Landing`, `Auth`,
+  `Dashboard`, `Studio`, `Builder`, `Onboarding`, …). **Reality check (from scan):
+  the shell uses inline-style objects — NO Tailwind, NO component lib.** Do not
+  assume Tailwind exists — read the file.
+- **Backend:** **Hono server** (`server/index.ts`, run via `@hono/node-server`),
+  not Next.js API routes. Route handlers live in `server/routes/` (`agent.chat`,
+  `agent.cowork`, `agent.file`, `build`, `chat`, `conversations`, `github.*`).
+  Auth is Bearer-token (migrated off Next.js cookie/middleware auth). The same
+  Node process hosts the AgentRunner; a dedicated long-running runner service
+  comes if/when sessions outgrow it.
 - **Engine:** Claude Agent SDK (TypeScript) — same agent loop, tools, and context
   management that power Claude Code
 - **Sandbox:** Cloudflare Sandbox SDK (Containers on Cloudflare — founder decision
   2026-06-11). Abstracted behind `SandboxDriver` so we can swap to E2B / Firecracker later.
 - **DB / Auth:** Supabase (PostgreSQL + Supabase Auth)
-- **Hosting:** **Cloudflare only** (founder decision, 2026-06-11) — app on Cloudflare
-  (Workers/Pages); user-app deploy target is Cloudflare. No Vercel. **Reality check:
-  v1 ships via GitHub push → Railway** (README + the `/api/chat` `maxDuration` comment
-  reference Railway); migrate the app host to Cloudflare as part of v2. **Watch-out:**
-  long-running Agent SDK sessions exceed Workers' CPU/duration limits — the agent
-  runner likely needs Durable Objects / Containers or a dedicated long-running service,
-  not a plain Worker (decide at S2/S3).
+- **Hosting:** **Cloudflare only** (founder decision, 2026-06-11). **Done:** the app
+  is LIVE on Cloudflare Containers (the Vite SPA + Hono server bundled into the
+  `EzClaudeContainer`, `Dockerfile` + `worker/container.ts` + `wrangler.jsonc`) —
+  the Agent SDK needs Node, so the app runs in a Container, not a plain Worker.
+  Railway is gone (v1 history only; the README still mentions it — stale). User-app
+  deploy target is Cloudflare. No Vercel. Per-build sandboxes live in `sandbox-worker/`.
 - **AI billing:** Anthropic API key + prepaid API credit pool (see §6)
 
 > Confirm exact current versions against the Phase 0 scan before coding. Do not
@@ -76,7 +81,7 @@ before changing — do not refactor KEEP code just because you're nearby.
 
 ```
 User prompt (chat)
-  → Orchestrator (API route): find/create project, ensure Cloudflare sandbox is running
+  → Orchestrator (Hono route, server/routes/): find/create project, ensure Cloudflare sandbox is running
   → Agent runner: open Agent SDK session bound to that sandbox's filesystem
   → Agent edits files / runs commands INSIDE the sandbox
   → Stream agent events back to chat UI (thinking, edits, tool calls)
@@ -88,8 +93,10 @@ User prompt (chat)
 One project = one sandbox = one Agent SDK session context. Persist session state
 so a project can be resumed (rehydrate the sandbox from saved files on resume).
 
-> **Scan finding:** today builds run **client-side in the browser tab** (close
-> tab = lost build) via `app/builder/page.tsx`. v2 moves this server-side. The
+> **Scan finding (v1):** builds originally ran **client-side in the browser tab**
+> (close tab = lost build) via the v1 `app/builder/page.tsx`. v2 moves this
+> server-side; the live SPA builder UI now lives at `web/src/routes/Builder.tsx`
+> (+ `web/src/routes/builder/`). The
 > clean seam to cut at is the body of `approveBuild()` — keep everything before
 > it (prompt → proposal) and after finalize (preview, GitHub push); replace the
 > middle. Add a **`build_jobs`** run-log table so builds are durable, streamable,
@@ -188,7 +195,9 @@ Framework: Raudhah Tech 10-Layer Build Framework — **Phase 0 (Audit) nearly do
 - [ ] Stage 5 — QA / GO–NO-GO
 - [~] Stage 6 — Deploy + ops — **app is LIVE on Cloudflare Containers (2026-06-12)** at
   https://ezclaude.ariavibecoderlab.workers.dev (Worker `ezclaude` → `EzClaudeContainer`,
-  standard-2 instance running the Next.js standalone server + Agent SDK). The Agent SDK
+  standard-2 instance running the Vite SPA + Hono server + Agent SDK; **the app was
+  migrated off Next.js to Vite+Hono on 2026-06-12** — see
+  `docs/plans/2026-06-12-nextjs-to-vite-hono.md`). The Agent SDK
   needs Node, so the app runs in a Container, not a Worker — see `Dockerfile` +
   `worker/container.ts` + `wrangler.jsonc`. Per-build sandboxes stay in `sandbox-worker/`
   (bridge). Secrets set via `wrangler secret put` (ANTHROPIC_API_KEY,
