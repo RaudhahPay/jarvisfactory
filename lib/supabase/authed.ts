@@ -19,15 +19,13 @@ export interface AuthedContext {
   db: any // RLS-scoped to the user (token forwarded); token-less anon client if no user
 }
 
-// NOTE: Task D1 finalizes the rename to the server-side env names. Until then we
-// read the new names with a fallback to the legacy NEXT_PUBLIC_* names so nothing
-// breaks before D1.
+import { loadServerEnv } from '@/server/config'
+
 function supabaseUrl(): string {
-  return (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
+  return loadServerEnv().supabaseUrl
 }
 function supabasePublishableKey(): string {
-  return (process.env.SUPABASE_PUBLISHABLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)!
+  return loadServerEnv().supabasePublishableKey
 }
 
 function parseBearer(authHeader?: string | null): string | null {
