@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run dev:server & npm run dev:web",
-    "dev:web": "cd web && npx vite",
+    "dev": "bun run dev:server & bun run dev:web",
+    "dev:web": "cd web && vite",
     "dev:server": "tsx watch server/index.ts",
-    "build": "npm run build:web && npm run build:server",
-    "build:web": "cd web && npx vite build",
-    "build:server": "npx esbuild server/index.ts --bundle --platform=node --format=esm --outdir=server/dist --packages=external",
+    "build": "bun run build:web && bun run build:server",
+    "build:web": "cd web && vite build",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --outdir=server/dist --packages=external",
     "start": "node server/dist/index.js",
     "test": "vitest run"
   },
