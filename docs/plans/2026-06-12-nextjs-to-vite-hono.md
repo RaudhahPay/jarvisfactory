@@ -316,17 +316,17 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
   `VITE_GITHUB_OAUTH_CLIENT_ID`)
 - Test: `server/routes/github.oauth.test.ts`
 
-- [ ] **Step 1 — Failing test:** `POST /api/github/oauth/exchange { code }` with no Bearer
+- [x] **Step 1 — Failing test:** `POST /api/github/oauth/exchange { code }` with no Bearer
       → 401; with valid Bearer + mocked GitHub token-exchange + `/user` → upserts
       `user_github_connections` and returns `{ ok: true, username }`.
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** server endpoint reuses the exchange/`/user`/upsert logic from
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** server endpoint reuses the exchange/`/user`/upsert logic from
       `app/api/github/oauth/callback/route.ts:28-78` but identifies the user via
       `requireUser(c)`; `GithubCallback.tsx` reads `?code`, POSTs it via `apiFetch`, then
       `navigate('/dashboard?github=connected'|'?github_error=...')`. Dashboard authorize URL
       points `redirect_uri` at `/auth/github/callback`.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit (+ external note):** `feat(github): SPA oauth callback + bearer code exchange`
+- [x] **Step 4 — Verify it passes:** PASS.
+- [x] **Step 5 — Commit (+ external note):** `feat(github): SPA oauth callback + bearer code exchange`
       — and flag: GitHub OAuth app redirect URI must be updated at cutover (Spec Open Q3).
 
 ### Task C5: Client route guards (replace middleware.ts)
@@ -335,15 +335,15 @@ Cloudflare Container (`EzClaudeContainer`, `standard-2`, port 3000). Spec:
 - Create: `web/src/auth/RequireAuth.tsx`; wrap guarded routes in `web/src/App.tsx`
 - Test: `web/src/auth/RequireAuth.test.tsx`
 
-- [ ] **Step 1 — Failing test:** with a mocked session present → renders children; with no
+- [x] **Step 1 — Failing test:** with a mocked session present → renders children; with no
       session → renders a `<Navigate to="/auth">` (assert redirect).
-- [ ] **Step 2 — Verify it fails:** fail.
-- [ ] **Step 3 — Implement:** `RequireAuth` reads `supabase.auth.getSession()` (loading
+- [x] **Step 2 — Verify it fails:** fail.
+- [x] **Step 3 — Implement:** `RequireAuth` reads `supabase.auth.getSession()` (loading
       state → spinner), redirects to `/auth` when absent; wrap `/studio`, `/builder`,
       `/dashboard`, `/onboarding` (the exact set `middleware.ts:9` matched). `/` and `/auth`
       stay public. Add an API-401 handler in `apiFetch` that signs out + redirects.
-- [ ] **Step 4 — Verify it passes:** PASS.
-- [ ] **Step 5 — Commit:** `feat(web): client route guards replace next middleware`.
+- [x] **Step 4 — Verify it passes:** PASS (64/64 tests green).
+- [x] **Step 5 — Commit:** `0cacf82 feat(auth): RequireAuth route guard + API 401 handler`.
 
 ---
 
