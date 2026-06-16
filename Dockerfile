@@ -1,12 +1,10 @@
 # ============================================================
-# ezclaude — Cloudflare Container image (Next.js + Claude Agent SDK)
+# ezclaude — Cloudflare Container image (Vite SPA + Hono API + Claude Agent SDK)
 # ============================================================
 # Must run on linux/amd64 (Cloudflare Containers requirement). node:22-slim is
-# Debian/glibc, which matches the @anthropic-ai/claude-agent-sdk-linux-x64 (glibc,
-# non-musl) binary that npm installs below. The Agent SDK spawns that ~220MB `claude`
-# binary as a subprocess, so it is baked into the image (no cold-start download).
+# Debian/glibc, which matches the @anthropic-ai/claude-agent-sdk-linux-x64 binary.
 #
-# NEXT_PUBLIC_* are inlined at `next build` → passed as build args (image_vars in
+# VITE_* are inlined at `vite build` → passed as build args (image_vars in
 # wrangler.jsonc). Runtime secrets (ANTHROPIC_API_KEY, bridge token, GH secret) are
 # injected by the Container class at start, NOT baked here.
 # ============================================================
@@ -17,21 +15,18 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-# ---- builder: compile the Next.js standalone server ----
+# ---- builder: compile Vite SPA + Hono server bundle ----
 FROM node:22-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-ARG NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID
-ARG NEXT_PUBLIC_V2_ENGINE
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY \
-    NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID=$NEXT_PUBLIC_GITHUB_OAUTH_CLIENT_ID \
-    NEXT_PUBLIC_V2_ENGINE=$NEXT_PUBLIC_V2_ENGINE \
-    NEXT_TELEMETRY_DISABLED=1
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+ARG VITE_GITHUB_OAUTH_CLIENT_ID
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+    VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY \
+    VITE_GITHUB_OAUTH_CLIENT_ID=$VITE_GITHUB_OAUTH_CLIENT_ID
 
 RUN npm run build
 
@@ -39,8 +34,6 @@ RUN npm run build
 FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1 \
-    HOSTNAME=0.0.0.0 \
     PORT=3000
 
 # git + CA certs: the Claude CLI shells out to git and needs TLS roots for HTTPS.
@@ -48,15 +41,13 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends git ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-# Standalone server + assets.
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Hono server bundle + SPA static assets.
+COPY --from=builder /app/server/dist ./server/dist
+COPY --from=builder /app/web/dist ./web/dist
 
-# Belt-and-suspenders: ensure the Agent SDK + its platform binary are present in the
-# standalone node_modules even if file tracing missed the dynamically-spawned binary.
-COPY --from=deps /app/node_modules/@anthropic-ai/claude-agent-sdk ./node_modules/@anthropic-ai/claude-agent-sdk
-COPY --from=deps /app/node_modules/@anthropic-ai/claude-agent-sdk-linux-x64 ./node_modules/@anthropic-ai/claude-agent-sdk-linux-x64
+# Runtime node_modules (hono, supabase-js, agent SDK + platform binary, etc.).
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "server/dist/index.js"]
