@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run dev:server & bun run dev:web",
-    "dev:web": "cd web && vite",
+    "dev:web": "cd web && vite --port ${PORT:-5173}",
     "dev:server": "tsx watch server/index.ts",
     "build": "bun run build:web && bun run build:server",
     "build:web": "cd web && vite build",

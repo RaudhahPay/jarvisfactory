@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .wrangler/
 server/dist
 web/dist
+web/.env.local

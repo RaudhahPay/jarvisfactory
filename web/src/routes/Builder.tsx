@@ -10,6 +10,7 @@ import { createClaudeClient } from '@/web/src/lib/claude-client'
 import { useBuildPipeline } from './builder/useBuildPipeline'
 import { useV2Build } from './builder/useV2Build'
 import type { BuildInput, BuildDeps } from '@/lib/build-types'
+import { theme } from '@/web/src/lib/theme'
 
 export default function Builder() {
   const [user, setUser] = useState<any>(null)
@@ -49,7 +50,7 @@ export default function Builder() {
   const [isRunningQA, setIsRunningQA] = useState(false)
   // Sprint 2: file attachments
   const [attachments, setAttachments] = useState<{name:string,type:string,data:string,preview?:string}[]>([])
-  const [brandColour, setBrandColour] = useState('#00e5b0')
+  const [brandColour, setBrandColour] = useState('#10b981')
   const [brandName, setBrandName] = useState('')
   const [showBrandPanel, setShowBrandPanel] = useState(false)
   // ── v6: Deep-discovery intake & full proposal modal ──
@@ -159,7 +160,7 @@ export default function Builder() {
         if(searchParams.get('action') === 'pdf') {
           setTimeout(() => triggerProposalPDF(appToRestore), 400)
         }
-        setJarvisMsg(`Welcome back. I've restored <strong style="color:#00e5b0">${appToRestore.name}</strong>.<br><br>
+        setJarvisMsg(`Welcome back. I've restored <strong style="color:#10b981">${appToRestore.name}</strong>.<br><br>
 You can keep editing it via chat below, or start a new app with the "<strong>+ New App</strong>" button.<br><br>
 <strong style="color:#ffd166">${appList!.length} app${appList!.length===1?'':'s'}</strong> in your library.`)
       } else {
@@ -168,13 +169,13 @@ You can keep editing it via chat below, or start a new app with the "<strong>+ N
         if(initialPrompt) {
           setPrompt(decodeURIComponent(initialPrompt))
         }
-        setJarvisMsg(`Good day. I'm <strong style="color:#00e5b0">${j?.jarvis_name||'JARVIS'}</strong> — your personal AI developer.<br><br>
+        setJarvisMsg(`Good day. I'm <strong style="color:#10b981">${j?.jarvis_name||'JARVIS'}</strong> — your personal AI developer.<br><br>
 I specialise in <strong>${j?.industry||'your industry'}</strong> apps.<br><br>
 <strong style="color:#ffd166">New in v5.2:</strong><br>
 🔌 Real Supabase backend — your apps now have real signup/login<br>
 💾 Persistent data across devices, not just localStorage<br>
 🎨 Multi-user with full data isolation per app<br><br>
-${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the prompt box on the left — review it and click ⚡ Launch when ready.</strong>' : 'Tell me what you want to build.'}`)
+${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the prompt box on the left — review it and click ⚡ Launch when ready.</strong>' : 'Tell me what you want to build.'}`)
       }
     }
     load()
@@ -242,7 +243,7 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
     setShowAppsPicker(false)
     localStorage.setItem('jf_last_app_id', app.id)
     addLog(`Switched to: ${app.name}`, 'ok')
-    addChat(`📂 Loaded <strong style="color:#00e5b0">${app.name}</strong>. Edit via chat below.`)
+    addChat(`📂 Loaded <strong style="color:#10b981">${app.name}</strong>. Edit via chat below.`)
   }
 
   function newApp() {
@@ -331,7 +332,7 @@ ${initialPrompt ? '<strong style="color:#00e5b0">Your idea is ready in the promp
     addChat(msg, true)
     addLog(`Feedback: "${msg.substring(0,50)}..." — Diagnosing first...`, 'build')
 
-    setChatLog(l => [...l, { html: '<div style="display:flex;gap:4px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:#ffd166;display:inline-block;animation:bob 1s infinite"></span><span style="margin-left:8px;font-size:12px;color:#a8a9b3">JARVIS is diagnosing the issue...</span></div>', isUser: false }])
+    setChatLog(l => [...l, { html: '<div style="display:flex;gap:4px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:#ffd166;display:inline-block;animation:bob 1s infinite"></span><span style="margin-left:8px;font-size:12px;color:#5a5a72">JARVIS is diagnosing the issue...</span></div>', isUser: false }])
 
     try {
       const sys = `You are ${jarvis?.jarvis_name||'JARVIS'}, a senior developer doing code review and diagnosis.
@@ -400,19 +401,19 @@ Return ONLY valid JSON (no markdown):
 
       // Show diagnosis card in chat
       setChatLog(l => l.map((m,i) => i === l.length-1 ? { ...m, html: `
-        <div style="background:#1e1e30;border:1px solid rgba(255,209,102,0.25);border-radius:10px;padding:14px">
-          <div style="font-family:'Space Mono',monospace;font-size:10px;color:#ffd166;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">🔍 Diagnosis</div>
-          <div style="font-size:12px;color:#e8e9ed;margin-bottom:8px;line-height:1.6">${diagnosis.diagnosis}</div>
+        <div style="background:#f7f5ef;border:1px solid rgba(255,209,102,0.25);border-radius:10px;padding:14px">
+          <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#ffd166;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">🔍 Diagnosis</div>
+          <div style="font-size:12px;color:#0a0a18;margin-bottom:8px;line-height:1.6">${diagnosis.diagnosis}</div>
           <div style="font-size:11px;color:#ff6b9d;margin-bottom:10px"><strong>Root cause:</strong> ${diagnosis.root_cause}</div>
-          <div style="font-family:'Space Mono',monospace;font-size:10px;color:#00e5b0;margin-bottom:6px">FIX PLAN:</div>
-          ${diagnosis.fix_plan.map((f:string) => `<div style="font-size:11px;color:#a8a9b3;margin-bottom:3px;display:flex;gap:6px"><span style="color:#00e5b0">→</span>${f}</div>`).join('')}
-          <div style="height:1px;background:#252538;margin:10px 0"></div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#10b981;margin-bottom:6px">FIX PLAN:</div>
+          ${diagnosis.fix_plan.map((f:string) => `<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:6px"><span style="color:#10b981">→</span>${f}</div>`).join('')}
+          <div style="height:1px;background:#ececf3;margin:10px 0"></div>
           <div style="font-size:12px;color:#ffd166;margin-bottom:10px">${diagnosis.question}</div>
           <div style="display:flex;gap:6px">
-            <button onclick="window.jfConfirmFix('')" style="flex:1;padding:8px;background:#00e5b0;color:#000;border:none;border-radius:7px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;cursor:pointer">✓ Apply Fix</button>
-            <button onclick="window.jfRejectFix()" style="flex:1;padding:8px;background:transparent;color:#a8a9b3;border:1px solid #262731;border-radius:7px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer">✕ Cancel</button>
+            <button onclick="window.jfConfirmFix('')" style="flex:1;padding:8px;background:#10b981;color:#000;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer">✓ Apply Fix</button>
+            <button onclick="window.jfRejectFix()" style="flex:1;padding:8px;background:transparent;color:#5a5a72;border:1px solid #e3e3ee;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer">✕ Cancel</button>
           </div>
-          <input id="extraChangesInput" placeholder="Optional: add more changes to batch..." style="width:100%;margin-top:8px;background:#0e0f15;border:1px solid #262731;border-radius:6px;color:#e8e9ed;font-size:11px;padding:7px;box-sizing:border-box;outline:none"/>
+          <input id="extraChangesInput" placeholder="Optional: add more changes to batch..." style="width:100%;margin-top:8px;background:#faf9f6;border:1px solid #e3e3ee;border-radius:6px;color:#0a0a18;font-size:11px;padding:7px;box-sizing:border-box;outline:none"/>
         </div>` } : m))
 
       // Expose global handlers
@@ -456,7 +457,7 @@ Return ONLY valid JSON (no markdown):
     setPhase('iterating')
     addLog('Fix confirmed. Applying changes...', 'build')
 
-    setChatLog(l => [...l, { html: '<div style="display:flex;gap:4px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:#00e5b0;display:inline-block;animation:bob 1s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#8b7cf8;display:inline-block;animation:bob 1s 0.15s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#ff6b9d;display:inline-block;animation:bob 1s 0.3s infinite"></span><span style="margin-left:8px;font-size:12px;color:#a8a9b3">Applying fixes and improvements...</span></div>', isUser: false }])
+    setChatLog(l => [...l, { html: '<div style="display:flex;gap:4px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;animation:bob 1s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#7b6fff;display:inline-block;animation:bob 1s 0.15s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:#ff6b9d;display:inline-block;animation:bob 1s 0.3s infinite"></span><span style="margin-left:8px;font-size:12px;color:#5a5a72">Applying fixes and improvements...</span></div>', isUser: false }])
 
     try {
       const brandContext = brandName ? `Brand: "${brandName}", colour: ${brandColour}.` : ''
@@ -567,7 +568,7 @@ ${fixPlanText}`
       runQA(code)
 
       setChatLog(l => l.map((m,i) => i === l.length-1 ? { ...m,
-        html: `✅ <strong>Fix applied!</strong> Running QA check now...<br><span style="color:#a8a9b3;font-size:11px">~${tok.toLocaleString()} tokens used</span>`
+        html: `✅ <strong>Fix applied!</strong> Running QA check now...<br><span style="color:#5a5a72;font-size:11px">~${tok.toLocaleString()} tokens used</span>`
       } : m))
 
       if(user) {
@@ -661,18 +662,18 @@ The 15 checks are:
       // Show QA report in chat
       setChatLog(l => [...l, {
         isUser: false,
-        html: `<div style="background:#1e1e30;border:1px solid ${report.certified?'rgba(0,229,176,0.3)':'rgba(255,209,102,0.3)'};border-radius:10px;padding:14px">
+        html: `<div style="background:#f7f5ef;border:1px solid ${report.certified?'rgba(16,185,129,0.3)':'rgba(255,209,102,0.3)'};border-radius:10px;padding:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-family:'Space Mono',monospace;font-size:10px;color:${report.certified?'#00e5b0':'#ffd166'};text-transform:uppercase;letter-spacing:1px">🔬 QA Report</div>
-            <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:${report.score>=80?'#00e5b0':report.score>=60?'#ffd166':'#ff4d6d'}">${report.score}/100</div>
+            <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'};text-transform:uppercase;letter-spacing:1px">🔬 QA Report</div>
+            <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:${report.score>=80?'#10b981':report.score>=60?'#ffd166':'#ff4d6d'}">${report.score}/100</div>
           </div>
-          <div style="font-size:12px;color:#e8e9ed;margin-bottom:10px">${report.summary}</div>
+          <div style="font-size:12px;color:#0a0a18;margin-bottom:10px">${report.summary}</div>
           ${report.critical?.length > 0 ? `<div style="margin-bottom:8px">${report.critical.map((c:string)=>`<div style="font-size:11px;color:#ff4d6d;margin-bottom:3px;display:flex;gap:5px"><span>✕</span>${c}</div>`).join('')}</div>` : ''}
           ${report.failed?.length > 0 ? `<div style="margin-bottom:8px">${report.failed.slice(0,3).map((f:string)=>`<div style="font-size:11px;color:#ffd166;margin-bottom:3px;display:flex;gap:5px"><span>⚠</span>${f}</div>`).join('')}</div>` : ''}
-          ${report.passed?.length > 0 ? `<div style="margin-bottom:10px">${report.passed.slice(0,3).map((p:string)=>`<div style="font-size:11px;color:#a8a9b3;margin-bottom:3px;display:flex;gap:5px"><span style="color:#00e5b0">✓</span>${p}</div>`).join('')}</div>` : ''}
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:${report.certified?'rgba(0,229,176,0.1)':'rgba(255,209,102,0.1)'};border-radius:6px">
-            <span style="font-family:'Space Mono',monospace;font-size:10px;color:${report.certified?'#00e5b0':'#ffd166'}">${report.certified?'✅ QA CERTIFIED':'⚠️ NEEDS FIXES'}</span>
-            ${!report.certified && report.critical?.length > 0 ? `<button onclick="window.jfAutoFix()" style="padding:5px 12px;background:#8b7cf8;color:#fff;border:none;border-radius:5px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer">Auto-fix issues</button>` : ''}
+          ${report.passed?.length > 0 ? `<div style="margin-bottom:10px">${report.passed.slice(0,3).map((p:string)=>`<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:5px"><span style="color:#10b981">✓</span>${p}</div>`).join('')}</div>` : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:${report.certified?'rgba(16,185,129,0.1)':'rgba(255,209,102,0.1)'};border-radius:6px">
+            <span style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'}">${report.certified?'✅ QA CERTIFIED':'⚠️ NEEDS FIXES'}</span>
+            ${!report.certified && report.critical?.length > 0 ? `<button onclick="window.jfAutoFix()" style="padding:5px 12px;background:#7b6fff;color:#fff;border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer">Auto-fix issues</button>` : ''}
           </div>
         </div>`
       }])
@@ -1500,7 +1501,7 @@ RULES:
       const validIcon = validation?.valid ? '✅' : '⚠️'
       addLog(`DONE. ${validIcon} ~${tok} tokens, ${((Date.now()-startRef.current)/1000).toFixed(1)}s, ${attempt+1} attempt${attempt>0?'s':''}`, 'ok')
       addLog('Tip: Type feedback in the chat below to improve anything!', 'ok')
-      addChat(`🚀 <strong>Build complete!</strong> ${validIcon} <strong style="color:#00e5b0">${tok.toLocaleString()} tokens</strong> · <strong style="color:#ffd166">${((Date.now()-startRef.current)/1000).toFixed(1)}s</strong>${attempt>0 ? ` · <strong style="color:#ff6b9d">${attempt+1} attempts</strong>` : ''}<br><br>Switch to <strong>⬡ Preview</strong> to test it.<br><br><span style="color:#8b7cf8;font-size:11px">💬 Type feedback below to improve anything — I'm still here!</span>`)
+      addChat(`🚀 <strong>Build complete!</strong> ${validIcon} <strong style="color:#10b981">${tok.toLocaleString()} tokens</strong> · <strong style="color:#ffd166">${((Date.now()-startRef.current)/1000).toFixed(1)}s</strong>${attempt>0 ? ` · <strong style="color:#ff6b9d">${attempt+1} attempts</strong>` : ''}<br><br>Switch to <strong>⬡ Preview</strong> to test it.<br><br><span style="color:#7b6fff;font-size:11px">💬 Type feedback below to improve anything — I'm still here!</span>`)
       if(user) {
         const buildTimeStr = ((Date.now()-startRef.current)/1000).toFixed(1)
         const { data: newRow } = await supabase.from('apps').insert({
@@ -1548,7 +1549,7 @@ RULES:
             if (lessonsExtracted.length > 0) {
               addLog(`🧠 +${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'} added to JARVIS memory from this build.`, 'ok')
               const lessonList = lessonsExtracted.map(l => `&nbsp;&nbsp;<span style="color:#7c5cff">[${l.category}]</span> ${l.pattern.slice(0, 120)}${l.pattern.length>120?'…':''}`).join('<br>')
-              addChat(`🧠 <strong>JARVIS just learned ${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'}</strong> from this build:<br>${lessonList}<br><br><span style="color:#6f7079;font-size:11px">These will inform every future build automatically.</span>`)
+              addChat(`🧠 <strong>JARVIS just learned ${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'}</strong> from this build:<br>${lessonList}<br><br><span style="color:#9a9aac;font-size:11px">These will inform every future build automatically.</span>`)
             }
           } catch (err: any) {
             addLog(`Lesson extraction skipped: ${err?.message}`, 'warn')
@@ -1593,32 +1594,34 @@ RULES:
 
   const phaseLabel = {idle:'IDLE',planning:'PLANNING',questioning:'Q&A',approving:'REVIEW',building:'BUILDING',iterating:'ITERATING',done:'DONE'}[phase]
 
+  const FONT = theme.font.sans
+  const MONO = theme.font.body
   const c: Record<string,React.CSSProperties> = {
-    page:{height:'100vh',display:'flex',flexDirection:'column',background:'#06070b',fontFamily:"'Inter','DM Sans',sans-serif",overflow:'hidden'},
-    nav:{height:54,background:'#0c0d12',borderBottom:'1px solid #1c1d24',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px',flexShrink:0},
-    logo:{fontFamily:"'Space Mono',monospace",fontSize:15,color:'#00e5b0',fontWeight:700},
+    page:{height:'100vh',display:'flex',flexDirection:'column',background:theme.color.surface,color:theme.color.ink,fontFamily:FONT,overflow:'hidden'},
+    nav:{height:56,background:theme.color.bg,borderBottom:`1px solid ${theme.color.border}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',flexShrink:0},
+    logo:{fontFamily:FONT,fontSize:16,color:theme.color.ink,fontWeight:800,letterSpacing:-0.4},
     main:{display:'flex',flex:1,overflow:'hidden'},
-    left:{width:280,background:'#0c0d12',borderRight:'1px solid #1c1d24',display:'flex',flexDirection:'column',flexShrink:0},
-    pTitle:{padding:'10px 16px',fontSize:11,fontFamily:"'Space Mono',monospace",color:'#6f7079',textTransform:'uppercase' as const,letterSpacing:1.5,borderBottom:'1px solid #1c1d24',display:'flex',justifyContent:'space-between'},
-    phaseTag:{fontSize:10,padding:'3px 9px',borderRadius:10,fontFamily:"'Space Mono',monospace",background:'rgba(90,90,120,0.3)',color:'#a8a9b3'},
-    promptArea:{flex:1,padding:12,overflowY:'auto' as const,display:'flex',flexDirection:'column' as const,gap:10},
-    textarea:{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:8,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'none' as const,height:110,lineHeight:1.6,outline:'none',boxSizing:'border-box' as const},
-    launchBtn:{margin:'0 12px 12px',padding:13,background:'#00e5b0',color:'#000',border:'none',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6},
-    center:{flex:1,display:'flex',flexDirection:'column' as const,overflow:'hidden'},
-    tabs:{display:'flex',background:'#0c0d12',borderBottom:'1px solid #1c1d24',padding:'0 14px',flexShrink:0},
-    tab:{padding:'10px 16px',fontSize:13,fontFamily:"'Space Mono',monospace",color:'#6f7079',cursor:'pointer',borderBottom:'2px solid transparent'},
-    term:{height:140,background:'#06070b',borderTop:'1px solid #1c1d24',flexShrink:0,display:'flex',flexDirection:'column' as const},
-    termH:{padding:'7px 14px',borderBottom:'1px solid #1c1d24',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0},
-    termB:{flex:1,overflow:'auto',padding:'7px 14px',fontFamily:"'Space Mono',monospace",fontSize:11.5,lineHeight:1.85},
-    right:{width:440,background:'#0c0d12',borderLeft:'1px solid #1c1d24',display:'flex',flexDirection:'column' as const,flexShrink:0},
-    chatH:{padding:'12px 16px',borderBottom:'1px solid #1c1d24',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0},
-    chatBody:{flex:1,overflowY:'auto' as const,padding:14,display:'flex',flexDirection:'column' as const,gap:12},
-    bubble:{fontSize:14.5,lineHeight:1.65,color:'#e8e9ed',background:'#0e0f15',padding:'12px 14px',borderRadius:10,border:'1px solid #252538',wordBreak:'break-word' as const},
-    feedbackArea:{padding:'10px 12px',borderTop:'1px solid #1c1d24',flexShrink:0,background:'#080810'},
-    feedbackInput:{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:8,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:'10px 12px',resize:'none' as const,height:72,lineHeight:1.55,outline:'none',boxSizing:'border-box' as const,marginBottom:7},
-    feedbackRow:{display:'flex',gap:7},
-    attachBtn:{padding:'8px 12px',background:'transparent',border:'1px solid #262731',borderRadius:7,color:'#a8a9b3',fontSize:13,cursor:'pointer',fontFamily:"'Space Mono',monospace",flexShrink:0},
-    sendBtn:{flex:1,padding:'8px 12px',background:isFeedbackLoading?'#262731':'#8b7cf8',color:isFeedbackLoading?'#6f7079':'#fff',border:'none',borderRadius:7,fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,cursor:isFeedbackLoading?'not-allowed':'pointer'},
+    left:{width:288,background:theme.color.bg,borderRight:`1px solid ${theme.color.border}`,display:'flex',flexDirection:'column',flexShrink:0},
+    pTitle:{padding:'12px 18px',fontSize:11,fontFamily:MONO,color:theme.color.faint,textTransform:'uppercase' as const,letterSpacing:1.5,fontWeight:700,borderBottom:`1px solid ${theme.color.border}`,display:'flex',justifyContent:'space-between',alignItems:'center'},
+    phaseTag:{fontSize:10,padding:'3px 9px',borderRadius:theme.radius.pill,fontFamily:MONO,fontWeight:600,background:theme.color.surfaceWarm,color:theme.color.muted,border:`1px solid ${theme.color.border}`},
+    promptArea:{flex:1,padding:14,overflowY:'auto' as const,display:'flex',flexDirection:'column' as const,gap:10},
+    textarea:{width:'100%',background:theme.color.bg,border:`1px solid ${theme.color.borderInput}`,borderRadius:theme.radius.button,color:theme.color.ink,fontFamily:MONO,fontSize:14,padding:12,resize:'none' as const,height:110,lineHeight:1.6,outline:'none',boxSizing:'border-box' as const},
+    launchBtn:{margin:'0 14px 14px',padding:13,background:theme.color.ink,color:'#fff',border:'none',borderRadius:theme.radius.button,fontFamily:FONT,fontSize:14,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6},
+    center:{flex:1,display:'flex',flexDirection:'column' as const,overflow:'hidden',background:theme.color.surface},
+    tabs:{display:'flex',background:theme.color.bg,borderBottom:`1px solid ${theme.color.border}`,padding:'0 16px',flexShrink:0},
+    tab:{padding:'12px 16px',fontSize:13,fontFamily:MONO,fontWeight:600,color:theme.color.muted,cursor:'pointer',borderBottom:'2px solid transparent'},
+    term:{height:150,background:theme.color.bg,borderTop:`1px solid ${theme.color.border}`,flexShrink:0,display:'flex',flexDirection:'column' as const},
+    termH:{padding:'8px 16px',borderBottom:`1px solid ${theme.color.border}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0},
+    termB:{flex:1,overflow:'auto',padding:'8px 16px',fontFamily:MONO,fontSize:11.5,lineHeight:1.85},
+    right:{width:448,background:theme.color.bg,borderLeft:`1px solid ${theme.color.border}`,display:'flex',flexDirection:'column' as const,flexShrink:0},
+    chatH:{padding:'14px 18px',borderBottom:`1px solid ${theme.color.border}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0},
+    chatBody:{flex:1,overflowY:'auto' as const,padding:16,display:'flex',flexDirection:'column' as const,gap:14,background:theme.color.surface},
+    bubble:{fontSize:14.5,lineHeight:1.65,color:theme.color.inkSoft,background:theme.color.bg,padding:'12px 14px',borderRadius:theme.radius.card,border:`1px solid ${theme.color.border}`,boxShadow:theme.shadow.card,wordBreak:'break-word' as const},
+    feedbackArea:{padding:'12px 14px',borderTop:`1px solid ${theme.color.border}`,flexShrink:0,background:theme.color.bg},
+    feedbackInput:{width:'100%',background:theme.color.surface,border:`1px solid ${theme.color.borderInput}`,borderRadius:theme.radius.button,color:theme.color.ink,fontFamily:MONO,fontSize:14,padding:'10px 12px',resize:'none' as const,height:72,lineHeight:1.55,outline:'none',boxSizing:'border-box' as const,marginBottom:8},
+    feedbackRow:{display:'flex',gap:8},
+    attachBtn:{padding:'8px 12px',background:'#fff',border:`1px solid ${theme.color.borderInput}`,borderRadius:theme.radius.button,color:theme.color.muted,fontSize:13,cursor:'pointer',fontFamily:FONT,flexShrink:0},
+    sendBtn:{flex:1,padding:'8px 12px',background:isFeedbackLoading?theme.color.borderInput:theme.color.ink,color:isFeedbackLoading?theme.color.faint:'#fff',border:'none',borderRadius:theme.radius.button,fontFamily:FONT,fontSize:14,fontWeight:600,cursor:isFeedbackLoading?'not-allowed':'pointer'},
   }
 
   return (
@@ -1631,44 +1634,44 @@ RULES:
           produce a proper proposal — reference apps, UI/UX style, must-haves, etc.
           Every field is optional. The more they fill, the better the proposal. */}
       {showDiscovery && (
-        <div style={{position:'fixed' as const,inset:0,background:'rgba(5,5,13,0.85)',backdropFilter:'blur(8px)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:24,animation:'fadeIn 0.2s ease'}}>
-          <div style={{width:'100%',maxWidth:780,maxHeight:'92vh',overflowY:'auto' as const,background:'#0d0d1e',border:'1px solid rgba(0,229,176,0.25)',borderRadius:16,boxShadow:'0 30px 80px rgba(0,0,0,0.6)'}}>
-            <div style={{padding:'18px 24px',borderBottom:'1px solid #1c1d24',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky' as const,top:0,background:'#0d0d1e',zIndex:1}}>
+        <div style={{position:'fixed' as const,inset:0,background:'rgba(10,10,24,0.45)',backdropFilter:'blur(8px)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:24,animation:'fadeIn 0.2s ease'}}>
+          <div style={{width:'100%',maxWidth:780,maxHeight:'92vh',overflowY:'auto' as const,background:'#ffffff',border:'1px solid rgba(16,185,129,0.25)',borderRadius:16,boxShadow:'0 24px 60px -24px rgba(40,30,80,0.28), 0 2px 6px rgba(0,0,0,0.04)'}}>
+            <div style={{padding:'18px 24px',borderBottom:'1px solid #ececf3',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky' as const,top:0,background:'#ffffff',zIndex:1}}>
               <div>
-                <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:3}}>Step 1 of 3 · Deep Discovery</div>
-                <div style={{fontSize:18,fontWeight:700,color:'#e8e9ed'}}>Tell JARVIS more about your project</div>
-                <div style={{fontSize:13,color:'#a8a9b3',marginTop:3}}>Every field is optional — the more you share, the better the proposal.</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:3}}>Step 1 of 3 · Deep Discovery</div>
+                <div style={{fontSize:18,fontWeight:700,color:'#0a0a18'}}>Tell JARVIS more about your project</div>
+                <div style={{fontSize:13,color:'#5a5a72',marginTop:3}}>Every field is optional — the more you share, the better the proposal.</div>
               </div>
-              <button onClick={()=>setShowDiscovery(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #262731',color:'#a8a9b3',fontSize:16,cursor:'pointer'}}>×</button>
+              <button onClick={()=>setShowDiscovery(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #e3e3ee',color:'#5a5a72',fontSize:16,cursor:'pointer'}}>×</button>
             </div>
 
             <div style={{padding:24,display:'flex',flexDirection:'column' as const,gap:20}}>
 
               {/* Vision */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎯 Vision</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:8}}>What do you want this app to achieve in one or two sentences?</div>
-                <textarea value={discovery.vision} onChange={e=>setDiscovery({...discovery,vision:e.target.value})} placeholder="e.g. I want a loyalty app for my coffee shop in Shah Alam so customers earn points and come back more often." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎯 Vision</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>What do you want this app to achieve in one or two sentences?</div>
+                <textarea value={discovery.vision} onChange={e=>setDiscovery({...discovery,vision:e.target.value})} placeholder="e.g. I want a loyalty app for my coffee shop in Shah Alam so customers earn points and come back more often." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Target users */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>👥 Target Users</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:8}}>Who is this app for? Be specific — age, role, location, what they do today.</div>
-                <textarea value={discovery.target_users} onChange={e=>setDiscovery({...discovery,target_users:e.target.value})} placeholder="e.g. F&B operators in Klang Valley with 1-3 outlets, currently using paper loyalty cards." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>👥 Target Users</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Who is this app for? Be specific — age, role, location, what they do today.</div>
+                <textarea value={discovery.target_users} onChange={e=>setDiscovery({...discovery,target_users:e.target.value})} placeholder="e.g. F&B operators in Klang Valley with 1-3 outlets, currently using paper loyalty cards." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Reference apps */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌐 Reference Apps You Like</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:8}}>Paste names or URLs. What do you like about them? (e.g. "Tealive app — clean dashboard. Grab — easy ordering.")</div>
-                <textarea value={discovery.reference_apps} onChange={e=>setDiscovery({...discovery,reference_apps:e.target.value})} placeholder="e.g. Tealive app for the rewards UI. Grab for simple ordering. Notion for the calm aesthetic." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌐 Reference Apps You Like</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Paste names or URLs. What do you like about them? (e.g. "Tealive app — clean dashboard. Grab — easy ordering.")</div>
+                <textarea value={discovery.reference_apps} onChange={e=>setDiscovery({...discovery,reference_apps:e.target.value})} placeholder="e.g. Tealive app for the rewards UI. Grab for simple ordering. Notion for the calm aesthetic." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* UI Style picker */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎨 UI/UX Style</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:10}}>Pick the closest fit — JARVIS will design accordingly.</div>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎨 UI/UX Style</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Pick the closest fit — JARVIS will design accordingly.</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))',gap:8}}>
                   {[
                     {k:'Modern & Minimal',d:'Lots of white space, clean'},
@@ -1678,9 +1681,9 @@ RULES:
                     {k:'Dark & Premium',d:'Dark mode, neon accents'},
                     {k:'Halal-first / Islamic',d:'Calm, geometric, modest'},
                   ].map(s=>(
-                    <button key={s.k} onClick={()=>setDiscovery({...discovery,ui_style:s.k})} style={{padding:'10px 12px',background:discovery.ui_style===s.k?'rgba(0,229,176,0.12)':'#0e0f15',border:`1px solid ${discovery.ui_style===s.k?'#00e5b0':'#262731'}`,borderRadius:9,color:discovery.ui_style===s.k?'#00e5b0':'#a8a8c0',cursor:'pointer',textAlign:'left' as const,transition:'all 0.15s'}}>
+                    <button key={s.k} onClick={()=>setDiscovery({...discovery,ui_style:s.k})} style={{padding:'10px 12px',background:discovery.ui_style===s.k?'rgba(16,185,129,0.12)':'#faf9f6',border:`1px solid ${discovery.ui_style===s.k?'#10b981':'#e3e3ee'}`,borderRadius:9,color:discovery.ui_style===s.k?'#10b981':'#5a5a72',cursor:'pointer',textAlign:'left' as const,transition:'all 0.15s'}}>
                       <div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{s.k}</div>
-                      <div style={{fontSize:11,color:'#6f7079'}}>{s.d}</div>
+                      <div style={{fontSize:11,color:'#9a9aac'}}>{s.d}</div>
                     </button>
                   ))}
                 </div>
@@ -1688,66 +1691,66 @@ RULES:
 
               {/* Must-haves */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>⭐ Must-Have Features</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:8}}>Non-negotiable. The app fails without these.</div>
-                <textarea value={discovery.must_haves} onChange={e=>setDiscovery({...discovery,must_haves:e.target.value})} placeholder="e.g. Customer signs up with phone number. Earns 1 point per RM10 spent. Redeems free drink at 100 points." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>⭐ Must-Have Features</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Non-negotiable. The app fails without these.</div>
+                <textarea value={discovery.must_haves} onChange={e=>setDiscovery({...discovery,must_haves:e.target.value})} placeholder="e.g. Customer signs up with phone number. Earns 1 point per RM10 spent. Redeems free drink at 100 points." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Nice-to-haves */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b7cf8',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>✨ Nice-to-Have Features</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:8}}>Cool to add if budget/time allows. JARVIS will note these for v2.</div>
-                <textarea value={discovery.nice_haves} onChange={e=>setDiscovery({...discovery,nice_haves:e.target.value})} placeholder="e.g. Birthday surprise reward. Referral bonuses. Push notifications." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>✨ Nice-to-Have Features</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Cool to add if budget/time allows. JARVIS will note these for v2.</div>
+                <textarea value={discovery.nice_haves} onChange={e=>setDiscovery({...discovery,nice_haves:e.target.value})} placeholder="e.g. Birthday surprise reward. Referral bonuses. Push notifications." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Integrations multi-select */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🔌 Required Integrations</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:10}}>Tap to toggle. Add the ones your app needs.</div>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🔌 Required Integrations</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Tap to toggle. Add the ones your app needs.</div>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['DuitNow','Stripe','PayPal','WhatsApp','Telegram','Email','SMS','Google Maps','Google Login','Facebook Login','Apple Login','Calendar','PDF Export','CSV Export','Camera/QR'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('integrations',opt)} style={{padding:'7px 13px',background:discovery.integrations.includes(opt)?'rgba(0,229,176,0.15)':'#0e0f15',border:discovery.integrations.includes(opt)?'1px solid #00e5b0':'1px solid #262731',borderRadius:20,fontSize:12.5,color:discovery.integrations.includes(opt)?'#00e5b0':'#a8a8c0',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.integrations.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('integrations',opt)} style={{padding:'7px 13px',background:discovery.integrations.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.integrations.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.integrations.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.integrations.includes(opt)?'✓ ':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Languages */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌍 Languages</label>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌍 Languages</label>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['English','Bahasa Melayu','Bahasa Indonesia','Mandarin','Arabic','Tamil'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('languages',opt)} style={{padding:'7px 13px',background:discovery.languages.includes(opt)?'rgba(0,229,176,0.15)':'#0e0f15',border:discovery.languages.includes(opt)?'1px solid #00e5b0':'1px solid #262731',borderRadius:20,fontSize:12.5,color:discovery.languages.includes(opt)?'#00e5b0':'#a8a8c0',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.languages.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('languages',opt)} style={{padding:'7px 13px',background:discovery.languages.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.languages.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.languages.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.languages.includes(opt)?'✓ ':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Platforms */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📱 Platforms</label>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📱 Platforms</label>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['Web app','Mobile-friendly web','iOS native (later)','Android native (later)','Marketing website','Internal tool only'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('platforms',opt)} style={{padding:'7px 13px',background:discovery.platforms.includes(opt)?'rgba(0,229,176,0.15)':'#0e0f15',border:discovery.platforms.includes(opt)?'1px solid #00e5b0':'1px solid #262731',borderRadius:20,fontSize:12.5,color:discovery.platforms.includes(opt)?'#00e5b0':'#a8a8c0',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.platforms.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('platforms',opt)} style={{padding:'7px 13px',background:discovery.platforms.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.platforms.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.platforms.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.platforms.includes(opt)?'✓ ':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Pricing model */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💰 How will this app make money?</label>
-                <input value={discovery.pricing_model} onChange={e=>setDiscovery({...discovery,pricing_model:e.target.value})} placeholder="e.g. Free for customers; restaurant pays RM99/mo. Or: subscription, marketplace fees, one-off purchase, internal use only." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:'10px 12px',outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💰 How will this app make money?</label>
+                <input value={discovery.pricing_model} onChange={e=>setDiscovery({...discovery,pricing_model:e.target.value})} placeholder="e.g. Free for customers; restaurant pays RM99/mo. Or: subscription, marketplace fees, one-off purchase, internal use only." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:'10px 12px',outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Documents upload */}
-              <div style={{padding:14,background:'rgba(139,124,248,0.05)',border:'1px dashed rgba(139,124,248,0.3)',borderRadius:10}}>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b7cf8',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📎 Briefs, Mockups, Reference Images</label>
-                <div style={{fontSize:12,color:'#a8a9b3',marginBottom:10}}>Got a brief, sketch, screenshot, or PDF? Drop it in — JARVIS will read it.</div>
-                <button onClick={()=>fileInputRef.current?.click()} style={{padding:'10px 16px',background:'#0e0f15',border:'1px solid #8b7cf8',borderRadius:8,color:'#8b7cf8',fontSize:13,cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif",fontWeight:600}}>+ Attach files</button>
+              <div style={{padding:14,background:'rgba(123,111,255,0.05)',border:'1px dashed rgba(123,111,255,0.3)',borderRadius:10}}>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📎 Briefs, Mockups, Reference Images</label>
+                <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Got a brief, sketch, screenshot, or PDF? Drop it in — JARVIS will read it.</div>
+                <button onClick={()=>fileInputRef.current?.click()} style={{padding:'10px 16px',background:'#faf9f6',border:'1px solid #7b6fff',borderRadius:8,color:'#7b6fff',fontSize:13,cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif",fontWeight:600}}>+ Attach files</button>
                 {attachments.length > 0 && (
                   <div style={{marginTop:10,display:'flex',flexWrap:'wrap' as const,gap:6}}>
                     {attachments.map((att,i)=>(
-                      <span key={i} style={{padding:'6px 10px',background:'#0e0f15',border:'1px solid #262731',borderRadius:7,fontSize:11,color:'#a8a8c0',display:'flex',alignItems:'center',gap:6}}>
+                      <span key={i} style={{padding:'6px 10px',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:7,fontSize:11,color:'#5a5a72',display:'flex',alignItems:'center',gap:6}}>
                         {att.preview ? <img src={att.preview} alt="" style={{width:20,height:20,objectFit:'cover',borderRadius:3}}/> : '📄'} {att.name}
-                        <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#6f7079',cursor:'pointer',fontSize:13,padding:0}}>✕</button>
+                        <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:13,padding:0}}>✕</button>
                       </span>
                     ))}
                   </div>
@@ -1756,15 +1759,15 @@ RULES:
 
               {/* Notes */}
               <div>
-                <label style={{display:'block',fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💭 Anything Else?</label>
-                <textarea value={discovery.notes} onChange={e=>setDiscovery({...discovery,notes:e.target.value})} placeholder="Anything JARVIS should know — constraints, deadlines, the story behind why you're building this..." style={{width:'100%',background:'#0e0f15',border:'1px solid #262731',borderRadius:9,color:'#e8e9ed',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
+                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💭 Anything Else?</label>
+                <textarea value={discovery.notes} onChange={e=>setDiscovery({...discovery,notes:e.target.value})} placeholder="Anything JARVIS should know — constraints, deadlines, the story behind why you're building this..." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
             </div>
 
             {/* Footer with action buttons */}
-            <div style={{padding:'16px 24px',borderTop:'1px solid #1c1d24',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'#0d0d1e'}}>
-              <button onClick={()=>{ setShowDiscovery(false); launch() }} style={{padding:'12px 18px',background:'transparent',color:'#a8a9b3',border:'1px solid #262731',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:12,cursor:'pointer',letterSpacing:0.5}}>Skip — JARVIS will infer</button>
-              <button onClick={launch} style={{flex:1,padding:'12px 18px',background:'#00e5b0',color:'#000',border:'none',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(0,229,176,0.25)'}}>Continue to clarifying questions →</button>
+            <div style={{padding:'16px 24px',borderTop:'1px solid #ececf3',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'#ffffff'}}>
+              <button onClick={()=>{ setShowDiscovery(false); launch() }} style={{padding:'12px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer',letterSpacing:0.5}}>Skip — JARVIS will infer</button>
+              <button onClick={launch} style={{flex:1,padding:'12px 18px',background:'#10b981',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(16,185,129,0.25)'}}>Continue to clarifying questions →</button>
             </div>
           </div>
         </div>
@@ -1775,43 +1778,43 @@ RULES:
           architecture, phases, tech specs, costs, risks, and recommendations.
           This is the moment that makes the user feel "Claude-quality". */}
       {showProposal && finalPlan && (
-        <div style={{position:'fixed' as const,inset:0,background:'rgba(5,5,13,0.88)',backdropFilter:'blur(10px)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadeIn 0.25s ease'}}>
-          <div ref={proposalRef} style={{width:'100%',maxWidth:980,maxHeight:'94vh',overflowY:'auto' as const,background:'linear-gradient(180deg, #0e0e1d 0%, #0c0d12 100%)',border:'1px solid rgba(0,229,176,0.3)',borderRadius:18,boxShadow:'0 40px 100px rgba(0,229,176,0.08), 0 20px 60px rgba(0,0,0,0.7)'}}>
+        <div style={{position:'fixed' as const,inset:0,background:'rgba(10,10,24,0.48)',backdropFilter:'blur(10px)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadeIn 0.25s ease'}}>
+          <div ref={proposalRef} style={{width:'100%',maxWidth:980,maxHeight:'94vh',overflowY:'auto' as const,background:'#ffffff',border:'1px solid rgba(16,185,129,0.3)',borderRadius:18,boxShadow:'0 24px 60px -24px rgba(40,30,80,0.28), 0 2px 6px rgba(0,0,0,0.04)'}}>
 
             {/* Sticky Header */}
-            <div style={{padding:'18px 28px',borderBottom:'1px solid #1c1d24',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky' as const,top:0,background:'rgba(14,14,29,0.95)',backdropFilter:'blur(8px)',zIndex:2}}>
+            <div style={{padding:'18px 28px',borderBottom:'1px solid #ececf3',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky' as const,top:0,background:'rgba(14,14,29,0.95)',backdropFilter:'blur(8px)',zIndex:2}}>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <span style={{width:10,height:10,borderRadius:'50%',background:'#00e5b0',boxShadow:'0 0 14px #00e5b0'}}/>
+                <span style={{width:10,height:10,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 10px rgba(16,185,129,0.5)'}}/>
                 <div>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const}}>Build Proposal · Awaiting Approval</div>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',letterSpacing:0.5,marginTop:2}}>JF/PROPOSAL/{Date.now().toString(36).toUpperCase().slice(-6)} · {new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const}}>Build Proposal · Awaiting Approval</div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:0.5,marginTop:2}}>JF/PROPOSAL/{Date.now().toString(36).toUpperCase().slice(-6)} · {new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</div>
                 </div>
               </div>
-              <button data-noexport="1" onClick={()=>setShowProposal(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #262731',color:'#a8a9b3',fontSize:16,cursor:'pointer'}}>×</button>
+              <button data-noexport="1" onClick={()=>setShowProposal(false)} style={{width:36,height:36,borderRadius:9,background:'transparent',border:'1px solid #e3e3ee',color:'#5a5a72',fontSize:16,cursor:'pointer'}}>×</button>
             </div>
 
             {/* Body */}
             <div style={{padding:'28px 32px'}}>
 
               {/* Title block */}
-              <div style={{marginBottom:28,paddingBottom:24,borderBottom:'1px solid #1c1d24'}}>
-                <div style={{fontSize:32,fontWeight:700,color:'#e8e9ed',marginBottom:8,lineHeight:1.15}}>{finalPlan.app_name||'Your App'}</div>
-                {finalPlan.tagline && <div style={{fontSize:17,color:'#a8a8c0',fontStyle:'italic',lineHeight:1.5,marginBottom:16}}>{finalPlan.tagline}</div>}
-                {finalPlan.executive_summary && <div style={{fontSize:14,color:'#d0d0e0',lineHeight:1.7,maxWidth:760}}>{finalPlan.executive_summary}</div>}
+              <div style={{marginBottom:28,paddingBottom:24,borderBottom:'1px solid #ececf3'}}>
+                <div style={{fontSize:32,fontWeight:700,color:'#0a0a18',marginBottom:8,lineHeight:1.15}}>{finalPlan.app_name||'Your App'}</div>
+                {finalPlan.tagline && <div style={{fontSize:17,color:'#5a5a72',fontStyle:'italic',lineHeight:1.5,marginBottom:16}}>{finalPlan.tagline}</div>}
+                {finalPlan.executive_summary && <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.7,maxWidth:760}}>{finalPlan.executive_summary}</div>}
               </div>
 
               {/* Quick stats grid */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4, 1fr)',gap:1,background:'#252538',border:'1px solid #252538',borderRadius:12,overflow:'hidden',marginBottom:28}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4, 1fr)',gap:1,background:'#ececf3',border:'1px solid #ececf3',borderRadius:12,overflow:'hidden',marginBottom:28}}>
                 {[
-                  {label:'Timeline',value:finalPlan.est_build_time||finalPlan.est_time||'~90s',color:'#00e5b0'},
-                  {label:'Investment',value:finalPlan.est_cost_credits||'1 build credit',color:'#00e5b0',sub:`~${finalPlan.est_tokens||'—'} tokens`},
-                  {label:'Complexity',value:finalPlan.complexity||'Medium',color:'#e8e9ed'},
-                  {label:'Tech',value:finalPlan.tech_stack?.frontend?'Next.js + Supabase':'HTML+JS',color:'#8b7cf8',sub:'Production-ready'},
+                  {label:'Timeline',value:finalPlan.est_build_time||finalPlan.est_time||'~90s',color:'#10b981'},
+                  {label:'Investment',value:finalPlan.est_cost_credits||'1 build credit',color:'#10b981',sub:`~${finalPlan.est_tokens||'—'} tokens`},
+                  {label:'Complexity',value:finalPlan.complexity||'Medium',color:'#0a0a18'},
+                  {label:'Tech',value:finalPlan.tech_stack?.frontend?'Next.js + Supabase':'HTML+JS',color:'#7b6fff',sub:'Production-ready'},
                 ].map((s,i)=>(
-                  <div key={i} style={{padding:'14px 16px',background:'#0f0f1f'}}>
-                    <div style={{fontFamily:"'Space Mono',monospace",fontSize:9.5,color:'#6f7079',letterSpacing:1,textTransform:'uppercase' as const,marginBottom:5}}>{s.label}</div>
+                  <div key={i} style={{padding:'14px 16px',background:'#faf9f6'}}>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9.5,color:'#9a9aac',letterSpacing:1,textTransform:'uppercase' as const,marginBottom:5}}>{s.label}</div>
                     <div style={{fontSize:14,color:s.color,fontWeight:700}}>{s.value}</div>
-                    {s.sub && <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',marginTop:3}}>{s.sub}</div>}
+                    {s.sub && <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',marginTop:3}}>{s.sub}</div>}
                   </div>
                 ))}
               </div>
@@ -1821,14 +1824,14 @@ RULES:
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:28}}>
                   {finalPlan.problem && (
                     <div style={{padding:18,background:'rgba(255,107,157,0.04)',border:'1px solid rgba(255,107,157,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#ff6b9d',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>⚠ Problem</div>
-                      <div style={{fontSize:14,color:'#d0d0e0',lineHeight:1.6}}>{finalPlan.problem}</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ff6b9d',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>⚠ Problem</div>
+                      <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.6}}>{finalPlan.problem}</div>
                     </div>
                   )}
                   {finalPlan.solution && (
-                    <div style={{padding:18,background:'rgba(0,229,176,0.04)',border:'1px solid rgba(0,229,176,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>✓ Solution</div>
-                      <div style={{fontSize:14,color:'#d0d0e0',lineHeight:1.6}}>{finalPlan.solution}</div>
+                    <div style={{padding:18,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:11}}>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>✓ Solution</div>
+                      <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.6}}>{finalPlan.solution}</div>
                     </div>
                   )}
                 </div>
@@ -1837,14 +1840,14 @@ RULES:
               {/* Target users + Personas */}
               {(finalPlan.target_users || (finalPlan.personas?.length>0)) && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b7cf8',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>👥</span><span>Who This Is For</span></div>
-                  {finalPlan.target_users && <div style={{fontSize:14,color:'#d0d0e0',lineHeight:1.7,marginBottom:14,padding:'12px 16px',background:'rgba(139,124,248,0.05)',border:'1px solid rgba(139,124,248,0.2)',borderRadius:9}}>{finalPlan.target_users}</div>}
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>👥</span><span>Who This Is For</span></div>
+                  {finalPlan.target_users && <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.7,marginBottom:14,padding:'12px 16px',background:'rgba(123,111,255,0.05)',border:'1px solid rgba(123,111,255,0.2)',borderRadius:9}}>{finalPlan.target_users}</div>}
                   {finalPlan.personas?.length>0 && (
                     <div style={{display:'grid',gridTemplateColumns:`repeat(auto-fit, minmax(260px, 1fr))`,gap:10}}>
                       {finalPlan.personas.map((p:any,i:number)=>(
-                        <div key={i} style={{padding:14,background:'#0f0f1f',border:'1px solid #1c1d24',borderRadius:9}}>
-                          <div style={{fontSize:13,fontWeight:700,color:'#b9b0ff',marginBottom:5}}>{p.name}</div>
-                          <div style={{fontSize:12.5,color:'#a8a8c0',lineHeight:1.6}}>{p.description}</div>
+                        <div key={i} style={{padding:14,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:9}}>
+                          <div style={{fontSize:13,fontWeight:700,color:'#7b6fff',marginBottom:5}}>{p.name}</div>
+                          <div style={{fontSize:12.5,color:'#5a5a72',lineHeight:1.6}}>{p.description}</div>
                         </div>
                       ))}
                     </div>
@@ -1854,29 +1857,29 @@ RULES:
 
               {/* Feature tiers */}
               <div style={{marginBottom:28}}>
-                <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📦</span><span>What You'll Get</span></div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📦</span><span>What You'll Get</span></div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))',gap:14}}>
                   {finalPlan.features_mvp?.length>0 && (
-                    <div style={{padding:16,background:'rgba(0,229,176,0.04)',border:'1px solid rgba(0,229,176,0.25)',borderRadius:11}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#00e5b0',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⭐ MVP — In this build</div>
+                    <div style={{padding:16,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:11}}>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⭐ MVP — In this build</div>
                       {finalPlan.features_mvp.map((f:string,i:number)=>(
-                        <div key={i} style={{fontSize:13,color:'#d0d0e0',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#00e5b0',flexShrink:0}}>✓</span><span>{f}</span></div>
+                        <div key={i} style={{fontSize:13,color:'#3a3a52',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#10b981',flexShrink:0}}>✓</span><span>{f}</span></div>
                       ))}
                     </div>
                   )}
                   {finalPlan.features_v2?.length>0 && (
-                    <div style={{padding:16,background:'rgba(139,124,248,0.04)',border:'1px solid rgba(139,124,248,0.25)',borderRadius:11}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#8b7cf8',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⚡ V2 — Next iteration</div>
+                    <div style={{padding:16,background:'rgba(123,111,255,0.04)',border:'1px solid rgba(123,111,255,0.25)',borderRadius:11}}>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#7b6fff',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⚡ V2 — Next iteration</div>
                       {finalPlan.features_v2.map((f:string,i:number)=>(
-                        <div key={i} style={{fontSize:13,color:'#a8a8c0',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#8b7cf8',flexShrink:0}}>+</span><span>{f}</span></div>
+                        <div key={i} style={{fontSize:13,color:'#5a5a72',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#7b6fff',flexShrink:0}}>+</span><span>{f}</span></div>
                       ))}
                     </div>
                   )}
                   {finalPlan.features_future?.length>0 && (
                     <div style={{padding:16,background:'rgba(255,209,102,0.04)',border:'1px solid rgba(255,209,102,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#ffd166',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>🚀 Future — On the roadmap</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ffd166',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>🚀 Future — On the roadmap</div>
                       {finalPlan.features_future.map((f:string,i:number)=>(
-                        <div key={i} style={{fontSize:13,color:'#a8a8c0',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#ffd166',flexShrink:0}}>○</span><span>{f}</span></div>
+                        <div key={i} style={{fontSize:13,color:'#5a5a72',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#ffd166',flexShrink:0}}>○</span><span>{f}</span></div>
                       ))}
                     </div>
                   )}
@@ -1886,24 +1889,24 @@ RULES:
               {/* Architecture / Screens diagram */}
               {finalPlan.screens?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗺</span><span>App Architecture · Screen Map</span></div>
-                  <div style={{padding:18,background:'#0f0f1f',border:'1px solid #1c1d24',borderRadius:11}}>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗺</span><span>App Architecture · Screen Map</span></div>
+                  <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11}}>
                     <div style={{display:'flex',flexWrap:'wrap' as const,gap:10,alignItems:'center',justifyContent:'center'}}>
                       {finalPlan.screens.map((s:any,i:number)=>(
                         <div key={i} style={{display:'flex',alignItems:'center',gap:8}}>
-                          <div style={{padding:'10px 14px',background:'#0e0f15',border:'1px solid rgba(0,229,176,0.3)',borderRadius:9,minWidth:120,textAlign:'center' as const}}>
-                            <div style={{fontSize:12,fontWeight:700,color:'#00e5b0',marginBottom:3}}>{s.name}</div>
-                            <div style={{fontSize:10.5,color:'#a8a9b3',lineHeight:1.4}}>{s.purpose}</div>
+                          <div style={{padding:'10px 14px',background:'#faf9f6',border:'1px solid rgba(16,185,129,0.3)',borderRadius:9,minWidth:120,textAlign:'center' as const}}>
+                            <div style={{fontSize:12,fontWeight:700,color:'#10b981',marginBottom:3}}>{s.name}</div>
+                            <div style={{fontSize:10.5,color:'#5a5a72',lineHeight:1.4}}>{s.purpose}</div>
                           </div>
-                          {i<finalPlan.screens.length-1 && <span style={{color:'#6f7079',fontSize:14}}>→</span>}
+                          {i<finalPlan.screens.length-1 && <span style={{color:'#9a9aac',fontSize:14}}>→</span>}
                         </div>
                       ))}
                     </div>
                     {finalPlan.user_flows?.length>0 && (
-                      <div style={{marginTop:18,paddingTop:14,borderTop:'1px solid #1c1d24'}}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',letterSpacing:1,marginBottom:8,textTransform:'uppercase' as const}}>Key User Flows</div>
+                      <div style={{marginTop:18,paddingTop:14,borderTop:'1px solid #ececf3'}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:1,marginBottom:8,textTransform:'uppercase' as const}}>Key User Flows</div>
                         {finalPlan.user_flows.map((f:string,i:number)=>(
-                          <div key={i} style={{fontSize:12.5,color:'#a8a8c0',marginBottom:5,fontFamily:"'Space Mono',monospace"}}>· {f}</div>
+                          <div key={i} style={{fontSize:12.5,color:'#5a5a72',marginBottom:5,fontFamily:"'DM Sans',sans-serif"}}>· {f}</div>
                         ))}
                       </div>
                     )}
@@ -1914,12 +1917,12 @@ RULES:
               {/* Tech stack */}
               {finalPlan.tech_stack && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚙</span><span>Technical Specs</span></div>
-                  <div style={{padding:18,background:'#0f0f1f',border:'1px solid #1c1d24',borderRadius:11,display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))',gap:14}}>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚙</span><span>Technical Specs</span></div>
+                  <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))',gap:14}}>
                     {Object.entries(finalPlan.tech_stack).map(([k,v]:any)=>(
                       <div key={k}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',letterSpacing:1,textTransform:'uppercase' as const,marginBottom:5}}>{k}</div>
-                        <div style={{fontSize:13,color:'#d0d0e0',lineHeight:1.5}}>{String(v)}</div>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:1,textTransform:'uppercase' as const,marginBottom:5}}>{k}</div>
+                        <div style={{fontSize:13,color:'#3a3a52',lineHeight:1.5}}>{String(v)}</div>
                       </div>
                     ))}
                   </div>
@@ -1929,12 +1932,12 @@ RULES:
               {/* Data model */}
               {finalPlan.data_model?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗄</span><span>Data Model</span></div>
-                  <div style={{padding:18,background:'#0f0f1f',border:'1px solid #1c1d24',borderRadius:11,fontFamily:"'Space Mono',monospace"}}>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗄</span><span>Data Model</span></div>
+                  <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,fontFamily:"'DM Sans',sans-serif"}}>
                     {finalPlan.data_model.map((t:any,i:number)=>(
-                      <div key={i} style={{marginBottom:i<finalPlan.data_model.length-1?12:0,paddingBottom:i<finalPlan.data_model.length-1?12:0,borderBottom:i<finalPlan.data_model.length-1?'1px solid #1c1d24':'none'}}>
-                        <div style={{fontSize:13,color:'#00e5b0',fontWeight:700,marginBottom:4}}>{t.table}</div>
-                        <div style={{fontSize:11.5,color:'#a8a9b3',lineHeight:1.6}}>{t.fields}</div>
+                      <div key={i} style={{marginBottom:i<finalPlan.data_model.length-1?12:0,paddingBottom:i<finalPlan.data_model.length-1?12:0,borderBottom:i<finalPlan.data_model.length-1?'1px solid #ececf3':'none'}}>
+                        <div style={{fontSize:13,color:'#10b981',fontWeight:700,marginBottom:4}}>{t.table}</div>
+                        <div style={{fontSize:11.5,color:'#5a5a72',lineHeight:1.6}}>{t.fields}</div>
                       </div>
                     ))}
                   </div>
@@ -1944,18 +1947,18 @@ RULES:
               {/* Phased roadmap */}
               {finalPlan.phases?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📅</span><span>Phased Roadmap</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📅</span><span>Phased Roadmap</span></div>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:10}}>
                     {finalPlan.phases.map((p:any,i:number)=>(
-                      <div key={i} style={{padding:16,background:'#0f0f1f',border:'1px solid #1c1d24',borderRadius:11,display:'flex',gap:14}}>
-                        <div style={{width:36,height:36,borderRadius:8,background:'rgba(0,229,176,0.12)',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',color:'#00e5b0',fontWeight:700,fontFamily:"'Space Mono',monospace",fontSize:13,flexShrink:0}}>{i+1}</div>
+                      <div key={i} style={{padding:16,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,display:'flex',gap:14}}>
+                        <div style={{width:36,height:36,borderRadius:8,background:'rgba(16,185,129,0.12)',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',color:'#10b981',fontWeight:700,fontFamily:"'DM Sans',sans-serif",fontSize:13,flexShrink:0}}>{i+1}</div>
                         <div style={{flex:1}}>
                           <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:4,gap:10}}>
-                            <div style={{fontSize:14,fontWeight:700,color:'#e8e9ed'}}>{p.name}</div>
-                            <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',whiteSpace:'nowrap' as const}}>{p.duration}</div>
+                            <div style={{fontSize:14,fontWeight:700,color:'#0a0a18'}}>{p.name}</div>
+                            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',whiteSpace:'nowrap' as const}}>{p.duration}</div>
                           </div>
-                          <div style={{fontSize:13,color:'#a8a8c0',lineHeight:1.6,marginBottom:p.scope?5:0}}>{p.deliverables}</div>
-                          {p.scope && <div style={{fontSize:11.5,color:'#6f7079',lineHeight:1.5,fontStyle:'italic'}}>Scope: {p.scope}</div>}
+                          <div style={{fontSize:13,color:'#5a5a72',lineHeight:1.6,marginBottom:p.scope?5:0}}>{p.deliverables}</div>
+                          {p.scope && <div style={{fontSize:11.5,color:'#9a9aac',lineHeight:1.5,fontStyle:'italic'}}>Scope: {p.scope}</div>}
                         </div>
                       </div>
                     ))}
@@ -1966,12 +1969,12 @@ RULES:
               {/* Risks & Mitigations */}
               {finalPlan.risks?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚠</span><span>Risks & Mitigations</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚠</span><span>Risks & Mitigations</span></div>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
                     {finalPlan.risks.map((r:any,i:number)=>(
                       <div key={i} style={{padding:14,background:'rgba(255,209,102,0.04)',border:'1px solid rgba(255,209,102,0.2)',borderRadius:9}}>
                         <div style={{fontSize:13,color:'#ffd166',fontWeight:700,marginBottom:5}}>⚠ {r.risk}</div>
-                        <div style={{fontSize:12.5,color:'#a8a8c0',lineHeight:1.6}}><span style={{color:'#00e5b0',fontFamily:"'Space Mono',monospace",fontSize:10}}>MITIGATION:</span> {r.mitigation}</div>
+                        <div style={{fontSize:12.5,color:'#5a5a72',lineHeight:1.6}}><span style={{color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10}}>MITIGATION:</span> {r.mitigation}</div>
                       </div>
                     ))}
                   </div>
@@ -1980,45 +1983,48 @@ RULES:
 
               {/* JARVIS's recommendations */}
               {finalPlan.recommendations?.length>0 && (
-                <div style={{marginBottom:28,padding:18,background:'rgba(139,124,248,0.05)',border:'1px solid rgba(139,124,248,0.25)',borderRadius:12}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b7cf8',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>💡</span><span>JARVIS's Recommendations</span></div>
+                <div style={{marginBottom:28,padding:18,background:'rgba(123,111,255,0.05)',border:'1px solid rgba(123,111,255,0.25)',borderRadius:12}}>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>💡</span><span>JARVIS's Recommendations</span></div>
                   {finalPlan.recommendations.map((r:string,i:number)=>(
-                    <div key={i} style={{fontSize:13.5,color:'#d0d0e0',marginBottom:10,display:'flex',gap:10,lineHeight:1.6}}><span style={{color:'#8b7cf8',flexShrink:0,fontWeight:700}}>{i+1}.</span><span>{r}</span></div>
+                    <div key={i} style={{fontSize:13.5,color:'#3a3a52',marginBottom:10,display:'flex',gap:10,lineHeight:1.6}}><span style={{color:'#7b6fff',flexShrink:0,fontWeight:700}}>{i+1}.</span><span>{r}</span></div>
                   ))}
                 </div>
               )}
 
               {/* Approach */}
               {(finalPlan.approach || finalPlan.note) && (
-                <div style={{marginBottom:14,padding:18,background:'rgba(0,229,176,0.04)',border:'1px solid rgba(0,229,176,0.25)',borderRadius:12}}>
-                  <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:7}}><span>🎯</span><span>JARVIS's Build Approach</span></div>
-                  <div style={{fontSize:14,color:'#d0d0e0',lineHeight:1.7}}>{finalPlan.approach||finalPlan.note}</div>
+                <div style={{marginBottom:14,padding:18,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:12}}>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:7}}><span>🎯</span><span>JARVIS's Build Approach</span></div>
+                  <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.7}}>{finalPlan.approach||finalPlan.note}</div>
                 </div>
               )}
             </div>
 
             {/* Sticky Footer with action buttons */}
-            <div data-noexport="1" style={{padding:'18px 28px',borderTop:'1px solid #1c1d24',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'rgba(14,14,29,0.97)',backdropFilter:'blur(8px)',flexWrap:'wrap' as const}}>
-              <button onClick={()=>{ rejectPlan(); setShowProposal(false) }} style={{padding:'13px 18px',background:'transparent',color:'#a8a9b3',border:'1px solid #262731',borderRadius:10,fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>✕ Revise</button>
-              <button onClick={downloadProposalPDF} disabled={isExportingPDF} style={{padding:'13px 18px',background:isExportingPDF?'#1c1d24':'rgba(139,124,248,0.12)',color:isExportingPDF?'#6f7079':'#8b7cf8',border:'1px solid rgba(139,124,248,0.4)',borderRadius:10,fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,cursor:isExportingPDF?'not-allowed':'pointer',letterSpacing:0.5,display:'flex',alignItems:'center',gap:7}}>
-                {isExportingPDF ? (<><span style={{display:'inline-block',width:11,height:11,border:'2px solid #8b7cf8',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Generating...</>) : (<>📄 Download PDF</>)}
+            <div data-noexport="1" style={{padding:'18px 28px',borderTop:'1px solid #ececf3',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'rgba(14,14,29,0.97)',backdropFilter:'blur(8px)',flexWrap:'wrap' as const}}>
+              <button onClick={()=>{ rejectPlan(); setShowProposal(false) }} style={{padding:'13px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>✕ Revise</button>
+              <button onClick={downloadProposalPDF} disabled={isExportingPDF} style={{padding:'13px 18px',background:isExportingPDF?'#ececf3':'rgba(123,111,255,0.12)',color:isExportingPDF?'#9a9aac':'#7b6fff',border:'1px solid rgba(123,111,255,0.4)',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:isExportingPDF?'not-allowed':'pointer',letterSpacing:0.5,display:'flex',alignItems:'center',gap:7}}>
+                {isExportingPDF ? (<><span style={{display:'inline-block',width:11,height:11,border:'2px solid #7b6fff',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Generating...</>) : (<>📄 Download PDF</>)}
               </button>
-              <button onClick={()=>setShowProposal(false)} style={{padding:'13px 18px',background:'transparent',color:'#a8a9b3',border:'1px solid #262731',borderRadius:10,fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>Close</button>
-              <button onClick={()=>{ approveBuild(); setShowProposal(false) }} style={{flex:1,minWidth:200,padding:'13px 20px',background:'#00e5b0',color:'#000',border:'none',borderRadius:10,fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 24px rgba(0,229,176,0.3)'}}>✓ Approve & Build it!</button>
+              <button onClick={()=>setShowProposal(false)} style={{padding:'13px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>Close</button>
+              <button onClick={()=>{ approveBuild(); setShowProposal(false) }} style={{flex:1,minWidth:200,padding:'13px 20px',background:'#10b981',color:'#fff',border:'none',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 24px rgba(16,185,129,0.3)'}}>✓ Approve & Build it!</button>
             </div>
           </div>
         </div>
       )}
 
       <nav style={c.nav}>
-        <div style={c.logo}>JARVISFACTORY.AI <span style={{fontSize:9,background:'rgba(139,124,248,0.2)',color:'#8b7cf8',padding:'2px 6px',borderRadius:10,marginLeft:6}}>v6</span></div>
+        <div style={{display:'flex',alignItems:'center',gap:9}}>
+          <div style={{width:24,height:24,borderRadius:7,background:`linear-gradient(135deg, ${theme.color.accent}, ${theme.color.accentAlt})`,boxShadow:'0 2px 8px rgba(16,185,129,0.35)'}}/>
+          <span style={c.logo}>ezclaude <span style={{fontSize:9,background:theme.color.surfaceWarm,color:theme.color.muted,padding:'2px 7px',borderRadius:theme.radius.pill,marginLeft:4,fontWeight:600,letterSpacing:0.5}}>BUILDER</span></span>
+        </div>
         <div style={{display:'flex',gap:10,alignItems:'center',position:'relative' as const}}>
           {currentAppId && finalPlan?.app_name && (
-            <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#00e5b0',padding:'4px 8px',background:'rgba(0,229,176,0.08)',border:'1px solid rgba(0,229,176,0.2)',borderRadius:6,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>📂 {finalPlan.app_name}</span>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',padding:'4px 8px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:6,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>📂 {finalPlan.app_name}</span>
           )}
-          <button onClick={()=>setShowAppsPicker(!showAppsPicker)} style={{padding:'4px 10px',background:showAppsPicker?'rgba(139,124,248,0.15)':'transparent',border:'1px solid #1c1d24',borderRadius:6,color:'#8b7cf8',fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}}>📁 My Apps ({myApps.length})</button>
-          <button onClick={newApp} style={{padding:'4px 10px',background:'transparent',border:'1px solid rgba(0,229,176,0.3)',borderRadius:6,color:'#00e5b0',fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}}>+ New App</button>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#a8a9b3'}}>{jarvis?.jarvis_name||'JARVIS'}</span>
+          <button onClick={()=>setShowAppsPicker(!showAppsPicker)} style={{padding:'4px 10px',background:showAppsPicker?'rgba(123,111,255,0.15)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#7b6fff',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>📁 My Apps ({myApps.length})</button>
+          <button onClick={newApp} style={{padding:'4px 10px',background:'transparent',border:'1px solid rgba(16,185,129,0.3)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>+ New App</button>
+          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#5a5a72'}}>{jarvis?.jarvis_name||'JARVIS'}</span>
           {currentAppId && finalPlan && (
             <button onClick={async()=>{
               const app = myApps.find(a=>a.id===currentAppId)
@@ -2033,22 +2039,22 @@ RULES:
                 setFinalPlan(app.proposal_data)
               }
               setShowProposal(true)
-            }} style={{padding:'4px 10px',background:'rgba(0,229,176,0.08)',border:'1px solid rgba(0,229,176,0.25)',borderRadius:6,color:'#00e5b0',fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer',fontWeight:600}}>📋 View Proposal</button>
+            }} style={{padding:'4px 10px',background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:6,color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer',fontWeight:600}}>📋 View Proposal</button>
           )}
-          <button onClick={()=>setShowBrandPanel(!showBrandPanel)} style={{padding:'4px 10px',background:showBrandPanel?'rgba(0,229,176,0.1)':'transparent',border:'1px solid #1c1d24',borderRadius:6,color:'#a8a9b3',fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}}>🎨 Brand</button>
-          <button style={{padding:'4px 10px',background:'transparent',border:'1px solid #1c1d24',borderRadius:6,color:'#a8a9b3',fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}} onClick={()=>navigate('/dashboard')}>← Dashboard</button>
+          <button onClick={()=>setShowBrandPanel(!showBrandPanel)} style={{padding:'4px 10px',background:showBrandPanel?'rgba(16,185,129,0.1)':'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>🎨 Brand</button>
+          <button style={{padding:'4px 10px',background:'transparent',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}} onClick={()=>navigate('/dashboard')}>← Dashboard</button>
 
           {/* My Apps dropdown */}
           {showAppsPicker && (
-            <div style={{position:'absolute' as const,top:'calc(100% + 8px)',right:0,width:340,maxHeight:480,overflowY:'auto' as const,background:'#0d0d1e',border:'1px solid #1c1d24',borderRadius:10,boxShadow:'0 8px 24px rgba(0,0,0,0.5)',zIndex:100,padding:8}}>
-              <div style={{padding:'8px 10px',fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',textTransform:'uppercase' as const,letterSpacing:1,borderBottom:'1px solid #1c1d24',marginBottom:6}}>Your Apps ({myApps.length})</div>
+            <div style={{position:'absolute' as const,top:'calc(100% + 8px)',right:0,width:340,maxHeight:480,overflowY:'auto' as const,background:'#ffffff',border:'1px solid #ececf3',borderRadius:10,boxShadow:'0 8px 30px -20px rgba(40,30,80,0.25)',zIndex:100,padding:8}}>
+              <div style={{padding:'8px 10px',fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',textTransform:'uppercase' as const,letterSpacing:1,borderBottom:'1px solid #ececf3',marginBottom:6}}>Your Apps ({myApps.length})</div>
               {myApps.length === 0 ? (
-                <div style={{padding:'24px 10px',textAlign:'center' as const,fontSize:11,color:'#6f7079'}}>No apps yet. Build your first one!</div>
+                <div style={{padding:'24px 10px',textAlign:'center' as const,fontSize:11,color:'#9a9aac'}}>No apps yet. Build your first one!</div>
               ) : myApps.map(app => (
-                <div key={app.id} onClick={()=>switchToApp(app)} style={{padding:'10px 12px',marginBottom:4,background:currentAppId===app.id?'rgba(0,229,176,0.08)':'#0e0f15',border:`1px solid ${currentAppId===app.id?'rgba(0,229,176,0.3)':'#1c1d24'}`,borderRadius:8,cursor:'pointer'}}>
-                  <div style={{fontSize:12,fontWeight:600,color:currentAppId===app.id?'#00e5b0':'#e8e9ed',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{currentAppId===app.id?'● ':''}{app.name}</div>
-                  <div style={{fontSize:10,color:'#a8a9b3',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,marginBottom:4}}>{app.description?.substring(0,60)}</div>
-                  <div style={{fontSize:9,color:'#6f7079',fontFamily:"'Space Mono',monospace"}}>{new Date(app.created_at).toLocaleDateString()} · {app.tokens_used||0} tokens</div>
+                <div key={app.id} onClick={()=>switchToApp(app)} style={{padding:'10px 12px',marginBottom:4,background:currentAppId===app.id?'rgba(16,185,129,0.08)':'#faf9f6',border:`1px solid ${currentAppId===app.id?'rgba(16,185,129,0.3)':'#ececf3'}`,borderRadius:8,cursor:'pointer'}}>
+                  <div style={{fontSize:12,fontWeight:600,color:currentAppId===app.id?'#10b981':'#0a0a18',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{currentAppId===app.id?'● ':''}{app.name}</div>
+                  <div style={{fontSize:10,color:'#5a5a72',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,marginBottom:4}}>{app.description?.substring(0,60)}</div>
+                  <div style={{fontSize:9,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif"}}>{new Date(app.created_at).toLocaleDateString()} · {app.tokens_used||0} tokens</div>
                 </div>
               ))}
             </div>
@@ -2058,18 +2064,18 @@ RULES:
 
       {/* Brand Panel */}
       {showBrandPanel && (
-        <div style={{background:'#0d0d1e',borderBottom:'1px solid #1c1d24',padding:'10px 18px',display:'flex',gap:20,alignItems:'center',flexShrink:0}}>
-          <span style={{fontSize:11,fontFamily:"'Space Mono',monospace",color:'#a8a9b3'}}>Brand Kit</span>
+        <div style={{background:'#ffffff',borderBottom:'1px solid #ececf3',padding:'10px 18px',display:'flex',gap:20,alignItems:'center',flexShrink:0}}>
+          <span style={{fontSize:11,fontFamily:"'DM Sans',sans-serif",color:'#5a5a72'}}>Brand Kit</span>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontSize:11,color:'#6f7079'}}>Name:</span>
-            <input value={brandName} onChange={e=>setBrandName(e.target.value)} placeholder="Your brand name" style={{background:'#0e0f15',border:'1px solid #262731',borderRadius:6,color:'#e8e9ed',fontSize:11,padding:'4px 8px',outline:'none',width:140}}/>
+            <span style={{fontSize:11,color:'#9a9aac'}}>Name:</span>
+            <input value={brandName} onChange={e=>setBrandName(e.target.value)} placeholder="Your brand name" style={{background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:6,color:'#0a0a18',fontSize:11,padding:'4px 8px',outline:'none',width:140}}/>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontSize:11,color:'#6f7079'}}>Colour:</span>
-            <input type="color" value={brandColour} onChange={e=>setBrandColour(e.target.value)} style={{width:32,height:24,border:'1px solid #262731',borderRadius:4,background:'none',cursor:'pointer',padding:0}}/>
-            <span style={{fontSize:11,color:'#6f7079',fontFamily:"'Space Mono',monospace"}}>{brandColour}</span>
+            <span style={{fontSize:11,color:'#9a9aac'}}>Colour:</span>
+            <input type="color" value={brandColour} onChange={e=>setBrandColour(e.target.value)} style={{width:32,height:24,border:'1px solid #e3e3ee',borderRadius:4,background:'none',cursor:'pointer',padding:0}}/>
+            <span style={{fontSize:11,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif"}}>{brandColour}</span>
           </div>
-          <span style={{fontSize:10,color:'#6f7079',fontStyle:'italic'}}>JARVIS will use these in every app it builds for you</span>
+          <span style={{fontSize:10,color:'#9a9aac',fontStyle:'italic'}}>JARVIS will use these in every app it builds for you</span>
         </div>
       )}
 
@@ -2084,46 +2090,46 @@ RULES:
             {attachments.length > 0 && (
               <div style={{display:'flex',flexWrap:'wrap' as const,gap:4}}>
                 {attachments.map((att,i)=>(
-                  <div key={i} style={{position:'relative' as const,background:'#0e0f15',border:'1px solid #262731',borderRadius:6,padding:'4px 6px',display:'flex',alignItems:'center',gap:4,maxWidth:'100%'}}>
+                  <div key={i} style={{position:'relative' as const,background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:6,padding:'4px 6px',display:'flex',alignItems:'center',gap:4,maxWidth:'100%'}}>
                     {att.preview ? <img src={att.preview} alt="" style={{width:24,height:24,objectFit:'cover',borderRadius:3}}/> : <span style={{fontSize:14}}>📄</span>}
-                    <span style={{fontSize:10,color:'#a8a9b3',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,maxWidth:80}}>{att.name}</span>
-                    <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#6f7079',cursor:'pointer',fontSize:11,padding:0,marginLeft:2}}>✕</button>
+                    <span style={{fontSize:10,color:'#5a5a72',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,maxWidth:80}}>{att.name}</span>
+                    <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:11,padding:0,marginLeft:2}}>✕</button>
                   </div>
                 ))}
               </div>
             )}
 
             <div style={{display:'flex',gap:6}}>
-              <button onClick={()=>fileInputRef.current?.click()} style={{flex:1,padding:'6px 0',background:'#0e0f15',border:'1px dashed #262731',borderRadius:6,color:'#a8a9b3',fontSize:10,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>
+              <button onClick={()=>fileInputRef.current?.click()} style={{flex:1,padding:'6px 0',background:'#faf9f6',border:'1px dashed #e3e3ee',borderRadius:6,color:'#5a5a72',fontSize:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                 📎 Attach reference
               </button>
-              {attachments.length > 0 && <button onClick={()=>setAttachments([])} style={{padding:'6px 8px',background:'transparent',border:'1px solid #262731',borderRadius:6,color:'#6f7079',fontSize:10,cursor:'pointer'}}>Clear</button>}
+              {attachments.length > 0 && <button onClick={()=>setAttachments([])} style={{padding:'6px 8px',background:'transparent',border:'1px solid #e3e3ee',borderRadius:6,color:'#9a9aac',fontSize:10,cursor:'pointer'}}>Clear</button>}
             </div>
 
-            <div style={{fontSize:9,color:'#6f7079',fontFamily:"'Space Mono',monospace",textTransform:'uppercase' as const,letterSpacing:1}}>Quick starts</div>
+            <div style={{fontSize:9,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif",textTransform:'uppercase' as const,letterSpacing:1}}>Quick starts</div>
             {['DRE Coffee loyalty app with points & referral','Brainy Bunch student progress tracker','Muslim ibadah daily tracker with streaks','Staff birthday gifts manager'].map(p=>(
-              <button key={p} onClick={()=>setPrompt(p)} style={{padding:'7px 9px',background:'#0e0f15',border:'1px solid #1c1d24',borderRadius:6,color:'#a8a9b3',fontSize:10,textAlign:'left' as const,cursor:'pointer',lineHeight:1.4}}>{p}</button>
+              <button key={p} onClick={()=>setPrompt(p)} style={{padding:'7px 9px',background:'#faf9f6',border:'1px solid #ececf3',borderRadius:6,color:'#5a5a72',fontSize:10,textAlign:'left' as const,cursor:'pointer',lineHeight:1.4}}>{p}</button>
             ))}
 
-            <div style={{background:'#0d0d1e',border:'1px solid #1c1d24',borderRadius:8,padding:10}}>
-              <div style={{fontSize:9,fontFamily:"'Space Mono',monospace",color:'#6f7079',textTransform:'uppercase' as const,letterSpacing:1,marginBottom:6}}>Metrics</div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#a8a9b3',marginBottom:3}}><span>Tokens</span><span style={{color:'#e8e9ed'}}>{tokens}</span></div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#a8a9b3',marginBottom:3}}><span>Build time</span><span style={{color:'#e8e9ed'}}>{buildTime}</span></div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#a8a9b3'}}><span>Attachments</span><span style={{color:attachments.length>0?'#00e5b0':'#e8e9ed'}}>{attachments.length}</span></div>
+            <div style={{background:'#ffffff',border:'1px solid #ececf3',borderRadius:8,padding:10}}>
+              <div style={{fontSize:9,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',textTransform:'uppercase' as const,letterSpacing:1,marginBottom:6}}>Metrics</div>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72',marginBottom:3}}><span>Tokens</span><span style={{color:'#0a0a18'}}>{tokens}</span></div>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72',marginBottom:3}}><span>Build time</span><span style={{color:'#0a0a18'}}>{buildTime}</span></div>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#5a5a72'}}><span>Attachments</span><span style={{color:attachments.length>0?'#10b981':'#0a0a18'}}>{attachments.length}</span></div>
             </div>
           </div>
           <button style={{...c.launchBtn,opacity:isWorking?0.5:1}} onClick={()=>{ if(!prompt.trim()) return; setShowDiscovery(true) }} disabled={isWorking}>
             <span>⚡</span>{phase==='done'?'Rebuild':'Launch '+(jarvis?.jarvis_name||'JARVIS')}
           </button>
           {isWorking && builtCode && (
-            <button onClick={()=>{setPhase('done');setFeedbackPhase('idle');setIsFeedbackLoading(false);setPendingFeedback('');setDiagnosisResult(null);addLog('Reset: unstuck.','ok');addChat('🔄 Stuck state cleared. You can give feedback again.')}} style={{margin:'-4px 10px 10px',padding:8,background:'rgba(255,107,157,0.1)',color:'#ff6b9d',border:'1px solid rgba(255,107,157,0.3)',borderRadius:8,fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}}>
+            <button onClick={()=>{setPhase('done');setFeedbackPhase('idle');setIsFeedbackLoading(false);setPendingFeedback('');setDiagnosisResult(null);addLog('Reset: unstuck.','ok');addChat('🔄 Stuck state cleared. You can give feedback again.')}} style={{margin:'-4px 10px 10px',padding:8,background:'rgba(255,107,157,0.1)',color:'#ff6b9d',border:'1px solid rgba(255,107,157,0.3)',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>
               🔄 Stuck? Click to reset
             </button>
           )}
           {builtCode && (
             <div style={{margin:'-4px 10px 10px',display:'flex',gap:6}}>
-              <button onClick={download} style={{flex:1,padding:8,background:'#0e0f15',color:'#a8a9b3',border:'1px solid #1c1d24',borderRadius:8,fontFamily:"'Space Mono',monospace",fontSize:10,cursor:'pointer'}}>⬇ Download</button>
-              <button onClick={()=>runQA()} disabled={isRunningQA} style={{flex:1,padding:8,background:isRunningQA?'#1c1d24':qaReport?.certified?'rgba(0,229,176,0.15)':'rgba(255,209,102,0.15)',color:isRunningQA?'#6f7079':qaReport?.certified?'#00e5b0':'#ffd166',border:`1px solid ${qaReport?.certified?'rgba(0,229,176,0.3)':'rgba(255,209,102,0.3)'}`,borderRadius:8,fontFamily:"'Space Mono',monospace",fontSize:10,cursor:isRunningQA?'not-allowed':'pointer'}}>
+              <button onClick={download} style={{flex:1,padding:8,background:'#faf9f6',color:'#5a5a72',border:'1px solid #ececf3',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:'pointer'}}>⬇ Download</button>
+              <button onClick={()=>runQA()} disabled={isRunningQA} style={{flex:1,padding:8,background:isRunningQA?'#ececf3':qaReport?.certified?'rgba(16,185,129,0.15)':'rgba(255,209,102,0.15)',color:isRunningQA?'#9a9aac':qaReport?.certified?'#10b981':'#ffd166',border:`1px solid ${qaReport?.certified?'rgba(16,185,129,0.3)':'rgba(255,209,102,0.3)'}`,borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:10,cursor:isRunningQA?'not-allowed':'pointer'}}>
                 {isRunningQA?'QA...':`🔬 QA ${qaReport?qaReport.score+'/100':''}`}
               </button>
             </div>
@@ -2133,32 +2139,32 @@ RULES:
         {/* CENTER */}
         <div style={c.center}>
           <div style={c.tabs}>
-            <div style={{...c.tab,color:activeTab==='code'?'#00e5b0':'#6f7079',borderBottomColor:activeTab==='code'?'#00e5b0':'transparent'}} onClick={()=>setActiveTab('code')}>index.html</div>
-            <div style={{...c.tab,color:activeTab==='preview'?'#00e5b0':'#6f7079',borderBottomColor:activeTab==='preview'?'#00e5b0':'transparent'}} onClick={()=>setActiveTab('preview')}>⬡ Live Preview</div>
+            <div style={{...c.tab,color:activeTab==='code'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='code'?'#10b981':'transparent'}} onClick={()=>setActiveTab('code')}>index.html</div>
+            <div style={{...c.tab,color:activeTab==='preview'?'#10b981':'#9a9aac',borderBottomColor:activeTab==='preview'?'#10b981':'transparent'}} onClick={()=>setActiveTab('preview')}>⬡ Live Preview</div>
           </div>
-          <div style={{flex:1,overflow:'auto',display:activeTab==='code'?'flex':'none',flexDirection:'column' as const,background:'#06070b',padding:14}}>
+          <div style={{flex:1,overflow:'auto',display:activeTab==='code'?'flex':'none',flexDirection:'column' as const,background:'#faf9f6',padding:14}}>
             {!builtCode ? (
-              <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',gap:12,color:'#6f7079'}}>
+              <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',gap:12,color:'#9a9aac'}}>
                 <div style={{fontSize:36,opacity:0.2}}>⬡</div>
-                <div style={{fontFamily:"'Space Mono',monospace",fontSize:12}}>// Waiting for instructions</div>
-                <div style={{fontSize:11,textAlign:'center' as const,maxWidth:260,lineHeight:1.7,color:'#6f7079'}}>Attach reference images, set your brand kit, then describe your app. JARVIS will plan first — then build only after you approve.</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>// Waiting for instructions</div>
+                <div style={{fontSize:11,textAlign:'center' as const,maxWidth:260,lineHeight:1.7,color:'#9a9aac'}}>Attach reference images, set your brand kit, then describe your app. JARVIS will plan first — then build only after you approve.</div>
               </div>
-            ) : <pre id="codeDisplay" style={{fontFamily:"'Space Mono',monospace",fontSize:11,lineHeight:1.8,color:'#7ec8a0',whiteSpace:'pre-wrap' as const,wordBreak:'break-all' as const}}>{builtCode}</pre>}
+            ) : <pre id="codeDisplay" style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,lineHeight:1.8,color:'#3a3a52',whiteSpace:'pre-wrap' as const,wordBreak:'break-all' as const}}>{builtCode}</pre>}
           </div>
           <div style={{flex:1,overflow:'hidden',display:activeTab==='preview'?'flex':'none',flexDirection:'column' as const,background:'#fff'}}>
             {previewUrl && /^https?:\/\//.test(previewUrl) && !previewUrl.includes('.preview.local') ? (
               <>
-                <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',background:'#0c0d12',borderBottom:'1px solid #1a1c25',fontFamily:"'Space Mono',monospace",fontSize:10}}>
-                  <span style={{color:'#00e5b0'}}>⬡ LIVE SANDBOX</span>
-                  <span style={{color:'#6f7079',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{previewUrl}</span>
-                  <a href={previewUrl} target="_blank" rel="noreferrer" style={{color:'#8b7cf8',textDecoration:'none'}}>↗ open</a>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',background:'#ffffff',borderBottom:'1px solid #ececf3',fontFamily:"'DM Sans',sans-serif",fontSize:10}}>
+                  <span style={{color:'#10b981'}}>⬡ LIVE SANDBOX</span>
+                  <span style={{color:'#9a9aac',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{previewUrl}</span>
+                  <a href={previewUrl} target="_blank" rel="noreferrer" style={{color:'#7b6fff',textDecoration:'none'}}>↗ open</a>
                 </div>
                 <iframe id="previewFrame" style={{flex:1,border:'none',width:'100%',height:'100%'}} src={previewUrl}/>
               </>
             ) : !builtCode ? (
-              <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',background:'#0c0d12',gap:10,color:'#6f7079'}}>
+              <div style={{display:'flex',flexDirection:'column' as const,alignItems:'center',justifyContent:'center',height:'100%',background:'#ffffff',gap:10,color:'#9a9aac'}}>
                 <div style={{fontSize:36,opacity:0.2}}>◻</div>
-                <div style={{fontFamily:"'Space Mono',monospace",fontSize:12}}>Preview loads after build</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12}}>Preview loads after build</div>
               </div>
             ) : <iframe id="previewFrame" style={{flex:1,border:'none',width:'100%',height:'100%'}} srcDoc={builtCode}/>}
           </div>
@@ -2167,13 +2173,13 @@ RULES:
             <div style={c.termH}>
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <div style={{display:'flex',gap:4}}><div style={{width:10,height:10,borderRadius:'50%',background:'#ff5f57'}}/><div style={{width:10,height:10,borderRadius:'50%',background:'#febc2e'}}/><div style={{width:10,height:10,borderRadius:'50%',background:'#28c840'}}/></div>
-                <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',letterSpacing:1}}>TERMINAL</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',letterSpacing:1}}>TERMINAL</span>
               </div>
-              <button onClick={()=>setLogs([])} style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#6f7079',background:'none',border:'none',cursor:'pointer'}}>Clear</button>
+              <button onClick={()=>setLogs([])} style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#9a9aac',background:'none',border:'none',cursor:'pointer'}}>Clear</button>
             </div>
             <div style={c.termB} ref={termRef}>
               {logs.map((l,i)=>(
-                <div key={i}><span style={{color:'#6f7079',marginRight:10}}>{l.t}</span><span style={{color:{info:'#00e5b0',ok:'#06d6a0',err:'#ff4d6d',warn:'#ffd166',build:'#8b7cf8'}[l.type]||'#00e5b0'}}>{l.msg}</span></div>
+                <div key={i}><span style={{color:'#9a9aac',marginRight:10}}>{l.t}</span><span style={{color:{info:'#10b981',ok:'#10b981',err:'#ff4d6d',warn:'#ffd166',build:'#7b6fff'}[l.type]||'#10b981'}}>{l.msg}</span></div>
               ))}
             </div>
           </div>
@@ -2182,43 +2188,43 @@ RULES:
         {/* RIGHT: JARVIS CHAT + FEEDBACK */}
         <div style={c.right}>
           <div style={c.chatH}>
-            <span style={{fontFamily:"'Space Mono',monospace",fontSize:13,color:'#a8a9b3'}}>🤖 <span style={{color:'#00e5b0',fontWeight:700}}>{jarvis?.jarvis_name||'JARVIS'}</span></span>
-            <span style={{fontSize:10,color:'#6f7079',fontFamily:"'Space Mono',monospace",letterSpacing:1,textTransform:'uppercase' as const}}>{phase}</span>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'#5a5a72'}}>🤖 <span style={{color:'#10b981',fontWeight:700}}>{jarvis?.jarvis_name||'JARVIS'}</span></span>
+            <span style={{fontSize:10,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif",letterSpacing:1,textTransform:'uppercase' as const}}>{phase}</span>
           </div>
           <div style={c.chatBody} ref={chatRef}>
             {/* Initial greeting */}
             {jarvisMsg && (
               <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                <div style={{width:32,height:32,borderRadius:8,background:'rgba(0,229,176,0.12)',color:'#00e5b0',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
-                <div style={{flex:1,minWidth:0}}><div style={{fontSize:10.5,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div><div style={{...c.bubble,borderColor:'rgba(0,229,176,0.15)'}} dangerouslySetInnerHTML={{__html:jarvisMsg}}/></div>
+                <div style={{width:32,height:32,borderRadius:8,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
+                <div style={{flex:1,minWidth:0}}><div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div><div style={{...c.bubble,borderColor:'rgba(16,185,129,0.15)'}} dangerouslySetInnerHTML={{__html:jarvisMsg}}/></div>
               </div>
             )}
             {/* Chat history */}
             {chatLog.map((msg,i)=>(
               <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                <div style={{width:32,height:32,borderRadius:8,background:msg.isUser?'rgba(139,124,248,0.12)':'rgba(0,229,176,0.12)',color:msg.isUser?'#8b7cf8':'#00e5b0',border:`1px solid ${msg.isUser?'rgba(139,124,248,0.3)':'rgba(0,229,176,0.3)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>{msg.isUser?'U':'J'}</div>
-                <div style={{flex:1,minWidth:0}}><div style={{fontSize:10.5,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:5,letterSpacing:0.5}}>{msg.isUser?'You':'JARVIS'} · Now</div><div style={{...c.bubble,borderColor:msg.isUser?'rgba(139,124,248,0.2)':'rgba(0,229,176,0.15)'}} dangerouslySetInnerHTML={{__html:msg.html}}/></div>
+                <div style={{width:32,height:32,borderRadius:8,background:msg.isUser?'rgba(123,111,255,0.12)':'rgba(16,185,129,0.12)',color:msg.isUser?'#7b6fff':'#10b981',border:`1px solid ${msg.isUser?'rgba(123,111,255,0.3)':'rgba(16,185,129,0.3)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>{msg.isUser?'U':'J'}</div>
+                <div style={{flex:1,minWidth:0}}><div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>{msg.isUser?'You':'JARVIS'} · Now</div><div style={{...c.bubble,borderColor:msg.isUser?'rgba(123,111,255,0.2)':'rgba(16,185,129,0.15)'}} dangerouslySetInnerHTML={{__html:msg.html}}/></div>
               </div>
             ))}
             {/* Questions */}
             {phase==='questioning' && questions.length>0 && (
               <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                <div style={{width:32,height:32,borderRadius:8,background:'rgba(0,229,176,0.12)',color:'#00e5b0',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
+                <div style={{width:32,height:32,borderRadius:8,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:10.5,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
-                  <div style={{background:'#1e1e30',border:'1px solid rgba(255,209,102,0.25)',borderRadius:12,padding:16}}>
-                    <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#ffd166',marginBottom:14,textTransform:'uppercase' as const,letterSpacing:1.5,display:'flex',alignItems:'center',gap:7}}><span>🔍</span><span>Quick Discovery — pick the closest fit</span></div>
+                  <div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
+                  <div style={{background:'#f7f5ef',border:'1px solid rgba(255,209,102,0.25)',borderRadius:12,padding:16}}>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',marginBottom:14,textTransform:'uppercase' as const,letterSpacing:1.5,display:'flex',alignItems:'center',gap:7}}><span>🔍</span><span>Quick Discovery — pick the closest fit</span></div>
                     {questions.map((q:any,i:number)=>(
                       <div key={i} style={{marginBottom:16}}>
-                        <div style={{fontSize:14,color:'#e8e9ed',marginBottom:9,lineHeight:1.5,fontWeight:500}}>{i+1}. {q.q}</div>
+                        <div style={{fontSize:14,color:'#0a0a18',marginBottom:9,lineHeight:1.5,fontWeight:500}}>{i+1}. {q.q}</div>
                         <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                           {(Array.isArray(q?.options) ? q.options : ['Yes','No','Not sure']).map((opt:string)=>(
-                            <button key={opt} onClick={()=>selectAnswer(i,opt)} style={{padding:'7px 13px',background:qAnswers[i]===opt?'rgba(139,124,248,0.22)':'#0e0f15',border:qAnswers[i]===opt?'1px solid #8b7cf8':'1px solid #262731',borderRadius:20,fontSize:12.5,color:qAnswers[i]===opt?'#b9b0ff':'#a8a8c0',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif",transition:'all 0.15s',fontWeight:qAnswers[i]===opt?600:400}}>{opt}</button>
+                            <button key={opt} onClick={()=>selectAnswer(i,opt)} style={{padding:'7px 13px',background:qAnswers[i]===opt?'rgba(123,111,255,0.22)':'#faf9f6',border:qAnswers[i]===opt?'1px solid #7b6fff':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:qAnswers[i]===opt?'#7b6fff':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif",transition:'all 0.15s',fontWeight:qAnswers[i]===opt?600:400}}>{opt}</button>
                           ))}
                         </div>
                       </div>
                     ))}
-                    <button onClick={submitAnswers} disabled={!allAnswered} style={{width:'100%',marginTop:8,padding:12,background:allAnswered?'#8b7cf8':'#262731',color:allAnswered?'#fff':'#6f7079',border:'none',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:13,fontWeight:700,cursor:allAnswered?'pointer':'not-allowed',letterSpacing:0.5,boxShadow:allAnswered?'0 4px 16px rgba(139,124,248,0.25)':'none'}}>
+                    <button onClick={submitAnswers} disabled={!allAnswered} style={{width:'100%',marginTop:8,padding:12,background:allAnswered?'#7b6fff':'#e3e3ee',color:allAnswered?'#fff':'#9a9aac',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:allAnswered?'pointer':'not-allowed',letterSpacing:0.5,boxShadow:allAnswered?'0 4px 16px rgba(123,111,255,0.25)':'none'}}>
                       {allAnswered?'Generate Build Proposal →':`Answer all (${Object.keys(qAnswers).length}/${questions.length})`}
                     </button>
                   </div>
@@ -2230,19 +2236,19 @@ RULES:
                 This inline card is the "re-open proposal" pointer in chat history. */}
             {phase==='approving' && finalPlan && !showProposal && (
               <div style={{display:'flex',gap:10,alignItems:'flex-start',width:'100%'}}>
-                <div style={{width:32,height:32,borderRadius:8,background:'rgba(0,229,176,0.12)',color:'#00e5b0',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
+                <div style={{width:32,height:32,borderRadius:8,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:10.5,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
-                  <div onClick={()=>setShowProposal(true)} style={{cursor:'pointer',padding:18,background:'linear-gradient(135deg, rgba(0,229,176,0.08), rgba(139,124,248,0.05))',border:'1px solid rgba(0,229,176,0.3)',borderRadius:12,transition:'all 0.15s'}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor='#00e5b0'}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor='rgba(0,229,176,0.3)'}}>
-                    <div style={{fontFamily:"'Space Mono',monospace",fontSize:10.5,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>📋 Build Proposal · Ready</div>
-                    <div style={{fontSize:17,fontWeight:700,color:'#e8e9ed',marginBottom:6,lineHeight:1.3}}>{finalPlan.app_name||'Your App'}</div>
-                    <div style={{fontSize:13,color:'#a8a8c0',lineHeight:1.5,marginBottom:12}}>{finalPlan.tagline||finalPlan.summary||''}</div>
-                    <div style={{display:'flex',gap:14,alignItems:'center',fontSize:12,color:'#a8a9b3',marginBottom:12}}>
-                      <span><span style={{color:'#6f7079'}}>Time:</span> <strong style={{color:'#e8e9ed'}}>{finalPlan.est_build_time||finalPlan.est_time||'~90s'}</strong></span>
-                      <span><span style={{color:'#6f7079'}}>Cost:</span> <strong style={{color:'#00e5b0'}}>{finalPlan.est_cost_credits||'1 credit'}</strong></span>
-                      <span><span style={{color:'#6f7079'}}>Complexity:</span> <strong style={{color:'#e8e9ed'}}>{finalPlan.complexity||'Medium'}</strong></span>
+                  <div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
+                  <div onClick={()=>setShowProposal(true)} style={{cursor:'pointer',padding:18,background:'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,111,255,0.05))',border:'1px solid rgba(16,185,129,0.3)',borderRadius:12,transition:'all 0.15s'}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor='#10b981'}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor='rgba(16,185,129,0.3)'}}>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>📋 Build Proposal · Ready</div>
+                    <div style={{fontSize:17,fontWeight:700,color:'#0a0a18',marginBottom:6,lineHeight:1.3}}>{finalPlan.app_name||'Your App'}</div>
+                    <div style={{fontSize:13,color:'#5a5a72',lineHeight:1.5,marginBottom:12}}>{finalPlan.tagline||finalPlan.summary||''}</div>
+                    <div style={{display:'flex',gap:14,alignItems:'center',fontSize:12,color:'#5a5a72',marginBottom:12}}>
+                      <span><span style={{color:'#9a9aac'}}>Time:</span> <strong style={{color:'#0a0a18'}}>{finalPlan.est_build_time||finalPlan.est_time||'~90s'}</strong></span>
+                      <span><span style={{color:'#9a9aac'}}>Cost:</span> <strong style={{color:'#10b981'}}>{finalPlan.est_cost_credits||'1 credit'}</strong></span>
+                      <span><span style={{color:'#9a9aac'}}>Complexity:</span> <strong style={{color:'#0a0a18'}}>{finalPlan.complexity||'Medium'}</strong></span>
                     </div>
-                    <button style={{padding:'10px 16px',background:'#00e5b0',color:'#000',border:'none',borderRadius:8,fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,cursor:'pointer',letterSpacing:0.5}}>📖 Read full proposal →</button>
+                    <button style={{padding:'10px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer',letterSpacing:0.5}}>📖 Read full proposal →</button>
                   </div>
                 </div>
               </div>
@@ -2250,63 +2256,63 @@ RULES:
             {/* ── Legacy inline card (preserved but never rendered now that modal handles it) ── */}
             {false && phase==='approving' && finalPlan && (
               <div style={{display:'flex',gap:8,alignItems:'flex-start',width:'100%'}}>
-                <div style={{width:28,height:28,borderRadius:7,background:'rgba(0,229,176,0.12)',color:'#00e5b0',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}}>J</div>
+                <div style={{width:28,height:28,borderRadius:7,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0}}>J</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:9,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:6}}>
+                  <div style={{fontSize:9,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:6}}>
                     {jarvis?.jarvis_name||'JARVIS'} · BUILD PROPOSAL · {new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
                   </div>
-                  <div style={{background:'linear-gradient(180deg, #15152a 0%, #0f0f1f 100%)',border:'1px solid rgba(0,229,176,0.25)',borderRadius:14,overflow:'hidden',boxShadow:'0 12px 40px rgba(0,229,176,0.06)'}}>
+                  <div style={{background:'linear-gradient(180deg, #f7f5ef 0%, #faf9f6 100%)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:14,overflow:'hidden',boxShadow:'0 12px 40px rgba(16,185,129,0.06)'}}>
                     {/* Header banner */}
-                    <div style={{padding:'14px 18px',borderBottom:'1px solid rgba(0,229,176,0.15)',background:'rgba(0,229,176,0.04)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}}>
+                    <div style={{padding:'14px 18px',borderBottom:'1px solid rgba(16,185,129,0.15)',background:'rgba(16,185,129,0.04)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}}>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
-                        <span style={{width:8,height:8,borderRadius:'50%',background:'#00e5b0',boxShadow:'0 0 12px #00e5b0'}}/>
-                        <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const}}>Plan Ready · Awaiting Your Approval</span>
+                        <span style={{width:8,height:8,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 10px rgba(16,185,129,0.5)'}}/>
+                        <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const}}>Plan Ready · Awaiting Your Approval</span>
                       </div>
-                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',letterSpacing:1}}>JF/PROPOSAL</span>
+                      <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',letterSpacing:1}}>JF/PROPOSAL</span>
                     </div>
 
                     {/* Title block */}
                     <div style={{padding:'18px 18px 14px'}}>
-                      <div style={{fontSize:22,fontWeight:700,color:'#e8e9ed',marginBottom:6,lineHeight:1.2}}>{finalPlan.app_name||'Your App'}</div>
+                      <div style={{fontSize:22,fontWeight:700,color:'#0a0a18',marginBottom:6,lineHeight:1.2}}>{finalPlan.app_name||'Your App'}</div>
                       {finalPlan.tagline && (
-                        <div style={{fontSize:13,color:'#a8a8c0',marginBottom:10,lineHeight:1.5,fontStyle:'italic'}}>{finalPlan.tagline}</div>
+                        <div style={{fontSize:13,color:'#5a5a72',marginBottom:10,lineHeight:1.5,fontStyle:'italic'}}>{finalPlan.tagline}</div>
                       )}
                       {finalPlan.summary && (
-                        <div style={{fontSize:12,color:'#a8a9b3',lineHeight:1.6}}>{finalPlan.summary}</div>
+                        <div style={{fontSize:12,color:'#5a5a72',lineHeight:1.6}}>{finalPlan.summary}</div>
                       )}
                       {finalPlan.target_users && (
-                        <div style={{marginTop:10,padding:'8px 10px',background:'rgba(139,124,248,0.06)',border:'1px solid rgba(139,124,248,0.18)',borderRadius:7,fontSize:11,color:'#b9b0ff'}}>
-                          <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#8b7cf8',letterSpacing:1,marginRight:6}}>FOR:</span>{finalPlan.target_users}
+                        <div style={{marginTop:10,padding:'8px 10px',background:'rgba(123,111,255,0.06)',border:'1px solid rgba(123,111,255,0.18)',borderRadius:7,fontSize:11,color:'#7b6fff'}}>
+                          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#7b6fff',letterSpacing:1,marginRight:6}}>FOR:</span>{finalPlan.target_users}
                         </div>
                       )}
                     </div>
 
                     {/* Stats row */}
-                    <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:1,background:'#252538',borderTop:'1px solid #252538',borderBottom:'1px solid #252538'}}>
-                      <div style={{padding:'12px 14px',background:'#15152a'}}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Timeline</div>
-                        <div style={{fontSize:13,color:'#e8e9ed',fontWeight:600}}>{finalPlan.est_time||'~90 seconds'}</div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:1,background:'#ececf3',borderTop:'1px solid #ececf3',borderBottom:'1px solid #ececf3'}}>
+                      <div style={{padding:'12px 14px',background:'#f7f5ef'}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Timeline</div>
+                        <div style={{fontSize:13,color:'#0a0a18',fontWeight:600}}>{finalPlan.est_time||'~90 seconds'}</div>
                       </div>
-                      <div style={{padding:'12px 14px',background:'#15152a'}}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Investment</div>
-                        <div style={{fontSize:13,color:'#00e5b0',fontWeight:600}}>1 build credit</div>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',marginTop:2}}>~{finalPlan.est_tokens||'—'} tokens</div>
+                      <div style={{padding:'12px 14px',background:'#f7f5ef'}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Investment</div>
+                        <div style={{fontSize:13,color:'#10b981',fontWeight:600}}>1 build credit</div>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',marginTop:2}}>~{finalPlan.est_tokens||'—'} tokens</div>
                       </div>
-                      <div style={{padding:'12px 14px',background:'#15152a'}}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#6f7079',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Complexity</div>
-                        <div style={{fontSize:13,color:'#e8e9ed',fontWeight:600}}>{finalPlan.complexity||'Medium'}</div>
+                      <div style={{padding:'12px 14px',background:'#f7f5ef'}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,color:'#9a9aac',letterSpacing:1,marginBottom:4,textTransform:'uppercase' as const}}>Complexity</div>
+                        <div style={{fontSize:13,color:'#0a0a18',fontWeight:600}}>{finalPlan.complexity||'Medium'}</div>
                       </div>
                     </div>
 
                     {/* Features */}
                     <div style={{padding:'14px 18px'}}>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#00e5b0',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:6}}>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:6}}>
                         <span>✓</span><span>What's Included</span>
                       </div>
                       <div style={{display:'flex',flexDirection:'column',gap:7}}>
                         {(finalPlan.features||[]).map((f:string,i:number)=>(
-                          <div key={i} style={{fontSize:12,color:'#d0d0e0',display:'flex',gap:9,alignItems:'flex-start',lineHeight:1.5}}>
-                            <span style={{color:'#00e5b0',fontWeight:700,flexShrink:0,marginTop:1}}>✓</span>
+                          <div key={i} style={{fontSize:12,color:'#3a3a52',display:'flex',gap:9,alignItems:'flex-start',lineHeight:1.5}}>
+                            <span style={{color:'#10b981',fontWeight:700,flexShrink:0,marginTop:1}}>✓</span>
                             <span>{f}</span>
                           </div>
                         ))}
@@ -2315,18 +2321,18 @@ RULES:
 
                     {/* Approach */}
                     {(finalPlan.approach||finalPlan.note) && (
-                      <div style={{padding:'12px 18px 14px',borderTop:'1px solid #252538',background:'rgba(139,124,248,0.03)'}}>
-                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:'#8b7cf8',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6,display:'flex',alignItems:'center',gap:6}}>
+                      <div style={{padding:'12px 18px 14px',borderTop:'1px solid #ececf3',background:'rgba(123,111,255,0.03)'}}>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6,display:'flex',alignItems:'center',gap:6}}>
                           <span>💡</span><span>JARVIS's Approach</span>
                         </div>
-                        <div style={{fontSize:11,color:'#a8a8c0',lineHeight:1.6}}>{finalPlan.approach||finalPlan.note}</div>
+                        <div style={{fontSize:11,color:'#5a5a72',lineHeight:1.6}}>{finalPlan.approach||finalPlan.note}</div>
                       </div>
                     )}
 
                     {/* Action buttons */}
-                    <div style={{padding:'14px 18px 16px',borderTop:'1px solid #252538',display:'flex',gap:8}}>
-                      <button onClick={rejectPlan} style={{flex:'0 0 auto',padding:'11px 16px',background:'transparent',color:'#a8a9b3',border:'1px solid #262731',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:600,cursor:'pointer',letterSpacing:0.5,transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.borderColor='#ff6b9d';(e.target as HTMLElement).style.color='#ff6b9d'}} onMouseLeave={e=>{(e.target as HTMLElement).style.borderColor='#262731';(e.target as HTMLElement).style.color='#a8a9b3'}}>✕ Hold on, let me revise</button>
-                      <button onClick={approveBuild} style={{flex:1,padding:'11px 16px',background:'#00e5b0',color:'#000',border:'none',borderRadius:9,fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(0,229,176,0.25)',transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.background='#00ffcc';(e.target as HTMLElement).style.transform='translateY(-1px)'}} onMouseLeave={e=>{(e.target as HTMLElement).style.background='#00e5b0';(e.target as HTMLElement).style.transform='translateY(0)'}}>✓ Looks great — Build it!</button>
+                    <div style={{padding:'14px 18px 16px',borderTop:'1px solid #ececf3',display:'flex',gap:8}}>
+                      <button onClick={rejectPlan} style={{flex:'0 0 auto',padding:'11px 16px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',letterSpacing:0.5,transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.borderColor='#ff6b9d';(e.target as HTMLElement).style.color='#ff6b9d'}} onMouseLeave={e=>{(e.target as HTMLElement).style.borderColor='#e3e3ee';(e.target as HTMLElement).style.color='#5a5a72'}}>✕ Hold on, let me revise</button>
+                      <button onClick={approveBuild} style={{flex:1,padding:'11px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(16,185,129,0.25)',transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.background='#34d399';(e.target as HTMLElement).style.transform='translateY(-1px)'}} onMouseLeave={e=>{(e.target as HTMLElement).style.background='#10b981';(e.target as HTMLElement).style.transform='translateY(0)'}}>✓ Looks great — Build it!</button>
                     </div>
                   </div>
                 </div>
@@ -2336,20 +2342,20 @@ RULES:
                 Shows the team working live: Architect → Builder → QA, each with status. */}
             {(phase==='building'||phase==='iterating') && (
               <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                <div style={{width:32,height:32,borderRadius:8,background:'rgba(0,229,176,0.12)',color:'#00e5b0',border:'1px solid rgba(0,229,176,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
+                <div style={{width:32,height:32,borderRadius:8,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:10.5,fontFamily:"'Space Mono',monospace",color:'#6f7079',marginBottom:5,letterSpacing:0.5}}>{jarvis?.jarvis_name||'JARVIS'} · BUILD IN PROGRESS · {buildTime}</div>
+                  <div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>{jarvis?.jarvis_name||'JARVIS'} · BUILD IN PROGRESS · {buildTime}</div>
                   {phase==='iterating' ? (
-                    <div style={{...c.bubble,borderColor:'rgba(0,229,176,0.15)'}}>
+                    <div style={{...c.bubble,borderColor:'rgba(16,185,129,0.15)'}}>
                       <div style={{display:'flex',gap:5,alignItems:'center'}}>
-                        <span style={{width:7,height:7,borderRadius:'50%',background:'#00e5b0',display:'inline-block',animation:'bob 1s infinite'}}/>
-                        <span style={{width:7,height:7,borderRadius:'50%',background:'#8b7cf8',display:'inline-block',animation:'bob 1s 0.15s infinite'}}/>
+                        <span style={{width:7,height:7,borderRadius:'50%',background:'#10b981',display:'inline-block',animation:'bob 1s infinite'}}/>
+                        <span style={{width:7,height:7,borderRadius:'50%',background:'#7b6fff',display:'inline-block',animation:'bob 1s 0.15s infinite'}}/>
                         <span style={{width:7,height:7,borderRadius:'50%',background:'#ff6b9d',display:'inline-block',animation:'bob 1s 0.3s infinite'}}/>
-                        <span style={{marginLeft:10,fontSize:13.5,color:'#a8a8c0'}}>Updating your app…</span>
+                        <span style={{marginLeft:10,fontSize:13.5,color:'#5a5a72'}}>Updating your app…</span>
                       </div>
                     </div>
                   ) : (
-                    <div style={{padding:14,background:'#15152a',border:'1px solid rgba(0,229,176,0.2)',borderRadius:11,display:'flex',flexDirection:'column' as const,gap:9}}>
+                    <div style={{padding:14,background:'#f7f5ef',border:'1px solid rgba(16,185,129,0.2)',borderRadius:11,display:'flex',flexDirection:'column' as const,gap:9}}>
                       {[
                         { id: 'architect', emoji: '🗺', name: 'Architect', desc: 'Designing data model + components' },
                         { id: 'designer',  emoji: '🎨', name: 'Designer',  desc: 'Defining colours, fonts, components' },
@@ -2359,10 +2365,10 @@ RULES:
                         const st = agentStatus[a.id]?.status || 'pending'
                         const note = agentStatus[a.id]?.note
                         const palette = {
-                          pending: { bg:'#1a1a2e', border:'#262731', dot:'#6f7079', label:'#6f7079', name:'#a8a9b3' },
-                          working: { bg:'rgba(0,229,176,0.06)', border:'rgba(0,229,176,0.4)', dot:'#00e5b0', label:'#00e5b0', name:'#e8e9ed' },
-                          done:    { bg:'rgba(0,229,176,0.04)', border:'rgba(0,229,176,0.18)', dot:'#00e5b0', label:'#00e5b0', name:'#a8a8c0' },
-                          failed:  { bg:'rgba(255,107,157,0.06)', border:'rgba(255,107,157,0.35)', dot:'#ff6b9d', label:'#ff6b9d', name:'#e8e9ed' },
+                          pending: { bg:'#f7f5ef', border:'#e3e3ee', dot:'#9a9aac', label:'#9a9aac', name:'#5a5a72' },
+                          working: { bg:'rgba(16,185,129,0.06)', border:'rgba(16,185,129,0.4)', dot:'#10b981', label:'#10b981', name:'#0a0a18' },
+                          done:    { bg:'rgba(16,185,129,0.04)', border:'rgba(16,185,129,0.18)', dot:'#10b981', label:'#10b981', name:'#5a5a72' },
+                          failed:  { bg:'rgba(255,107,157,0.06)', border:'rgba(255,107,157,0.35)', dot:'#ff6b9d', label:'#ff6b9d', name:'#0a0a18' },
                         }[st]
                         return (
                           <div key={a.id} style={{display:'flex',gap:11,alignItems:'center',padding:'9px 11px',background:palette.bg,border:`1px solid ${palette.border}`,borderRadius:9}}>
@@ -2370,22 +2376,22 @@ RULES:
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
                                 <div style={{fontSize:13,fontWeight:600,color:palette.name}}>{a.name}</div>
-                                <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:palette.label,letterSpacing:1,textTransform:'uppercase' as const,whiteSpace:'nowrap' as const}}>
+                                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:palette.label,letterSpacing:1,textTransform:'uppercase' as const,whiteSpace:'nowrap' as const}}>
                                   {st==='pending' && '○ Waiting'}
                                   {st==='working' && '◉ Working'}
                                   {st==='done' && '✓ Done'}
                                   {st==='failed' && '✕ Failed'}
                                 </div>
                               </div>
-                              <div style={{fontSize:11.5,color:'#a8a9b3',marginTop:1.5,lineHeight:1.4}}>
+                              <div style={{fontSize:11.5,color:'#5a5a72',marginTop:1.5,lineHeight:1.4}}>
                                 {note || a.desc}
                               </div>
                             </div>
                             {st==='working' && (
                               <div style={{display:'flex',gap:3,alignItems:'center'}}>
-                                <span style={{width:5,height:5,borderRadius:'50%',background:'#00e5b0',animation:'bob 1s infinite'}}/>
-                                <span style={{width:5,height:5,borderRadius:'50%',background:'#00e5b0',animation:'bob 1s 0.15s infinite'}}/>
-                                <span style={{width:5,height:5,borderRadius:'50%',background:'#00e5b0',animation:'bob 1s 0.3s infinite'}}/>
+                                <span style={{width:5,height:5,borderRadius:'50%',background:'#10b981',animation:'bob 1s infinite'}}/>
+                                <span style={{width:5,height:5,borderRadius:'50%',background:'#10b981',animation:'bob 1s 0.15s infinite'}}/>
+                                <span style={{width:5,height:5,borderRadius:'50%',background:'#10b981',animation:'bob 1s 0.3s infinite'}}/>
                               </div>
                             )}
                           </div>
@@ -2400,11 +2406,11 @@ RULES:
 
           {/* ── SPRINT 1: FEEDBACK INPUT ── */}
           <div style={c.feedbackArea}>
-            <div style={{fontSize:9,fontFamily:"'Space Mono',monospace",color:builtCode&&!isWorking?'#8b7cf8':'#6f7079',marginBottom:5,letterSpacing:0.5}}>
+            <div style={{fontSize:9,fontFamily:"'DM Sans',sans-serif",color:builtCode&&!isWorking?'#7b6fff':'#9a9aac',marginBottom:5,letterSpacing:0.5}}>
               {builtCode && !isWorking ? '💬 JARVIS IS LISTENING — TYPE FEEDBACK TO IMPROVE THE APP' : '⚡ BUILD AN APP FIRST — THEN GIVE FEEDBACK HERE'}
             </div>
             <textarea
-              style={{...c.feedbackInput, opacity: builtCode&&!isWorking?1:0.35, borderColor: builtCode&&!isWorking?'rgba(139,124,248,0.4)':'#262731'}}
+              style={{...c.feedbackInput, opacity: builtCode&&!isWorking?1:0.35, borderColor: builtCode&&!isWorking?'rgba(123,111,255,0.4)':'#e3e3ee'}}
               placeholder={builtCode ? 'e.g. "Make the header dark blue", "Add a search bar", "Change to DRE Coffee branding"...' : 'Build an app first, then give feedback here...'}
               value={feedbackInput}
               onChange={e=>setFeedbackInput(e.target.value)}
@@ -2444,12 +2450,12 @@ RULES:
                   }
                 }}
                 disabled={!builtCode}
-                style={{padding:'6px 10px',background:'transparent',border:'1px solid #262731',borderRadius:6,color:builtCode?'#00e5b0':'#6f7079',fontSize:10,cursor:builtCode?'pointer':'not-allowed',fontFamily:"'Space Mono',monospace",flexShrink:0}}
+                style={{padding:'6px 10px',background:'transparent',border:'1px solid #e3e3ee',borderRadius:6,color:builtCode?'#10b981':'#9a9aac',fontSize:10,cursor:builtCode?'pointer':'not-allowed',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}
               >💾 Save</button>
               <button
                 onClick={sendFeedback}
                 disabled={!feedbackInput.trim()||!builtCode||isWorking||feedbackPhase!=='idle'}
-                style={{...c.sendBtn, flex:1, background:(!feedbackInput.trim()||!builtCode||isWorking)?'#262731':'#8b7cf8', color:(!feedbackInput.trim()||!builtCode||isWorking)?'#6f7079':'#fff'}}
+                style={{...c.sendBtn, flex:1, background:(!feedbackInput.trim()||!builtCode||isWorking)?'#e3e3ee':'#7b6fff', color:(!feedbackInput.trim()||!builtCode||isWorking)?'#9a9aac':'#fff'}}
               >
                 {isFeedbackLoading?'Updating...':'Send ↑'}
               </button>

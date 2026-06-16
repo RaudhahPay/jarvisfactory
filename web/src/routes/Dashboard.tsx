@@ -3,6 +3,7 @@ import { getSupabase } from '@/web/src/lib/supabase'
 import { apiFetch } from '@/web/src/lib/api'
 import { useNavigate } from 'react-router-dom'
 import { countLessons } from '@/lib/jarvis-memory'
+import { theme, ui } from '@/web/src/lib/theme'
 
 // ── v9 Dashboard — Replit-style layout: left sidebar + prompt-first hero + apps grid ──
 // All existing data flows preserved (apps list, JARVIS profile, PDF download, sign out).
@@ -168,27 +169,31 @@ export default function Dashboard() {
   }).length
   const buildPct = Math.min(100, (buildsThisMonth / buildLimit) * 100)
 
-  // ── Color palette (cleaner, more Replit-like — accent used sparingly) ──
+  // ── Color palette — derived from the canonical Landing tokens (web/src/lib/theme.ts).
+  // Keys preserved from the prior dark theme so only the values changed; the page now
+  // speaks Landing's clean light language: teal accent, ink text, off-white surfaces,
+  // hairline borders, soft shadows. ──
   const palette = {
-    bg:        '#06070b',
-    bgPanel:   '#0c0d12',
-    bgCard:    '#0e0f15',
-    bgHover:   '#13141b',
-    border:    '#1c1d24',
-    borderH:   '#262731',
-    text:      '#e8e9ed',
-    textMid:   '#a8a9b3',
-    textDim:   '#6f7079',
-    textFaint: '#4b4c54',
-    accent:    '#00e5b0',
-    accent2:   '#7c5cff',
-    accentBg:  'rgba(0,229,176,0.1)',
-    danger:    '#ff6b8a',
+    bg:        theme.color.bg,            // white page
+    bgPanel:   theme.color.surface,       // off-white sidebar
+    bgCard:    '#ffffff',                 // white cards
+    bgHover:   theme.color.surfaceWarm,   // warm hover
+    border:    theme.color.border,        // hairline
+    borderH:   theme.color.borderInput,   // hover border
+    text:      theme.color.ink,
+    textMid:   theme.color.inkSoft,
+    textDim:   theme.color.muted,
+    textFaint: theme.color.faint,
+    accent:    theme.color.accent,        // teal
+    accent2:   theme.color.accentAlt,     // violet
+    accentBg:  'rgba(16,185,129,0.10)',
+    danger:    '#e0476b',
+    shadow:    theme.shadow.card,
   }
 
   if (loading) {
     return (
-      <div style={{minHeight:'100vh', background:palette.bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Inter','DM Sans',sans-serif", color:palette.accent, fontSize:14}}>
+      <div style={{minHeight:'100vh', background:palette.bg, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:theme.font.sans, color:palette.accent, fontSize:14}}>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <span style={{width:8,height:8,borderRadius:'50%',background:palette.accent,animation:'pulse 1.4s infinite'}}/>
           <style>{`@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}`}</style>
@@ -199,11 +204,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{minHeight:'100vh', background:palette.bg, color:palette.text, fontFamily:"'Inter','DM Sans',sans-serif", display:'flex'}}>
+    <div style={{minHeight:'100vh', background:palette.bg, color:palette.text, fontFamily:theme.font.sans, display:'flex'}}>
       <style>{`
         body { background:${palette.bg}; }
         .nav-item:hover { background:${palette.bgHover}; }
-        .app-card:hover { border-color:${palette.borderH} !important; transform:translateY(-2px); }
+        .app-card:hover { border-color:${palette.borderH} !important; transform:translateY(-2px); box-shadow:0 14px 40px -22px rgba(40,30,80,0.32); }
         .chip:hover { background:${palette.bgHover}; border-color:${palette.borderH}; }
         .icon-btn:hover { background:${palette.bgHover}; }
         .hero-input:focus { border-color:${palette.accent} !important; box-shadow:0 0 0 4px ${palette.accentBg}; }
@@ -215,17 +220,27 @@ export default function Dashboard() {
       <aside style={{
         width:260, flexShrink:0, height:'100vh', position:'sticky' as const, top:0,
         background:palette.bgPanel, borderRight:`1px solid ${palette.border}`,
-        display:'flex', flexDirection:'column' as const, padding:'14px 12px',
+        display:'flex', flexDirection:'column' as const, padding:'16px 14px',
       }}>
+        {/* Brand mark — matches Landing's logo language */}
+        <button onClick={()=>navigate('/')} style={{
+          background:'transparent', border:'none', cursor:'pointer', padding:'2px 4px',
+          display:'flex', alignItems:'center', gap:9, marginBottom:16,
+        }}>
+          <span style={ui.logoMark}/>
+          <span style={{fontSize:18, fontWeight:800, letterSpacing:-0.5, color:palette.text}}>ezclaude</span>
+        </button>
+
         {/* Workspace switcher */}
         <button style={{
-          background:'transparent', border:`1px solid ${palette.border}`, borderRadius:9, padding:'9px 12px',
+          background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:theme.radius.pill, padding:'9px 12px',
           display:'flex', alignItems:'center', gap:9, cursor:'pointer', color:palette.text, marginBottom:10,
+          boxShadow:palette.shadow,
         }}>
-          <span style={{width:22, height:22, borderRadius:6, background:`linear-gradient(135deg, ${palette.accent}, ${palette.accent2})`, display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#000'}}>
+          <span style={{width:22, height:22, borderRadius:6, background:`linear-gradient(135deg, ${palette.accent}, ${palette.accent2})`, display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff'}}>
             {firstName[0]?.toUpperCase()}
           </span>
-          <span style={{flex:1, textAlign:'left' as const, fontSize:13.5, fontWeight:500}}>{workspaceName}</span>
+          <span style={{flex:1, textAlign:'left' as const, fontSize:13.5, fontWeight:600}}>{workspaceName}</span>
           <span style={{color:palette.textDim, fontSize:11}}>▾</span>
         </button>
 
@@ -238,12 +253,11 @@ export default function Dashboard() {
           <span style={{marginLeft:'auto', fontSize:10, padding:'2px 6px', border:`1px solid ${palette.border}`, borderRadius:4, color:palette.textFaint}}>⌘K</span>
         </button>
 
-        {/* Primary CTA — gradient */}
+        {/* Primary CTA — solid ink (Landing's primary button) */}
         <button onClick={startBuild} style={{
-          background:`linear-gradient(135deg, ${palette.accent}, ${palette.accent2})`,
-          color:'#000', border:'none', borderRadius:9, padding:'11px 14px',
-          fontWeight:700, fontSize:13.5, cursor:'pointer', marginBottom:8,
-          display:'flex', alignItems:'center', gap:8, letterSpacing:0.2,
+          background:palette.text, color:'#fff', border:'none', borderRadius:theme.radius.button, padding:'11px 14px',
+          fontWeight:600, fontSize:13.5, cursor:'pointer', marginBottom:8,
+          display:'flex', alignItems:'center', gap:8, justifyContent:'center',
         }}>
           <span style={{fontSize:15}}>+</span> Create something new
         </button>
@@ -281,7 +295,7 @@ export default function Dashboard() {
         <div style={{flex:1}}/>
 
         {/* Plan info at bottom */}
-        <div style={{padding:'14px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:10, marginBottom:10}}>
+        <div style={{padding:'14px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:theme.radius.card, marginBottom:10, boxShadow:palette.shadow}}>
           <div style={{fontSize:11, color:palette.textDim, fontWeight:600, letterSpacing:0.5, textTransform:'uppercase' as const, marginBottom:10}}>
             Your {planLabel}
           </div>
@@ -305,14 +319,14 @@ export default function Dashboard() {
           </div>
           {plan === 'starter' && (
             <button style={{
-              width:'100%', marginTop:12, padding:'8px 0', background:palette.accent, color:'#000',
-              border:'none', borderRadius:7, fontSize:12, fontWeight:700, cursor:'pointer'
+              width:'100%', marginTop:12, padding:'8px 0', background:palette.text, color:'#fff',
+              border:'none', borderRadius:theme.radius.button, fontSize:12, fontWeight:600, cursor:'pointer'
             }}>↑ Upgrade plan</button>
           )}
         </div>
 
         {/* v10 Phase 5: GitHub block */}
-        <div style={{padding:'12px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:10, marginBottom:10}}>
+        <div style={{padding:'12px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:theme.radius.card, marginBottom:10, boxShadow:palette.shadow}}>
           <div style={{fontSize:11, color:palette.textDim, fontWeight:600, letterSpacing:0.5, textTransform:'uppercase' as const, marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
             <span>🐙 GitHub</span>
           </div>
@@ -335,7 +349,7 @@ export default function Dashboard() {
         </div>
 
         {/* User profile pill */}
-        <div style={{display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:palette.bgCard, border:`1px solid ${palette.border}`}}>
+        <div style={{display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:theme.radius.pill, background:palette.bgCard, border:`1px solid ${palette.border}`, boxShadow:palette.shadow}}>
           <span style={{width:26, height:26, borderRadius:'50%', background:palette.accentBg, color:palette.accent, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, border:`1px solid ${palette.accent}33`}}>
             {firstName[0]?.toUpperCase()}
           </span>
@@ -352,7 +366,7 @@ export default function Dashboard() {
 
         {/* Top bar: tiny workspace pill (Replit-style) */}
         <div style={{padding:'18px 0 0', display:'flex', justifyContent:'flex-end' as const, alignItems:'center'}}>
-          <div style={{display:'flex', alignItems:'center', gap:7, padding:'6px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:18, fontSize:12, color:palette.textMid}}>
+          <div style={{display:'flex', alignItems:'center', gap:7, padding:'6px 12px', background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:18, fontSize:12, color:palette.textMid, boxShadow:palette.shadow}}>
             <span style={{width:6, height:6, borderRadius:'50%', background:palette.accent}}/>
             <span>{workspaceName}</span>
           </div>
@@ -376,8 +390,8 @@ export default function Dashboard() {
         {/* HERO */}
         <div className="fade-in" style={{maxWidth:760, margin:'80px auto 0'}}>
           <h1 style={{
-            fontSize:34, fontWeight:600, textAlign:'center' as const,
-            color:palette.text, marginBottom:32, letterSpacing:-0.5, lineHeight:1.2,
+            fontSize:'clamp(30px,4vw,42px)', fontWeight:800, textAlign:'center' as const,
+            color:palette.text, marginBottom:32, letterSpacing:-1, lineHeight:1.1,
           }}>
             Hi {firstName}, what do you want to build?
           </h1>
@@ -393,25 +407,25 @@ export default function Dashboard() {
               rows={3}
               style={{
                 width:'100%', boxSizing:'border-box' as const,
-                background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:14,
-                padding:'18px 110px 50px 18px', color:palette.text, fontFamily:'inherit', fontSize:15,
+                background:palette.bgHover, border:`1px solid ${palette.border}`, borderRadius:theme.radius.panel,
+                padding:'20px 110px 52px 20px', color:palette.text, fontFamily:theme.font.body, fontSize:16,
                 lineHeight:1.55, resize:'none' as const, outline:'none', transition:'all 0.15s',
-                minHeight:90,
+                minHeight:96, boxShadow:theme.shadow.panel,
               }}
             />
-            <div style={{position:'absolute' as const, bottom:12, left:14, display:'flex', gap:6, alignItems:'center'}}>
-              <button title="Attach reference" style={{background:'transparent', border:`1px solid ${palette.border}`, borderRadius:7, color:palette.textDim, cursor:'pointer', padding:'6px 9px', fontSize:13}}>+</button>
+            <div style={{position:'absolute' as const, bottom:14, left:16, display:'flex', gap:6, alignItems:'center'}}>
+              <button title="Attach reference" style={{background:'#fff', border:`1px solid ${palette.borderH}`, borderRadius:'50%', width:34, height:34, color:palette.textDim, cursor:'pointer', fontSize:18, lineHeight:1, display:'grid', placeItems:'center'}}>+</button>
             </div>
             <button
               onClick={startBuild}
               disabled={!heroPrompt.trim()}
               style={{
-                position:'absolute' as const, bottom:11, right:11,
-                background: heroPrompt.trim() ? palette.accent : palette.bgHover,
-                color: heroPrompt.trim() ? '#000' : palette.textDim,
-                border:'none', borderRadius:9, padding:'8px 14px',
-                fontWeight:700, fontSize:12.5, cursor: heroPrompt.trim() ? 'pointer' : 'not-allowed',
-                display:'flex', alignItems:'center', gap:6, letterSpacing:0.2,
+                position:'absolute' as const, bottom:13, right:13,
+                background: heroPrompt.trim() ? palette.text : palette.bgCard,
+                color: heroPrompt.trim() ? '#fff' : palette.textDim,
+                border: heroPrompt.trim() ? 'none' : `1px solid ${palette.border}`, borderRadius:theme.radius.button, padding:'9px 15px',
+                fontWeight:600, fontSize:13, cursor: heroPrompt.trim() ? 'pointer' : 'not-allowed',
+                display:'flex', alignItems:'center', gap:6,
               }}
             >
               <span>Build</span>
@@ -466,14 +480,14 @@ export default function Dashboard() {
               <div style={{fontSize:13, color:palette.textDim, marginTop:4}}>{apps.length} app{apps.length===1?'':'s'} in your library</div>
             </div>
             <button onClick={() => navigate('/builder')} style={{
-              background:'transparent', border:`1px solid ${palette.border}`, borderRadius:8, padding:'8px 14px',
-              color:palette.textMid, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', gap:6,
+              background:'#fff', border:`1px solid ${palette.borderH}`, borderRadius:theme.radius.button, padding:'9px 16px',
+              color:palette.text, fontSize:13, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:6,
             }}>+ New project</button>
           </div>
 
           {apps.length === 0 ? (
             <div style={{
-              background:palette.bgCard, border:`1px dashed ${palette.border}`, borderRadius:14,
+              background:palette.bgPanel, border:`1px dashed ${palette.borderH}`, borderRadius:theme.radius.card,
               padding:'56px 32px', textAlign:'center' as const,
             }}>
               <div style={{fontSize:36, marginBottom:14, opacity:0.5}}>⬡</div>
@@ -482,16 +496,16 @@ export default function Dashboard() {
                 Type your idea above. {jarvis?.jarvis_name || 'JARVIS'} will plan, estimate the budget, and build your first app.
               </div>
               <button onClick={() => navigate('/builder')} style={{
-                padding:'10px 22px', background:palette.accent, color:'#000', border:'none', borderRadius:9,
-                fontSize:13, fontWeight:700, cursor:'pointer'
+                padding:'11px 22px', background:palette.text, color:'#fff', border:'none', borderRadius:theme.radius.button,
+                fontSize:13, fontWeight:600, cursor:'pointer'
               }}>Build my first app →</button>
             </div>
           ) : (
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14}}>
               {apps.map(app => (
                 <div key={app.id} className="app-card" style={{
-                  background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:12,
-                  padding:18, transition:'all 0.15s', cursor:'pointer',
+                  background:palette.bgCard, border:`1px solid ${palette.border}`, borderRadius:theme.radius.card,
+                  padding:20, transition:'all 0.15s', cursor:'pointer', boxShadow:palette.shadow,
                 }}>
                   <div onClick={()=>navigate(`/builder?app=${app.id}`)}>
                     <div style={{display:'flex', alignItems:'center', gap:10, marginBottom:10}}>
@@ -515,8 +529,8 @@ export default function Dashboard() {
                     <button
                       onClick={(e)=>{ e.stopPropagation(); navigate(`/builder?app=${app.id}`) }}
                       style={{
-                        flex:1, padding:'7px 10px', background:palette.bgHover, color:palette.text,
-                        border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer'
+                        flex:1, padding:'8px 10px', background:palette.text, color:'#fff',
+                        border:'none', borderRadius:theme.radius.pill, fontSize:12, fontWeight:600, cursor:'pointer'
                       }}
                     >Open →</button>
                     <button
@@ -524,7 +538,7 @@ export default function Dashboard() {
                       onClick={(e)=>{ e.stopPropagation(); navigate(`/builder?app=${app.id}&action=pdf`) }}
                       style={{
                         padding:'7px 10px', background:'transparent', color:palette.textMid,
-                        border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer'
+                        border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600, cursor:'pointer'
                       }}
                     >📄 PDF</button>
                     {/* v10 Phase 5+6: GitHub view + pull (if linked) OR save (if not yet) */}
@@ -538,7 +552,7 @@ export default function Dashboard() {
                           title={`On GitHub: ${app.github_repo_full_name || ''}`}
                           style={{
                             padding:'7px 10px', background:'#1a1a24', color:'#fff', textDecoration:'none' as const,
-                            border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600, cursor:'pointer',
+                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600, cursor:'pointer',
                             display:'inline-flex', alignItems:'center', gap:4
                           }}
                         >🐙 View</a>
@@ -549,7 +563,7 @@ export default function Dashboard() {
                           style={{
                             padding:'7px 10px',
                             background: palette.bgHover, color: palette.textMid,
-                            border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600,
+                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
                             cursor: savingAppId === app.id ? 'not-allowed' : 'pointer',
                             opacity: savingAppId === app.id ? 0.6 : 1,
                           }}
@@ -561,7 +575,7 @@ export default function Dashboard() {
                           style={{
                             padding:'7px 10px',
                             background: palette.bgHover, color: palette.textMid,
-                            border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600,
+                            border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
                             cursor: savingAppId === app.id ? 'not-allowed' : 'pointer',
                             opacity: savingAppId === app.id ? 0.6 : 1,
                           }}
@@ -576,7 +590,7 @@ export default function Dashboard() {
                           padding:'7px 10px',
                           background: githubConn ? '#24292e' : palette.bgHover,
                           color: githubConn ? '#fff' : palette.textDim,
-                          border:`1px solid ${palette.border}`, borderRadius:7, fontSize:12, fontWeight:600,
+                          border:`1px solid ${palette.border}`, borderRadius:9, fontSize:12, fontWeight:600,
                           cursor: githubConn && savingAppId !== app.id ? 'pointer' : 'not-allowed',
                           opacity: savingAppId === app.id ? 0.6 : 1,
                         }}

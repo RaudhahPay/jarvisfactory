@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { getSupabase } from "@/web/src/lib/supabase";
 import { apiFetch } from "@/web/src/lib/api";
 import { MODELS, DEFAULT_MODEL } from "@/lib/models";
+import { theme, ui } from "@/web/src/lib/theme";
 
 type Mode = "chat" | "cowork" | "build";
 type Line = { role: "user" | "assistant" | "log"; text: string };
@@ -50,15 +51,27 @@ function fileToAttachment(file: File): Promise<Attachment> {
   });
 }
 
+// Studio's palette, mapped onto the canonical Landing design tokens (theme.ts)
+// so the working app surface speaks the same visual language as the marketing
+// page: teal accent, ink text, white + off-white surfaces, hairline borders,
+// Plus Jakarta Sans.
 const C = {
-  bg: "#06070b",
-  panel: "#0c0d12",
-  border: "#1a1c25",
-  teal: "#00e5b0",
-  violet: "#8b7cf8",
-  text: "#e6e7ea",
-  dim: "#6f7079",
-  mono: "'Space Mono', ui-monospace, monospace",
+  bg: theme.color.bg, // white page
+  surface: theme.color.surface, // off-white (sidebar / inputs / assistant bubbles)
+  surfaceWarm: theme.color.surfaceWarm, // warm panel (composer)
+  panel: "#fff", // white cards
+  border: theme.color.border, // hairline
+  borderInput: theme.color.borderInput, // input / outline border
+  teal: theme.color.accent,
+  violet: theme.color.accentAlt,
+  ink: theme.color.ink,
+  text: theme.color.ink,
+  dim: theme.color.muted,
+  faint: theme.color.faint,
+  sans: theme.font.sans,
+  mono: theme.font.sans,
+  tealSoft: "rgba(16,185,129,0.10)",
+  violetSoft: "rgba(123,111,255,0.10)",
 };
 
 // Minimal SSE reader: POST via apiFetch + stream `data: {json}` lines → onEvent.
@@ -350,12 +363,13 @@ export default function StudioPage() {
         style={{
           minHeight: "100vh",
           background: C.bg,
-          color: C.teal,
+          color: C.dim,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: C.mono,
+          fontFamily: C.sans,
           fontSize: 14,
+          fontWeight: 500,
         }}
       >
         Loading ezclaude…
@@ -401,7 +415,7 @@ export default function StudioPage() {
         height: "100vh",
         background: C.bg,
         color: C.text,
-        fontFamily: C.mono,
+        fontFamily: C.sans,
         display: "flex",
         flexDirection: "row",
         overflow: "hidden",
@@ -415,21 +429,22 @@ export default function StudioPage() {
             borderRight: `1px solid ${C.border}`,
             display: "flex",
             flexDirection: "column",
-            background: C.panel,
+            background: C.surface,
           }}
         >
-          <div style={{ padding: 12, borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ padding: 14, borderBottom: `1px solid ${C.border}` }}>
             <button
               onClick={newChat}
               style={{
                 width: "100%",
-                padding: "9px 10px",
-                borderRadius: 8,
-                border: `1px solid ${C.teal}`,
-                background: "rgba(0,229,176,0.12)",
-                color: C.teal,
-                fontFamily: C.mono,
-                fontSize: 12,
+                padding: "10px 12px",
+                borderRadius: theme.radius.button,
+                border: "none",
+                background: C.ink,
+                color: "#fff",
+                fontFamily: C.sans,
+                fontSize: 13,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -447,7 +462,7 @@ export default function StudioPage() {
             }}
           >
             {convos.length === 0 && (
-              <div style={{ color: C.dim, fontSize: 11, padding: 8 }}>
+              <div style={{ color: C.faint, fontSize: 12, padding: 8 }}>
                 No history yet.
               </div>
             )}
@@ -462,13 +477,15 @@ export default function StudioPage() {
                   title={c.title}
                   style={{
                     textAlign: "left",
-                    padding: "8px 10px",
-                    borderRadius: 8,
-                    border: `1px solid ${active ? C.teal : "transparent"}`,
-                    background: active ? "rgba(0,229,176,0.10)" : "transparent",
-                    color: active ? C.teal : C.text,
-                    fontFamily: C.mono,
-                    fontSize: 12,
+                    padding: "9px 11px",
+                    borderRadius: theme.radius.pill,
+                    border: `1px solid ${active ? C.border : "transparent"}`,
+                    background: active ? "#fff" : "transparent",
+                    boxShadow: active ? theme.shadow.card : "none",
+                    color: active ? C.ink : C.dim,
+                    fontFamily: C.sans,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 500,
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -492,8 +509,9 @@ export default function StudioPage() {
       >
         <div
           style={{
-            padding: "14px 20px",
+            padding: "14px 24px",
             borderBottom: `1px solid ${C.border}`,
+            background: C.bg,
             display: "flex",
             alignItems: "center",
             gap: 16,
@@ -504,19 +522,24 @@ export default function StudioPage() {
             onClick={() => setSidebarOpen((o) => !o)}
             title="Toggle history"
             style={{
-              background: "none",
+              background: "#fff",
               border: `1px solid ${C.border}`,
-              borderRadius: 8,
+              borderRadius: theme.radius.pill,
               color: C.dim,
               cursor: "pointer",
-              padding: "4px 9px",
+              padding: "5px 10px",
               fontSize: 14,
             }}
           >
             ☰
           </button>
-          <div style={{ fontWeight: 700, color: C.teal, letterSpacing: 1 }}>
-            ⬡ ezclaude
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={ui.logoMark} />
+            <span
+              style={{ fontWeight: 800, color: C.ink, letterSpacing: -0.5, fontSize: 18 }}
+            >
+              ezclaude
+            </span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             {tabs.map((t) => (
@@ -527,14 +550,14 @@ export default function StudioPage() {
                 title={t.hint}
                 style={{
                   padding: "8px 14px",
-                  borderRadius: 9,
+                  borderRadius: theme.radius.pill,
                   cursor: busy ? "default" : "pointer",
-                  fontFamily: C.mono,
-                  fontSize: 12,
-                  border: `1px solid ${mode === t.id ? C.teal : C.border}`,
-                  background:
-                    mode === t.id ? "rgba(0,229,176,0.12)" : "transparent",
-                  color: mode === t.id ? C.teal : C.dim,
+                  fontFamily: C.sans,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  border: `1px solid ${mode === t.id ? "transparent" : C.border}`,
+                  background: mode === t.id ? C.ink : "#fff",
+                  color: mode === t.id ? "#fff" : C.dim,
                 }}
               >
                 {t.label}
@@ -549,13 +572,13 @@ export default function StudioPage() {
               gap: 12,
             }}
           >
-            <span style={{ fontSize: 11, color: C.dim }}>{cur.hint}</span>
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 500 }}>{cur.hint}</span>
             <a
               href="/dashboard"
               target="_blank"
               rel="noreferrer"
               title="Your previously built apps (opens in a new tab)"
-              style={{ fontSize: 11, color: C.violet, textDecoration: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 9px", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, color: C.ink, fontWeight: 600, textDecoration: "none", border: `1px solid ${C.borderInput}`, background: "#fff", borderRadius: theme.radius.button, padding: "7px 12px", whiteSpace: "nowrap" }}
             >
               ▤ My Apps ↗
             </a>
@@ -565,13 +588,14 @@ export default function StudioPage() {
               disabled={busy}
               title="Choose the Claude model"
               style={{
-                background: C.panel,
-                color: C.text,
-                border: `1px solid ${C.border}`,
-                borderRadius: 8,
-                padding: "6px 8px",
-                fontFamily: C.mono,
-                fontSize: 11,
+                background: "#fff",
+                color: C.ink,
+                border: `1px solid ${C.borderInput}`,
+                borderRadius: theme.radius.button,
+                padding: "7px 10px",
+                fontFamily: C.sans,
+                fontSize: 12,
+                fontWeight: 500,
                 outline: "none",
                 cursor: busy ? "default" : "pointer",
               }}
@@ -590,10 +614,11 @@ export default function StudioPage() {
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: 20,
+            padding: "28px 24px",
             display: "flex",
             flexDirection: "column",
-            gap: 12,
+            gap: 14,
+            background: C.surface,
           }}
         >
           {lines.length === 0 && (
@@ -605,8 +630,8 @@ export default function StudioPage() {
                 maxWidth: 460,
               }}
             >
-              <div style={{ fontSize: 40, opacity: 0.2 }}>⬡</div>
-              <div style={{ fontSize: 13, marginTop: 8 }}>{cur.empty}</div>
+              <div style={{ ...ui.logoMark, width: 44, height: 44, borderRadius: 13, margin: "0 auto" }} />
+              <div style={{ fontSize: 15, marginTop: 16, color: C.dim, lineHeight: 1.55 }}>{cur.empty}</div>
             </div>
           )}
           {lines.map((ln, i) => (
@@ -621,20 +646,37 @@ export default function StudioPage() {
             >
               <div
                 style={{
-                  padding: ln.role === "log" ? "4px 10px" : "10px 14px",
-                  borderRadius: 12,
+                  padding: ln.role === "log" ? "4px 10px" : "11px 15px",
+                  borderRadius:
+                    ln.role === "log" ? 8 : theme.radius.card,
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
-                  fontSize: ln.role === "log" ? 11 : 13,
-                  lineHeight: 1.5,
+                  fontSize: ln.role === "log" ? 12 : 14,
+                  fontFamily:
+                    ln.role === "log"
+                      ? "ui-monospace, 'SF Mono', monospace"
+                      : C.sans,
+                  lineHeight: 1.55,
                   background:
                     ln.role === "user"
-                      ? "rgba(139,124,248,0.15)"
+                      ? C.ink
                       : ln.role === "log"
                         ? "transparent"
-                        : C.panel,
-                  border: ln.role === "log" ? "none" : `1px solid ${C.border}`,
-                  color: ln.role === "log" ? C.dim : C.text,
+                        : "#fff",
+                  border:
+                    ln.role === "log"
+                      ? "none"
+                      : ln.role === "user"
+                        ? "none"
+                        : `1px solid ${C.border}`,
+                  boxShadow:
+                    ln.role === "assistant" ? theme.shadow.card : "none",
+                  color:
+                    ln.role === "log"
+                      ? C.faint
+                      : ln.role === "user"
+                        ? "#fff"
+                        : C.text,
                 }}
               >
                 {ln.text || (busy ? "…" : "")}
@@ -644,15 +686,16 @@ export default function StudioPage() {
                   onClick={() => copyText(ln.text, i)}
                   title="Copy"
                   style={{
-                    marginTop: 4,
+                    marginTop: 5,
                     alignSelf: ln.role === "user" ? "flex-end" : "flex-start",
                     display: "block",
                     background: "none",
                     border: "none",
-                    color: copiedIdx === i ? C.teal : C.dim,
+                    color: copiedIdx === i ? C.teal : C.faint,
                     cursor: "pointer",
-                    fontFamily: C.mono,
-                    fontSize: 10,
+                    fontFamily: C.sans,
+                    fontWeight: 500,
+                    fontSize: 11,
                     padding: 0,
                   }}
                 >
@@ -663,7 +706,7 @@ export default function StudioPage() {
           ))}
           {busy && (
             <div
-              style={{ alignSelf: "flex-start", color: C.teal, fontSize: 11 }}
+              style={{ alignSelf: "flex-start", color: C.teal, fontSize: 12, fontWeight: 600 }}
             >
               ● working…
             </div>
@@ -673,15 +716,16 @@ export default function StudioPage() {
         {mode === "cowork" && deliverables.length > 0 && (
           <div
             style={{
-              padding: "8px 20px",
+              padding: "10px 24px",
               borderTop: `1px solid ${C.border}`,
+              background: C.bg,
               display: "flex",
               gap: 8,
               flexWrap: "wrap",
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: 11, color: C.teal }}>📦 Files:</span>
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>📦 Files:</span>
             {deliverables.map((d) => (
               <a
                 key={d}
@@ -691,12 +735,14 @@ export default function StudioPage() {
                     : "#"
                 }
                 style={{
-                  fontSize: 11,
-                  color: C.violet,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.ink,
                   textDecoration: "none",
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 7,
-                  padding: "3px 8px",
+                  border: `1px solid ${C.borderInput}`,
+                  background: "#fff",
+                  borderRadius: theme.radius.pill,
+                  padding: "5px 11px",
                 }}
               >
                 ↓ {d}
@@ -707,19 +753,20 @@ export default function StudioPage() {
         {mode === "build" && previewUrl && (
           <div
             style={{
-              padding: "8px 20px",
+              padding: "10px 24px",
               borderTop: `1px solid ${C.border}`,
+              background: C.bg,
               display: "flex",
               gap: 10,
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: 11, color: C.teal }}>⬡ Live preview:</span>
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>⬡ Live preview:</span>
             <a
               href={previewUrl}
               target="_blank"
               rel="noreferrer"
-              style={{ fontSize: 12, color: C.violet }}
+              style={{ fontSize: 13, color: C.teal, fontWeight: 600 }}
             >
               {previewUrl} ↗
             </a>
@@ -729,7 +776,8 @@ export default function StudioPage() {
         {attachments.length > 0 && (
           <div
             style={{
-              padding: "8px 16px 0",
+              padding: "12px 24px 0",
+              background: C.bg,
               display: "flex",
               gap: 6,
               flexWrap: "wrap",
@@ -740,11 +788,13 @@ export default function StudioPage() {
               <span
                 key={i}
                 style={{
-                  fontSize: 11,
-                  color: C.violet,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 7,
-                  padding: "3px 8px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: C.ink,
+                  border: `1px solid ${C.borderInput}`,
+                  background: "#fff",
+                  borderRadius: theme.radius.pill,
+                  padding: "5px 11px",
                   display: "flex",
                   gap: 6,
                   alignItems: "center",
@@ -758,9 +808,9 @@ export default function StudioPage() {
                   style={{
                     background: "none",
                     border: "none",
-                    color: C.dim,
+                    color: C.faint,
                     cursor: "pointer",
-                    fontSize: 12,
+                    fontSize: 13,
                     padding: 0,
                   }}
                 >
@@ -773,8 +823,9 @@ export default function StudioPage() {
 
         <div
           style={{
-            padding: 16,
+            padding: 18,
             borderTop: `1px solid ${C.border}`,
+            background: C.bg,
             display: "flex",
             gap: 10,
             alignItems: "flex-end",
@@ -793,11 +844,11 @@ export default function StudioPage() {
             disabled={busy}
             title="Attach documents, images, or a zip for Claude to study"
             style={{
-              padding: "0 14px",
-              height: 46,
-              borderRadius: 10,
-              border: `1px solid ${C.border}`,
-              background: C.panel,
+              padding: "0 16px",
+              height: 48,
+              borderRadius: theme.radius.button,
+              border: `1px solid ${C.borderInput}`,
+              background: "#fff",
               color: C.dim,
               cursor: busy ? "default" : "pointer",
               fontSize: 16,
@@ -819,13 +870,14 @@ export default function StudioPage() {
             style={{
               flex: 1,
               resize: "none",
-              background: C.panel,
-              border: `1px solid ${C.border}`,
-              borderRadius: 10,
+              background: C.surfaceWarm,
+              border: `1px solid ${C.borderInput}`,
+              borderRadius: theme.radius.button,
               color: C.text,
-              padding: "12px 14px",
-              fontFamily: C.mono,
-              fontSize: 13,
+              padding: "13px 15px",
+              fontFamily: C.sans,
+              fontSize: 15,
+              lineHeight: 1.5,
               outline: "none",
             }}
           />
@@ -833,15 +885,16 @@ export default function StudioPage() {
             onClick={send}
             disabled={busy || (!input.trim() && attachments.length === 0)}
             style={{
-              padding: "0 22px",
-              borderRadius: 10,
+              padding: "0 24px",
+              height: 48,
+              borderRadius: theme.radius.button,
               border: "none",
               cursor: busy ? "default" : "pointer",
-              background: busy ? C.border : C.teal,
-              color: busy ? C.dim : "#000",
-              fontFamily: C.mono,
+              background: busy ? C.border : C.ink,
+              color: busy ? C.dim : "#fff",
+              fontFamily: C.sans,
               fontWeight: 700,
-              fontSize: 13,
+              fontSize: 14,
             }}
           >
             {busy ? "…" : "Send ↑"}
