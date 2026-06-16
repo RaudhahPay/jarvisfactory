@@ -6,7 +6,7 @@
 // Falls back gracefully if the migration hasn't been run yet.
 // ============================================================
 
-import { createClient } from '@/utils/supabase/client'
+import { getSupabase as createClient } from '@/web/src/lib/supabase'
 
 export type LessonCategory = 'forbidden' | 'required' | 'pitfall' | 'correction' | 'recipe'
 
