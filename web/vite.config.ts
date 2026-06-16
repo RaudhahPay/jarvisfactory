@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react';
 
 // `web/` is the SPA root. `@/` maps to the REPO ROOT (two levels up) to mirror
 // `vitest.config.ts` and `web/tsconfig.json`, so ported files keep their
-// `@/lib/...` imports working across the directory boundary. During Phase A the
-// `/api` proxy points at the still-running Next dev server on :3000.
+// `@/lib/...` imports working across the directory boundary. The `/api` proxy
+// forwards to the Hono server on :3000 during dev.
 export default defineConfig({
   root: __dirname,
   plugins: [react()],

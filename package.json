@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:server\"",
+    "dev": "npm run dev:server & npm run dev:web",
     "dev:web": "cd web && npx vite",
     "dev:server": "tsx watch server/index.ts",
     "build": "npm run build:web && npm run build:server",

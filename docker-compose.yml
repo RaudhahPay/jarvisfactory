@@ -1,25 +1,21 @@
 services:
-  jarvisfactory:
-    container_name: jarvisfactory-dev
+  ezclaude:
+    container_name: ezclaude-dev
     build:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      # Map container port 3000 → your Mac's port 3000
+      # Vite dev server (SPA)
+      - "5173:5173"
+      # Hono API server
       - "3000:3000"
     volumes:
-      # Mount your code folder INTO the container so changes show instantly
       - .:/app
-      # But keep node_modules INSIDE the container (faster, avoids OS conflicts)
       - /app/node_modules
-      - /app/.next
     env_file:
-      # Load secrets from .env.local (keep this file out of git!)
-      - .env.local
+      - .env
     environment:
       - NODE_ENV=development
-      # Watching files via mounted volumes can be slow on macOS — polling fixes that
-      - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
