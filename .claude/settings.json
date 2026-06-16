@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vitest *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git commit -m 'feat\\(web\\): vite SPA shell + react-router routes *)",
+      "Bash(git commit -q -m 'feat\\(web\\): supabase browser client + getAccessToken *)",
+      "Bash(cat vitest.config.*)",
+      "Bash(find . -name \"*.setup.*\" -not -path \"*/node_modules/*\")",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\),indent=2\\)\\); print\\('test deps:', [k for k in {**d.get\\('devDependencies',{}\\),**d.get\\('dependencies',{}\\)} if 'vitest' in k or 'testing' in k or 'jsdom' in k]\\)\")"
+    ]
+  }
+}

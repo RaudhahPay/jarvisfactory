@@ -30,7 +30,7 @@ create index if not exists idx_apps_builder_version on apps(builder_version);
 -- ── Helpful view: which apps are still on the old single-file pipeline ──
 -- Useful for the "Convert to React" migration UX (Phase 7.1 task #68)
 create or replace view legacy_v10_apps as
-  select id, user_id, name, created_at, updated_at,
+  select id, user_id, name, created_at,
          length(html_code) as code_size,
          (proposal_data is not null) as has_proposal,
          (github_repo_full_name is not null) as on_github
