@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MessageSquare, Sparkles, Zap, Mic, ArrowUp, ChevronDown, ArrowRight, Check } from 'lucide-react'
 
 // Mode config — the differentiator: ezclaude's three ways to use Claude,
 // surfaced right inside the Lovable-style prompt box.
@@ -126,10 +127,10 @@ export default function Home() {
                 title="Switch mode — Build, Create, or Ask"
                 onClick={() => setModeIdx((modeIdx + 1) % MODES.length)}
               >
-                {mode.key} <span style={{color:'#9a9aac',fontSize:11}}>▾</span>
+                {mode.key} <ChevronDown size={13} color="#9a9aac" />
               </button>
-              <button style={s.micBtn} title="Voice (coming soon)">🎤</button>
-              <button style={s.sendBtn} title="Start (⌘↵)" onClick={launch}>↑</button>
+              <button style={s.micBtn} title="Voice (coming soon)"><Mic size={16} /></button>
+              <button style={s.sendBtn} title="Start (⌘↵)" onClick={launch}><ArrowUp size={17} color="#fff" /></button>
             </div>
           </div>
         </div>
@@ -143,16 +144,16 @@ export default function Home() {
           <div style={s.sectionTitle}>Three ways to use Claude — no code</div>
           <div style={s.grid}>
             {[
-              ['01','💬','Ask','Chat with Claude about anything — questions, drafts, research, explanations. Plain language, English or Bahasa Melayu.','just talk'],
-              ['02','✨','Create','Describe a document, slide deck, spreadsheet or PDF and Claude makes the real file for you to download.','no code'],
-              ['03','⚡','Build','Describe an app and Claude builds and launches it — database, hosting, the works. You own everything.','real, live apps'],
-            ].map(([num,icon,title,desc,tag]) => (
+              ['01',MessageSquare,'Ask','Chat with Claude about anything — questions, drafts, research, explanations. Plain language, English or Bahasa Melayu.','just talk'],
+              ['02',Sparkles,'Create','Describe a document, slide deck, spreadsheet or PDF and Claude makes the real file for you to download.','no code'],
+              ['03',Zap,'Build','Describe an app and Claude builds and launches it — database, hosting, the works. You own everything.','real, live apps'],
+            ].map(([num,StepIcon,title,desc,tag]: any) => (
               <div key={num} style={s.step}>
-                <div style={s.stepIcon}>{icon}</div>
+                <div style={s.stepIcon}><StepIcon size={26} color={ACCENT} /></div>
                 <div style={s.stepNum}>{num}</div>
                 <div style={s.stepTitle}>{title}</div>
                 <div style={s.stepDesc}>{desc}</div>
-                <div style={s.stepTag}>→ {tag}</div>
+                <div style={{...s.stepTag, display:'flex', alignItems:'center', gap:5}}><ArrowRight size={14}/> {tag}</div>
               </div>
             ))}
           </div>
@@ -172,7 +173,7 @@ export default function Home() {
               <div style={s.pricePeriod}>Billed monthly</div>
               <ul style={s.priceFeatures}>
                 {['5 apps per month','Supabase database (shared)','Subdomain hosting','GitHub sync','Email support'].map(f=>(
-                  <li key={f} style={s.priceFeat}><span style={{color:ACCENT}}>→</span>{f}</li>
+                  <li key={f} style={s.priceFeat}><Check size={15} color={ACCENT} style={{flexShrink:0,marginTop:1}} />{f}</li>
                 ))}
               </ul>
               <button style={s.priceBtn} onClick={() => navigate('/auth')}>Get Started</button>
@@ -185,10 +186,10 @@ export default function Home() {
               <div style={s.pricePeriod}>Billed monthly</div>
               <ul style={s.priceFeatures}>
                 {['20 apps per month','Supabase database (dedicated)','Custom domain included','GitHub sync + auto-deploy','JARVIS memory & history','Priority support'].map(f=>(
-                  <li key={f} style={s.priceFeat}><span style={{color:ACCENT}}>→</span>{f}</li>
+                  <li key={f} style={s.priceFeat}><Check size={15} color={ACCENT} style={{flexShrink:0,marginTop:1}} />{f}</li>
                 ))}
               </ul>
-              <button style={s.priceBtnSolid} onClick={() => navigate('/auth')}>Get Early Access →</button>
+              <button style={{...s.priceBtnSolid, display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6}} onClick={() => navigate('/auth')}>Get Early Access <ArrowRight size={15} /></button>
             </div>
             {/* Agency */}
             <div style={s.priceCard}>
@@ -197,7 +198,7 @@ export default function Home() {
               <div style={s.pricePeriod}>Billed monthly</div>
               <ul style={s.priceFeatures}>
                 {['Unlimited apps','White-label your JARVIS','10 client seats','Custom domain + branding','Dedicated account manager','API access'].map(f=>(
-                  <li key={f} style={s.priceFeat}><span style={{color:ACCENT}}>→</span>{f}</li>
+                  <li key={f} style={s.priceFeat}><Check size={15} color={ACCENT} style={{flexShrink:0,marginTop:1}} />{f}</li>
                 ))}
               </ul>
               <button style={s.priceBtn} onClick={() => navigate('/auth')}>Contact Us</button>
@@ -213,7 +214,7 @@ export default function Home() {
           <span style={{fontWeight:800,color:INK}}>ezclaude</span>
         </div>
         <div style={{fontSize:12,color:'#9a9aac'}}>© 2026 ezclaude — Make Claude easy. Built by Coach Fadzil</div>
-        <button style={s.startBtn} onClick={() => navigate('/auth')}>Start building →</button>
+        <button style={{...s.startBtn, display:'inline-flex', alignItems:'center', gap:6}} onClick={() => navigate('/auth')}>Start building <ArrowRight size={15} color="#fff" /></button>
       </footer>
     </div>
   )
