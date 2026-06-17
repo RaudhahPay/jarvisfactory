@@ -108,7 +108,7 @@ export default function Onboarding() {
           <span style={c.logo}>ezclaude</span>
         </div>
         <div style={c.finalCard}>
-          <div style={c.jarvisAvatar}>🤖</div>
+          <div style={c.jarvisAvatar}></div>
           <div style={c.q}>NAME YOUR JARVIS</div>
           <div style={c.sub}>Give your AI developer a name. This is YOUR personal JARVIS.</div>
           <input
@@ -122,7 +122,7 @@ export default function Onboarding() {
             Based on your profile, your <strong style={{color:theme.color.accent}}>{jarvisName||'JARVIS'}</strong> will specialise in <strong style={{color:theme.color.ink}}>{answers.industry}</strong> apps, communicate in <strong style={{color:theme.color.ink}}>{answers.language}</strong>, and build exactly what you need.
           </div>
           <button style={c.btn} onClick={finish} disabled={loading}>
-            {loading ? 'Creating your JARVIS...' : `Activate ${jarvisName||'JARVIS'} →`}
+            {loading ? 'Creating your JARVIS...' : `Activate ${jarvisName||'JARVIS'} `}
           </button>
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function Onboarding() {
           onClick={next}
           disabled={!answers[current.id]}
         >
-          {step===steps.length-1 ? 'Almost Done →' : 'Next →'}
+          {step===steps.length-1 ? 'Almost Done ' : 'Next '}
         </button>
       </div>
     </div>

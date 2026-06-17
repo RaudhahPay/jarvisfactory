@@ -95,7 +95,7 @@ export default function AuthPage() {
         <input style={c.input} type="password" placeholder="Min 8 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAuth()}/>
 
         <button style={c.btn} onClick={handleAuth} disabled={loading}>
-          {loading ? '...' : mode==='signup' ? 'Create My Account →' : 'Sign In →'}
+          {loading ? '...' : mode==='signup' ? 'Create My Account ' : 'Sign In '}
         </button>
 
         <div style={c.toggle}>

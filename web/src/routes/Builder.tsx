@@ -15,7 +15,9 @@ import { Icon } from '@/web/src/lib/icon'
 import {
   Eye, Code2, Terminal as TerminalIcon, ChevronDown, ChevronUp, ExternalLink,
   FolderOpen, Plus, FileText, Palette, ArrowLeft, Paperclip, Wand2, Download,
-  Bot, ArrowUp, Save, MessageSquare, Sparkles,
+  Bot, ArrowUp, Save, MessageSquare, Sparkles, Compass, Hammer,
+  Target, Users, Globe, Star, Plug, Languages as LanguagesIcon, Smartphone,
+  DollarSign, MessageCircle, LayoutGrid, Database, AlertTriangle, Lightbulb, Map,
 } from 'lucide-react'
 
 export default function Builder() {
@@ -181,10 +183,10 @@ You can keep editing it via chat below, or start a new app with the "<strong>+ N
         setJarvisMsg(`Good day. I'm <strong style="color:#10b981">${j?.jarvis_name||'JARVIS'}</strong> — your personal AI developer.<br><br>
 I specialise in <strong>${j?.industry||'your industry'}</strong> apps.<br><br>
 <strong style="color:#ffd166">New in v5.2:</strong><br>
-🔌 Real Supabase backend — your apps now have real signup/login<br>
-💾 Persistent data across devices, not just localStorage<br>
-🎨 Multi-user with full data isolation per app<br><br>
-${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the prompt box on the left — review it and click ⚡ Launch when ready.</strong>' : 'Tell me what you want to build.'}`)
+Real Supabase backend — your apps now have real signup/login<br>
+Persistent data across devices, not just localStorage<br>
+Multi-user with full data isolation per app<br><br>
+${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the prompt box on the left — review it and click Launch when ready.</strong>' : 'Tell me what you want to build.'}`)
       }
     }
     load()
@@ -252,7 +254,7 @@ ${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the promp
     setShowAppsPicker(false)
     localStorage.setItem('jf_last_app_id', app.id)
     addLog(`Switched to: ${app.name}`, 'ok')
-    addChat(`📂 Loaded <strong style="color:#10b981">${app.name}</strong>. Edit via chat below.`)
+    addChat(`Loaded <strong style="color:#10b981">${app.name}</strong>. Edit via chat below.`)
   }
 
   function newApp() {
@@ -316,7 +318,7 @@ ${initialPrompt ? '<strong style="color:#10b981">Your idea is ready in the promp
   }
 
   // ── v7.6: Server-side stream capture — server holds the long-lived Anthropic stream
-  // and returns one complete JSON. Browser fetch is short-lived → immune to tab suspension. ──
+  // and returns one complete JSON. Browser fetch is short-lived immune to tab suspension. ──
   // v2/Stage 4 Layer-2: callClaudeOnce/callClaude/callClaudeAgentic moved to
   // lib/claude-client.ts. The component builds the client once, injecting its own
   // addLog (transient-retry notices) and buildMessages (attachments/vision path,
@@ -352,7 +354,7 @@ Analyse the provided HTML app code and the user's feedback/issue. Your job is to
 3. Propose a clear fix plan
 4. Ask if there are any other changes to batch together
 
-🔌 CRITICAL CONTEXT — THIS APP HAS A REAL BACKEND:
+CRITICAL CONTEXT — THIS APP HAS A REAL BACKEND:
 A global \`window.Jarvis\` object is auto-injected into every app. It provides Supabase-backed:
   - Jarvis.signup(email, password, fullName, role)
   - Jarvis.login(email, password)
@@ -368,7 +370,7 @@ DIAGNOSIS RULES:
 - If you see localStorage with keys like 'users', 'accounts', 'credentials', 'staffMembers', 'birthdays', 'sessionToken', 'isLoggedIn', 'authenticated', or any app-domain key (assignments, contacts, posts, items, etc.), that is ALWAYS a bug. Recommend refactor to Jarvis.* methods.
 - Hardcoded demo credentials (e.g. demo@example.com / demo123) are ALWAYS a bug.
 
-🟢 NOT A BUG — DO NOT FLAG THESE:
+NOT A BUG — DO NOT FLAG THESE:
 - localStorage keys with prefix 'jarvis_' (e.g. 'jarvis_session_<APP_ID>', 'jarvis_user_<APP_ID>') — these are the JARVIS LIBRARY's own session caching. They are CORRECT and EXPECTED.
 - localStorage keys: 'theme', 'darkMode', 'language', 'lang', 'fontSize', 'sidebar', 'activeTab', 'consent' — these are UI preferences and are FINE.
 - Any localStorage key prefixed with 'jf_', 'theme_', 'pref_', 'ui_' — also fine, UI state only.
@@ -411,16 +413,16 @@ Return ONLY valid JSON (no markdown):
       // Show diagnosis card in chat
       setChatLog(l => l.map((m,i) => i === l.length-1 ? { ...m, html: `
         <div style="background:#f7f5ef;border:1px solid rgba(255,209,102,0.25);border-radius:10px;padding:14px">
-          <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#ffd166;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">🔍 Diagnosis</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#ffd166;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Diagnosis</div>
           <div style="font-size:12px;color:#0a0a18;margin-bottom:8px;line-height:1.6">${diagnosis.diagnosis}</div>
           <div style="font-size:11px;color:#ff6b9d;margin-bottom:10px"><strong>Root cause:</strong> ${diagnosis.root_cause}</div>
           <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#10b981;margin-bottom:6px">FIX PLAN:</div>
-          ${diagnosis.fix_plan.map((f:string) => `<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:6px"><span style="color:#10b981">→</span>${f}</div>`).join('')}
+          ${diagnosis.fix_plan.map((f:string) => `<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:6px"><span style="color:#10b981"></span>${f}</div>`).join('')}
           <div style="height:1px;background:#ececf3;margin:10px 0"></div>
           <div style="font-size:12px;color:#ffd166;margin-bottom:10px">${diagnosis.question}</div>
           <div style="display:flex;gap:6px">
-            <button onclick="window.jfConfirmFix('')" style="flex:1;padding:8px;background:#10b981;color:#000;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer">✓ Apply Fix</button>
-            <button onclick="window.jfRejectFix()" style="flex:1;padding:8px;background:transparent;color:#5a5a72;border:1px solid #e3e3ee;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer">✕ Cancel</button>
+            <button onclick="window.jfConfirmFix('')" style="flex:1;padding:8px;background:#10b981;color:#000;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer">Apply Fix</button>
+            <button onclick="window.jfRejectFix()" style="flex:1;padding:8px;background:transparent;color:#5a5a72;border:1px solid #e3e3ee;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer">Cancel</button>
           </div>
           <input id="extraChangesInput" placeholder="Optional: add more changes to batch..." style="width:100%;margin-top:8px;background:#faf9f6;border:1px solid #e3e3ee;border-radius:6px;color:#0a0a18;font-size:11px;padding:7px;box-sizing:border-box;outline:none"/>
         </div>` } : m))
@@ -440,7 +442,7 @@ Return ONLY valid JSON (no markdown):
 
     } catch(err: any) {
       addLog('ERROR: '+err.message, 'err')
-      addChat('❌ Diagnosis failed: '+err.message)
+      addChat('Diagnosis failed: '+err.message)
       setFeedbackPhase('idle')
       setIsFeedbackLoading(false)
     }
@@ -454,12 +456,12 @@ Return ONLY valid JSON (no markdown):
     const codeToApply = builtCode || builtCodeRef.current
     if(!feedbackToApply){
       addLog('Apply Fix: no pending feedback found — please send feedback again.', 'err')
-      addChat('⚠️ Lost the original feedback. Please type your feedback in the chat below and send it again.')
+      addChat('Lost the original feedback. Please type your feedback in the chat below and send it again.')
       return
     }
     if(!codeToApply){
       addLog('Apply Fix: no app code loaded — build something first.', 'err')
-      addChat('⚠️ No app loaded. Build something before requesting a fix.')
+      addChat('No app loaded. Build something before requesting a fix.')
       return
     }
     setFeedbackPhase('fixing')
@@ -478,26 +480,26 @@ Return ONLY valid JSON (no markdown):
 You have diagnosed the issue. Now apply ALL the fixes.
 
 ╔═══════════════════════════════════════════════════════════╗
-║  ⛔ FORBIDDEN — IF YOU DO ANY OF THESE, FIX WILL FAIL    ║
+║  FORBIDDEN — IF YOU DO ANY OF THESE, FIX WILL FAIL    ║
 ╠═══════════════════════════════════════════════════════════╣
-║  ❌ DO NOT use localStorage for users, accounts,          ║
+║  DO NOT use localStorage for users, accounts,          ║
 ║     credentials, current user, sessions, or auth tokens.  ║
 ║     localStorage is for UI prefs ONLY (theme, language).  ║
 ║                                                            ║
-║  ❌ DO NOT use localStorage for app domain data (staff,    ║
+║  DO NOT use localStorage for app domain data (staff,    ║
 ║     contacts, items, posts, settings) — use Jarvis.saveData║
 ║                                                            ║
-║  ❌ DO NOT define your own \`users\` array in JS.            ║
+║  DO NOT define your own \`users\` array in JS.            ║
 ║                                                            ║
-║  ❌ DO NOT hardcode demo credentials.                      ║
+║  DO NOT hardcode demo credentials.                      ║
 ║                                                            ║
-║  ❌ DO NOT include the Jarvis library script — auto-loaded.║
+║  DO NOT include the Jarvis library script — auto-loaded.║
 ║                                                            ║
-║  ❌ DO NOT return markdown — raw HTML only.                ║
+║  DO NOT return markdown — raw HTML only.                ║
 ╚═══════════════════════════════════════════════════════════╝
 
-✅ THE ONLY WAY to do auth: window.Jarvis (auto-injected globally).
-✅ THE ONLY WAY to persist data: Jarvis.saveData / Jarvis.loadData.
+THE ONLY WAY to do auth: window.Jarvis (auto-injected globally).
+THE ONLY WAY to persist data: Jarvis.saveData / Jarvis.loadData.
 
 ═══ MANDATORY API ═══
   await Jarvis.signup(email, password, fullName, role)  // creates user + auto-login
@@ -513,10 +515,10 @@ You have diagnosed the issue. Now apply ALL the fixes.
 
 ═══ MANDATORY PATTERN FOR APPS WITH LOGIN ═══
   1. On page load: if(Jarvis.isLoggedIn()) show dashboard; else show login.
-  2. Signup form → \`await Jarvis.signup(...)\` with try/catch + toast.
-  3. Login form → \`await Jarvis.login(...)\` with try/catch + toast.
-  4. Logout → \`Jarvis.logout()\` then show login screen.
-  5. Domain data (staff, items, contacts, posts, etc.) → \`Jarvis.saveData / loadData\`.
+  2. Signup form \`await Jarvis.signup(...)\` with try/catch + toast.
+  3. Login form \`await Jarvis.login(...)\` with try/catch + toast.
+  4. Logout \`Jarvis.logout()\` then show login screen.
+  5. Domain data (staff, items, contacts, posts, etc.) \`Jarvis.saveData / loadData\`.
   6. The ONLY localStorage allowed: 'theme', 'darkMode', 'language', 'lang' (UI prefs only).
 
 ═══ HARD RULES ═══
@@ -531,7 +533,7 @@ You have diagnosed the issue. Now apply ALL the fixes.
 DIAGNOSED FIX PLAN — apply EVERY item:
 ${fixPlanText}`
 
-      // v6: Build → Validate → Retry on fix path too
+      // v6: Build Validate Retry on fix path too
       const fixNeedsAuth = promptRequiresAuth(prompt + ' ' + allChanges, '')
       let code = ''
       let validation: any = null
@@ -541,7 +543,7 @@ ${fixPlanText}`
       while (fixAttempt <= FIX_MAX_RETRIES) {
         let extraMsg = 'Current app code:\n' + builtCode + '\n\nIssue to fix: ' + allChanges
         if (fixAttempt > 0) {
-          extraMsg += `\n\n⚠️ PREVIOUS FIX FAILED VALIDATION:\n${validation.errors.map((e:string)=>'- '+e).join('\n')}\n\nFix these too. Use Jarvis.signup/login NOT localStorage. NO hardcoded demo creds.`
+          extraMsg += `\n\nPREVIOUS FIX FAILED VALIDATION:\n${validation.errors.map((e:string)=>'- '+e).join('\n')}\n\nFix these too. Use Jarvis.signup/login NOT localStorage. NO hardcoded demo creds.`
           addLog(`Fix retry ${fixAttempt}/${FIX_MAX_RETRIES}...`, 'info')
         }
 
@@ -569,7 +571,7 @@ ${fixPlanText}`
       const codeEl = document.getElementById('codeDisplay')
       if(codeEl) codeEl.textContent = code
 
-      const validIcon = validation?.valid ? '✅' : '⚠️'
+      const validIcon = validation?.valid ? '' : ''
       addLog(`Fix applied. ${validIcon} ~${tok} tokens.`, 'ok')
 
       // Auto-run QA after fix
@@ -577,7 +579,7 @@ ${fixPlanText}`
       runQA(code)
 
       setChatLog(l => l.map((m,i) => i === l.length-1 ? { ...m,
-        html: `✅ <strong>Fix applied!</strong> Running QA check now...<br><span style="color:#5a5a72;font-size:11px">~${tok.toLocaleString()} tokens used</span>`
+        html: `<strong>Fix applied!</strong> Running QA check now...<br><span style="color:#5a5a72;font-size:11px">~${tok.toLocaleString()} tokens used</span>`
       } : m))
 
       if(user) {
@@ -614,7 +616,7 @@ ${fixPlanText}`
 
     } catch(err: any) {
       addLog('ERROR: '+err.message, 'err')
-      addChat('❌ Fix failed: '+err.message)
+      addChat('Fix failed: '+err.message)
       setPhase('done')
       setFeedbackPhase('idle')
       setIsFeedbackLoading(false)
@@ -666,22 +668,22 @@ The 15 checks are:
 
       setQaReport(report)
       setIsRunningQA(false)
-      addLog(`QA complete. Score: ${report.score}/100. ${report.certified?'✅ CERTIFIED':'⚠️ Issues found'}`, report.certified?'ok':'warn')
+      addLog(`QA complete. Score: ${report.score}/100. ${report.certified?'CERTIFIED':'Issues found'}`, report.certified?'ok':'warn')
 
       // Show QA report in chat
       setChatLog(l => [...l, {
         isUser: false,
         html: `<div style="background:#f7f5ef;border:1px solid ${report.certified?'rgba(16,185,129,0.3)':'rgba(255,209,102,0.3)'};border-radius:10px;padding:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'};text-transform:uppercase;letter-spacing:1px">🔬 QA Report</div>
+            <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'};text-transform:uppercase;letter-spacing:1px">QA Report</div>
             <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:${report.score>=80?'#10b981':report.score>=60?'#ffd166':'#ff4d6d'}">${report.score}/100</div>
           </div>
           <div style="font-size:12px;color:#0a0a18;margin-bottom:10px">${report.summary}</div>
-          ${report.critical?.length > 0 ? `<div style="margin-bottom:8px">${report.critical.map((c:string)=>`<div style="font-size:11px;color:#ff4d6d;margin-bottom:3px;display:flex;gap:5px"><span>✕</span>${c}</div>`).join('')}</div>` : ''}
-          ${report.failed?.length > 0 ? `<div style="margin-bottom:8px">${report.failed.slice(0,3).map((f:string)=>`<div style="font-size:11px;color:#ffd166;margin-bottom:3px;display:flex;gap:5px"><span>⚠</span>${f}</div>`).join('')}</div>` : ''}
-          ${report.passed?.length > 0 ? `<div style="margin-bottom:10px">${report.passed.slice(0,3).map((p:string)=>`<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:5px"><span style="color:#10b981">✓</span>${p}</div>`).join('')}</div>` : ''}
+          ${report.critical?.length > 0 ? `<div style="margin-bottom:8px">${report.critical.map((c:string)=>`<div style="font-size:11px;color:#ff4d6d;margin-bottom:3px;display:flex;gap:5px"><span style="color:currentColor">-</span> ${c}</div>`).join('')}</div>` : ''}
+          ${report.failed?.length > 0 ? `<div style="margin-bottom:8px">${report.failed.slice(0,3).map((f:string)=>`<div style="font-size:11px;color:#ffd166;margin-bottom:3px;display:flex;gap:5px"><span style="color:currentColor">-</span> ${f}</div>`).join('')}</div>` : ''}
+          ${report.passed?.length > 0 ? `<div style="margin-bottom:10px">${report.passed.slice(0,3).map((p:string)=>`<div style="font-size:11px;color:#5a5a72;margin-bottom:3px;display:flex;gap:5px"><span style="color:#10b981"></span>${p}</div>`).join('')}</div>` : ''}
           <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:${report.certified?'rgba(16,185,129,0.1)':'rgba(255,209,102,0.1)'};border-radius:6px">
-            <span style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'}">${report.certified?'✅ QA CERTIFIED':'⚠️ NEEDS FIXES'}</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:10px;color:${report.certified?'#10b981':'#ffd166'}">${report.certified?'QA CERTIFIED':'NEEDS FIXES'}</span>
             ${!report.certified && report.critical?.length > 0 ? `<button onclick="window.jfAutoFix()" style="padding:5px 12px;background:#7b6fff;color:#fff;border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer">Auto-fix issues</button>` : ''}
           </div>
         </div>`
@@ -803,7 +805,7 @@ The 15 checks are:
       // Page header band (drawn on every page) — teal bar with hexagon mark + wordmark
       const drawPageHeader = () => {
         setFill(C.teal); pdf.rect(0, 0, pageW, 11, 'F')
-        // White hexagon brand mark (the ⬡ from the landing page)
+        // White hexagon brand mark (the from the landing page)
         drawHexagon(margin + 3, 5.5, 2.2, [255,255,255])
         pdf.setFont('helvetica','bold'); pdf.setFontSize(9.5); pdf.setTextColor(255,255,255)
         pdf.text('JARVISFACTORY.AI', margin + 8, 7)
@@ -870,7 +872,7 @@ The 15 checks are:
       }
       const drawWarning = (x: number, baseline: number, color: number[]) => {
         setDraw(color); pdf.setLineWidth(0.55); pdf.setLineJoin('round')
-        // Triangle pointing up: bottom-left → bottom-right → top → close
+        // Triangle pointing up: bottom-left bottom-right top close
         pdf.line(x, baseline, x + 4.4, baseline)
         pdf.line(x + 4.4, baseline, x + 2.2, baseline - 4)
         pdf.line(x + 2.2, baseline - 4, x, baseline)
@@ -1043,7 +1045,7 @@ The 15 checks are:
           subhead('Key User Flows')
           for(const f of finalPlan.user_flows){
             // Replace any Unicode arrows in the flow text with " > " (Helvetica-safe)
-            const safe = String(f).replace(/[→➝➔➜→]/g, ' > ').replace(/\s{2,}>/g, ' >').replace(/>\s{2,}/g, '> ')
+            const safe = String(f).replace(/[]/g, ' > ').replace(/\s{2,}>/g, ' >').replace(/>\s{2,}/g, '> ')
             ensureSpace(4.5)
             // Small teal dot bullet
             setFill(C.teal); pdf.circle(margin + 1, y - 1.4, 0.6, 'F')
@@ -1193,7 +1195,7 @@ The 15 checks are:
       addLog(`Print-quality PDF downloaded (${totalPages} pages)`, 'ok')
     } catch(err: any) {
       addLog('PDF export failed: ' + err.message, 'err')
-      addChat('❌ PDF export failed: ' + err.message)
+      addChat('PDF export failed: ' + err.message)
     } finally {
       setIsExportingPDF(false)
     }
@@ -1204,7 +1206,7 @@ The 15 checks are:
   // and produces a clean proposal JSON so the user can download a PDF. ──
   async function regenerateProposalFromCode(app: any): Promise<any> {
     addLog(`Regenerating proposal from "${app.name}"...`, 'info')
-    addChat(`📋 No proposal saved for <strong>${app.name}</strong> — JARVIS is reading the code and generating one now...`)
+    addChat(`No proposal saved for <strong>${app.name}</strong> — JARVIS is reading the code and generating one now...`)
     const code = (app.html_code || '').slice(0, 28000) // cap to be safe with token limits
     const sys = `You are JARVIS, an AI lead engineer reverse-engineering a build proposal from an existing app's HTML.
 Read the HTML carefully. Identify what the app does, who it's for, what features it has, the data model, the screens, and how it works.
@@ -1222,7 +1224,7 @@ Return ONLY valid JSON (no markdown fences). Use the EXACT structure below.
   "features_v2": ["Logical next-iteration features"],
   "features_future": ["Long-term roadmap items"],
   "screens": [{"name": "Screen name from code", "purpose": "What it does"}],
-  "user_flows": ["Flow 1: Step → Step → Step"],
+  "user_flows": ["Flow 1: Step Step Step"],
   "data_model": [{"table": "table_name from Jarvis.saveData calls or DOM", "fields": "fields detected"}],
   "tech_stack": {
     "frontend": "Single-page HTML/CSS/JS",
@@ -1266,7 +1268,7 @@ Be specific. Read the actual code. Don't hallucinate features that aren't there.
   async function triggerProposalPDF(app: any) {
     let plan = app.proposal_data
     if(!plan) {
-      addChat(`📋 Generating proposal from your existing app...`)
+      addChat(`Generating proposal from your existing app...`)
       try { plan = await regenerateProposalFromCode(app) } catch(err: any) { addLog('Regeneration failed: '+err.message, 'err'); return }
     }
     setFinalPlan(plan)
@@ -1355,7 +1357,7 @@ Return ONLY valid JSON, no markdown:
       addLog('Questions ready. Waiting for answers...', 'info')
     } catch(err: any) {
       addLog('ERROR: '+err.message, 'err')
-      addChat('❌ Error: '+err.message)
+      addChat('Error: '+err.message)
       setPhase('idle')
     }
   }
@@ -1396,8 +1398,8 @@ Return ONLY valid JSON (no markdown fences, no commentary). Use this EXACT struc
     {"name": "Add Item", "purpose": "Purpose"}
   ],
   "user_flows": [
-    "Step 1 → Step 2 → Step 3 (named like a real flow)",
-    "Another flow: Step → Step → Step"
+    "Step 1 Step 2 Step 3 (named like a real flow)",
+    "Another flow: Step Step Step"
   ],
   "data_model": [
     {"table": "users", "fields": "id, email, full_name, role, created_at"},
@@ -1434,7 +1436,7 @@ Return ONLY valid JSON (no markdown fences, no commentary). Use this EXACT struc
 }
 
 RULES:
-- Write features as USER OUTCOMES not technical names. ✗ "JWT auth system" ✓ "Customers sign in with email and password and stay logged in for 30 days"
+- Write features as USER OUTCOMES not technical names. "JWT auth system" "Customers sign in with email and password and stay logged in for 30 days"
 - 'screens' should be 4-8 items minimum
 - 'data_model' should have 2-5 tables, listing real fields
 - 'risks' should be specific to THIS app, not generic ("AI hallucinations" is generic — bad)
@@ -1466,7 +1468,7 @@ RULES:
     }
     if(!finalPlan) return
     setPhase('building')
-    addChat(`✅ <strong>Plan approved.</strong> The team is starting work...`)
+    addChat(`<strong>Plan approved.</strong> The team is starting work...`)
     addLog('Multi-agent pipeline started.', 'build')
     startRef.current = Date.now()
     timerRef.current = setInterval(() => { setBuildTime(((Date.now()-startRef.current)/1000).toFixed(1)+'s') }, 100)
@@ -1507,10 +1509,10 @@ RULES:
       const tok = Math.round(code.length / 4)
       setTokens(tok.toLocaleString())
       setPhase('done')
-      const validIcon = validation?.valid ? '✅' : '⚠️'
+      const validIcon = validation?.valid ? '' : ''
       addLog(`DONE. ${validIcon} ~${tok} tokens, ${((Date.now()-startRef.current)/1000).toFixed(1)}s, ${attempt+1} attempt${attempt>0?'s':''}`, 'ok')
       addLog('Tip: Type feedback in the chat below to improve anything!', 'ok')
-      addChat(`🚀 <strong>Build complete!</strong> ${validIcon} <strong style="color:#10b981">${tok.toLocaleString()} tokens</strong> · <strong style="color:#ffd166">${((Date.now()-startRef.current)/1000).toFixed(1)}s</strong>${attempt>0 ? ` · <strong style="color:#ff6b9d">${attempt+1} attempts</strong>` : ''}<br><br>Switch to <strong>⬡ Preview</strong> to test it.<br><br><span style="color:#7b6fff;font-size:11px">💬 Type feedback below to improve anything — I'm still here!</span>`)
+      addChat(`<strong>Build complete!</strong> ${validIcon} <strong style="color:#10b981">${tok.toLocaleString()} tokens</strong> · <strong style="color:#ffd166">${((Date.now()-startRef.current)/1000).toFixed(1)}s</strong>${attempt>0 ? ` · <strong style="color:#ff6b9d">${attempt+1} attempts</strong>` : ''}<br><br>Switch to <strong>Preview</strong> to test it.<br><br><span style="color:#7b6fff;font-size:11px">Type feedback below to improve anything — I'm still here!</span>`)
       if(user) {
         const buildTimeStr = ((Date.now()-startRef.current)/1000).toFixed(1)
         const { data: newRow } = await supabase.from('apps').insert({
@@ -1545,7 +1547,7 @@ RULES:
             user_satisfaction: undefined, // user can rate later
             notes: `Builder iterations: ${iterations}, tool calls: ${toolCallCount}`,
           })
-          addLog(`🧠 Build outcome recorded to JARVIS memory.`, 'ok')
+          addLog(`Build outcome recorded to JARVIS memory.`, 'ok')
 
           // ── v9.8 Phase 3: auto-extract reusable lessons from this build's QA findings ──
           try {
@@ -1556,9 +1558,9 @@ RULES:
               callClaude: async (sys, msg, maxTok, mdl) => callClaude(sys, msg, maxTok, false, mdl),
             })
             if (lessonsExtracted.length > 0) {
-              addLog(`🧠 +${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'} added to JARVIS memory from this build.`, 'ok')
+              addLog(`+${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'} added to JARVIS memory from this build.`, 'ok')
               const lessonList = lessonsExtracted.map(l => `&nbsp;&nbsp;<span style="color:#7c5cff">[${l.category}]</span> ${l.pattern.slice(0, 120)}${l.pattern.length>120?'…':''}`).join('<br>')
-              addChat(`🧠 <strong>JARVIS just learned ${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'}</strong> from this build:<br>${lessonList}<br><br><span style="color:#9a9aac;font-size:11px">These will inform every future build automatically.</span>`)
+              addChat(`<strong>JARVIS just learned ${lessonsExtracted.length} new lesson${lessonsExtracted.length===1?'':'s'}</strong> from this build:<br>${lessonList}<br><br><span style="color:#9a9aac;font-size:11px">These will inform every future build automatically.</span>`)
             }
           } catch (err: any) {
             addLog(`Lesson extraction skipped: ${err?.message}`, 'warn')
@@ -1570,7 +1572,7 @@ RULES:
     } catch(err: any) {
       clearInterval(timerRef.current)
       addLog('ERROR: '+err.message, 'err')
-      addChat('❌ Build failed: '+err.message)
+      addChat('Build failed: '+err.message)
       setPhase('idle')
       // Mark whichever agent was working as failed
       setAgentStatus(s => {
@@ -1657,7 +1659,7 @@ RULES:
 
               {/* Vision */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎯 Vision</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Target size={13}/> Vision</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>What do you want this app to achieve in one or two sentences?</div>
                 <textarea value={discovery.vision} onChange={e=>setDiscovery({...discovery,vision:e.target.value})} placeholder="e.g. I want a loyalty app for my coffee shop in Shah Alam so customers earn points and come back more often." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
@@ -1672,21 +1674,21 @@ RULES:
               {discoveryExpanded && <>
               {/* Target users */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>👥 Target Users</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Users size={13}/> Target Users</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Who is this app for? Be specific — age, role, location, what they do today.</div>
                 <textarea value={discovery.target_users} onChange={e=>setDiscovery({...discovery,target_users:e.target.value})} placeholder="e.g. F&B operators in Klang Valley with 1-3 outlets, currently using paper loyalty cards." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Reference apps */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌐 Reference Apps You Like</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Globe size={13}/> Reference Apps You Like</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Paste names or URLs. What do you like about them? (e.g. "Tealive app — clean dashboard. Grab — easy ordering.")</div>
                 <textarea value={discovery.reference_apps} onChange={e=>setDiscovery({...discovery,reference_apps:e.target.value})} placeholder="e.g. Tealive app for the rewards UI. Grab for simple ordering. Notion for the calm aesthetic." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* UI Style picker */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🎨 UI/UX Style</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><LayoutGrid size={13}/> UI/UX Style</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Pick the closest fit — JARVIS will design accordingly.</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))',gap:8}}>
                   {[
@@ -1707,66 +1709,66 @@ RULES:
 
               {/* Must-haves */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>⭐ Must-Have Features</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Star size={13}/> Must-Have Features</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Non-negotiable. The app fails without these.</div>
                 <textarea value={discovery.must_haves} onChange={e=>setDiscovery({...discovery,must_haves:e.target.value})} placeholder="e.g. Customer signs up with phone number. Earns 1 point per RM10 spent. Redeems free drink at 100 points." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:70,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Nice-to-haves */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>✨ Nice-to-Have Features</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Sparkles size={13}/> Nice-to-Have Features</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:8}}>Cool to add if budget/time allows. JARVIS will note these for v2.</div>
                 <textarea value={discovery.nice_haves} onChange={e=>setDiscovery({...discovery,nice_haves:e.target.value})} placeholder="e.g. Birthday surprise reward. Referral bonuses. Push notifications." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Integrations multi-select */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🔌 Required Integrations</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Plug size={13}/> Required Integrations</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Tap to toggle. Add the ones your app needs.</div>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['DuitNow','Stripe','PayPal','WhatsApp','Telegram','Email','SMS','Google Maps','Google Login','Facebook Login','Apple Login','Calendar','PDF Export','CSV Export','Camera/QR'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('integrations',opt)} style={{padding:'7px 13px',background:discovery.integrations.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.integrations.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.integrations.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.integrations.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('integrations',opt)} style={{padding:'7px 13px',background:discovery.integrations.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.integrations.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.integrations.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.integrations.includes(opt)?'':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Languages */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>🌍 Languages</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><LanguagesIcon size={13}/> Languages</label>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['English','Bahasa Melayu','Bahasa Indonesia','Mandarin','Arabic','Tamil'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('languages',opt)} style={{padding:'7px 13px',background:discovery.languages.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.languages.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.languages.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.languages.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('languages',opt)} style={{padding:'7px 13px',background:discovery.languages.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.languages.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.languages.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.languages.includes(opt)?'':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Platforms */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📱 Platforms</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Smartphone size={13}/> Platforms</label>
                 <div style={{display:'flex',flexWrap:'wrap' as const,gap:6}}>
                   {['Web app','Mobile-friendly web','iOS native (later)','Android native (later)','Marketing website','Internal tool only'].map(opt=>(
-                    <button key={opt} onClick={()=>toggleArrayValue('platforms',opt)} style={{padding:'7px 13px',background:discovery.platforms.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.platforms.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.platforms.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.platforms.includes(opt)?'✓ ':''}{opt}</button>
+                    <button key={opt} onClick={()=>toggleArrayValue('platforms',opt)} style={{padding:'7px 13px',background:discovery.platforms.includes(opt)?'rgba(16,185,129,0.15)':'#faf9f6',border:discovery.platforms.includes(opt)?'1px solid #10b981':'1px solid #e3e3ee',borderRadius:20,fontSize:12.5,color:discovery.platforms.includes(opt)?'#10b981':'#5a5a72',cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif"}}>{discovery.platforms.includes(opt)?'':''}{opt}</button>
                   ))}
                 </div>
               </div>
 
               {/* Pricing model */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💰 How will this app make money?</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><DollarSign size={13}/> How will this app make money?</label>
                 <input value={discovery.pricing_model} onChange={e=>setDiscovery({...discovery,pricing_model:e.target.value})} placeholder="e.g. Free for customers; restaurant pays RM99/mo. Or: subscription, marketplace fees, one-off purchase, internal use only." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:'10px 12px',outline:'none',boxSizing:'border-box' as const}}/>
               </div>
 
               {/* Documents upload */}
               <div style={{padding:14,background:'rgba(123,111,255,0.05)',border:'1px dashed rgba(123,111,255,0.3)',borderRadius:10}}>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>📎 Briefs, Mockups, Reference Images</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><Paperclip size={13}/> Briefs, Mockups, Reference Images</label>
                 <div style={{fontSize:12,color:'#5a5a72',marginBottom:10}}>Got a brief, sketch, screenshot, or PDF? Drop it in — JARVIS will read it.</div>
                 <button onClick={()=>fileInputRef.current?.click()} style={{padding:'10px 16px',background:'#faf9f6',border:'1px solid #7b6fff',borderRadius:8,color:'#7b6fff',fontSize:13,cursor:'pointer',fontFamily:"'Inter','DM Sans',sans-serif",fontWeight:600}}>+ Attach files</button>
                 {attachments.length > 0 && (
                   <div style={{marginTop:10,display:'flex',flexWrap:'wrap' as const,gap:6}}>
                     {attachments.map((att,i)=>(
                       <span key={i} style={{padding:'6px 10px',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:7,fontSize:11,color:'#5a5a72',display:'flex',alignItems:'center',gap:6}}>
-                        {att.preview ? <img src={att.preview} alt="" style={{width:20,height:20,objectFit:'cover',borderRadius:3}}/> : '📄'} {att.name}
-                        <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:13,padding:0}}>✕</button>
+                        {att.preview ? <img src={att.preview} alt="" style={{width:20,height:20,objectFit:'cover',borderRadius:3}}/> : ''} {att.name}
+                        <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:13,padding:0}}></button>
                       </span>
                     ))}
                   </div>
@@ -1775,7 +1777,7 @@ RULES:
 
               {/* Notes */}
               <div>
-                <label style={{display:'block',fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}>💭 Anything Else?</label>
+                <label style={{display:'flex',alignItems:'center',gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6}}><MessageCircle size={13}/> Anything Else?</label>
                 <textarea value={discovery.notes} onChange={e=>setDiscovery({...discovery,notes:e.target.value})} placeholder="Anything JARVIS should know — constraints, deadlines, the story behind why you're building this..." style={{width:'100%',background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:9,color:'#0a0a18',fontFamily:"'Inter','DM Sans',sans-serif",fontSize:14,padding:12,resize:'vertical' as const,minHeight:60,lineHeight:1.5,outline:'none',boxSizing:'border-box' as const}}/>
               </div>
               </>}
@@ -1784,7 +1786,7 @@ RULES:
             {/* Footer with action buttons */}
             <div style={{padding:'16px 24px',borderTop:'1px solid #ececf3',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'#ffffff'}}>
               <button onClick={launch} style={{flex:1,padding:'12px 18px',background:'#0a0a18',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer'}}>Skip — let ezclaude handle it</button>
-              {discoveryExpanded && <button onClick={launch} style={{padding:'12px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Continue with details →</button>}
+              {discoveryExpanded && <button onClick={launch} style={{padding:'12px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Continue with details </button>}
             </div>
           </div>
         </div>
@@ -1841,13 +1843,13 @@ RULES:
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:28}}>
                   {finalPlan.problem && (
                     <div style={{padding:18,background:'rgba(255,107,157,0.04)',border:'1px solid rgba(255,107,157,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ff6b9d',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>⚠ Problem</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ff6b9d',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>Problem</div>
                       <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.6}}>{finalPlan.problem}</div>
                     </div>
                   )}
                   {finalPlan.solution && (
                     <div style={{padding:18,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>✓ Solution</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>Solution</div>
                       <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.6}}>{finalPlan.solution}</div>
                     </div>
                   )}
@@ -1857,7 +1859,7 @@ RULES:
               {/* Target users + Personas */}
               {(finalPlan.target_users || (finalPlan.personas?.length>0)) && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>👥</span><span>Who This Is For</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><Users size={13}/><span>Who This Is For</span></div>
                   {finalPlan.target_users && <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.7,marginBottom:14,padding:'12px 16px',background:'rgba(123,111,255,0.05)',border:'1px solid rgba(123,111,255,0.2)',borderRadius:9}}>{finalPlan.target_users}</div>}
                   {finalPlan.personas?.length>0 && (
                     <div style={{display:'grid',gridTemplateColumns:`repeat(auto-fit, minmax(260px, 1fr))`,gap:10}}>
@@ -1874,19 +1876,19 @@ RULES:
 
               {/* Feature tiers */}
               <div style={{marginBottom:28}}>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📦</span><span>What You'll Get</span></div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><Sparkles size={13}/><span>What You'll Get</span></div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))',gap:14}}>
                   {finalPlan.features_mvp?.length>0 && (
                     <div style={{padding:16,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:11}}>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⭐ MVP — In this build</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>MVP — In this build</div>
                       {finalPlan.features_mvp.map((f:string,i:number)=>(
-                        <div key={i} style={{fontSize:13,color:'#3a3a52',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#10b981',flexShrink:0}}>✓</span><span>{f}</span></div>
+                        <div key={i} style={{fontSize:13,color:'#3a3a52',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#10b981',flexShrink:0}}></span><span>{f}</span></div>
                       ))}
                     </div>
                   )}
                   {finalPlan.features_v2?.length>0 && (
                     <div style={{padding:16,background:'rgba(123,111,255,0.04)',border:'1px solid rgba(123,111,255,0.25)',borderRadius:11}}>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#7b6fff',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>⚡ V2 — Next iteration</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#7b6fff',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>V2 — Next iteration</div>
                       {finalPlan.features_v2.map((f:string,i:number)=>(
                         <div key={i} style={{fontSize:13,color:'#5a5a72',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#7b6fff',flexShrink:0}}>+</span><span>{f}</span></div>
                       ))}
@@ -1894,9 +1896,9 @@ RULES:
                   )}
                   {finalPlan.features_future?.length>0 && (
                     <div style={{padding:16,background:'rgba(255,209,102,0.04)',border:'1px solid rgba(255,209,102,0.2)',borderRadius:11}}>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ffd166',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>🚀 Future — On the roadmap</div>
+                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#ffd166',letterSpacing:1.2,marginBottom:10,fontWeight:700}}>Future — On the roadmap</div>
                       {finalPlan.features_future.map((f:string,i:number)=>(
-                        <div key={i} style={{fontSize:13,color:'#5a5a72',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#ffd166',flexShrink:0}}>○</span><span>{f}</span></div>
+                        <div key={i} style={{fontSize:13,color:'#5a5a72',marginBottom:7,display:'flex',gap:8,lineHeight:1.5}}><span style={{color:'#ffd166',flexShrink:0}}></span><span>{f}</span></div>
                       ))}
                     </div>
                   )}
@@ -1906,7 +1908,7 @@ RULES:
               {/* Architecture / Screens diagram */}
               {finalPlan.screens?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗺</span><span>App Architecture · Screen Map</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><LayoutGrid size={13}/><span>App Architecture · Screen Map</span></div>
                   <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11}}>
                     <div style={{display:'flex',flexWrap:'wrap' as const,gap:10,alignItems:'center',justifyContent:'center'}}>
                       {finalPlan.screens.map((s:any,i:number)=>(
@@ -1915,7 +1917,7 @@ RULES:
                             <div style={{fontSize:12,fontWeight:700,color:'#10b981',marginBottom:3}}>{s.name}</div>
                             <div style={{fontSize:10.5,color:'#5a5a72',lineHeight:1.4}}>{s.purpose}</div>
                           </div>
-                          {i<finalPlan.screens.length-1 && <span style={{color:'#9a9aac',fontSize:14}}>→</span>}
+                          {i<finalPlan.screens.length-1 && <span style={{color:'#9a9aac',fontSize:14}}></span>}
                         </div>
                       ))}
                     </div>
@@ -1934,7 +1936,7 @@ RULES:
               {/* Tech stack */}
               {finalPlan.tech_stack && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚙</span><span>Technical Specs</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><Code2 size={13}/><span>Technical Specs</span></div>
                   <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))',gap:14}}>
                     {Object.entries(finalPlan.tech_stack).map(([k,v]:any)=>(
                       <div key={k}>
@@ -1949,7 +1951,7 @@ RULES:
               {/* Data model */}
               {finalPlan.data_model?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>🗄</span><span>Data Model</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><Database size={13}/><span>Data Model</span></div>
                   <div style={{padding:18,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,fontFamily:"'DM Sans',sans-serif"}}>
                     {finalPlan.data_model.map((t:any,i:number)=>(
                       <div key={i} style={{marginBottom:i<finalPlan.data_model.length-1?12:0,paddingBottom:i<finalPlan.data_model.length-1?12:0,borderBottom:i<finalPlan.data_model.length-1?'1px solid #ececf3':'none'}}>
@@ -1964,7 +1966,7 @@ RULES:
               {/* Phased roadmap */}
               {finalPlan.phases?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>📅</span><span>Phased Roadmap</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><Map size={13}/><span>Phased Roadmap</span></div>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:10}}>
                     {finalPlan.phases.map((p:any,i:number)=>(
                       <div key={i} style={{padding:16,background:'#faf9f6',border:'1px solid #ececf3',borderRadius:11,display:'flex',gap:14}}>
@@ -1986,11 +1988,11 @@ RULES:
               {/* Risks & Mitigations */}
               {finalPlan.risks?.length>0 && (
                 <div style={{marginBottom:28}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><span>⚠</span><span>Risks & Mitigations</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:14,display:'flex',alignItems:'center',gap:7}}><AlertTriangle size={13}/><span>Risks & Mitigations</span></div>
                   <div style={{display:'flex',flexDirection:'column' as const,gap:8}}>
                     {finalPlan.risks.map((r:any,i:number)=>(
                       <div key={i} style={{padding:14,background:'rgba(255,209,102,0.04)',border:'1px solid rgba(255,209,102,0.2)',borderRadius:9}}>
-                        <div style={{fontSize:13,color:'#ffd166',fontWeight:700,marginBottom:5}}>⚠ {r.risk}</div>
+                        <div style={{fontSize:13,color:'#ffd166',fontWeight:700,marginBottom:5}}>{r.risk}</div>
                         <div style={{fontSize:12.5,color:'#5a5a72',lineHeight:1.6}}><span style={{color:'#10b981',fontFamily:"'DM Sans',sans-serif",fontSize:10}}>MITIGATION:</span> {r.mitigation}</div>
                       </div>
                     ))}
@@ -2001,7 +2003,7 @@ RULES:
               {/* JARVIS's recommendations */}
               {finalPlan.recommendations?.length>0 && (
                 <div style={{marginBottom:28,padding:18,background:'rgba(123,111,255,0.05)',border:'1px solid rgba(123,111,255,0.25)',borderRadius:12}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><span>💡</span><span>JARVIS's Recommendations</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:12,display:'flex',alignItems:'center',gap:7}}><Lightbulb size={13}/><span>JARVIS's Recommendations</span></div>
                   {finalPlan.recommendations.map((r:string,i:number)=>(
                     <div key={i} style={{fontSize:13.5,color:'#3a3a52',marginBottom:10,display:'flex',gap:10,lineHeight:1.6}}><span style={{color:'#7b6fff',flexShrink:0,fontWeight:700}}>{i+1}.</span><span>{r}</span></div>
                   ))}
@@ -2011,7 +2013,7 @@ RULES:
               {/* Approach */}
               {(finalPlan.approach || finalPlan.note) && (
                 <div style={{marginBottom:14,padding:18,background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:12}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:7}}><span>🎯</span><span>JARVIS's Build Approach</span></div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:7}}><Wand2 size={13}/><span>JARVIS's Build Approach</span></div>
                   <div style={{fontSize:14,color:'#3a3a52',lineHeight:1.7}}>{finalPlan.approach||finalPlan.note}</div>
                 </div>
               )}
@@ -2019,12 +2021,12 @@ RULES:
 
             {/* Sticky Footer with action buttons */}
             <div data-noexport="1" style={{padding:'18px 28px',borderTop:'1px solid #ececf3',display:'flex',gap:10,position:'sticky' as const,bottom:0,background:'rgba(14,14,29,0.97)',backdropFilter:'blur(8px)',flexWrap:'wrap' as const}}>
-              <button onClick={()=>{ rejectPlan(); setShowProposal(false) }} style={{padding:'13px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>✕ Revise</button>
+              <button onClick={()=>{ rejectPlan(); setShowProposal(false) }} style={{padding:'13px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>Revise</button>
               <button onClick={downloadProposalPDF} disabled={isExportingPDF} style={{padding:'13px 18px',background:isExportingPDF?'#ececf3':'rgba(123,111,255,0.12)',color:isExportingPDF?'#9a9aac':'#7b6fff',border:'1px solid rgba(123,111,255,0.4)',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:isExportingPDF?'not-allowed':'pointer',letterSpacing:0.5,display:'flex',alignItems:'center',gap:7}}>
-                {isExportingPDF ? (<><span style={{display:'inline-block',width:11,height:11,border:'2px solid #7b6fff',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Generating...</>) : (<>📄 Download PDF</>)}
+                {isExportingPDF ? (<><span style={{display:'inline-block',width:11,height:11,border:'2px solid #7b6fff',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Generating...</>) : (<>Download PDF</>)}
               </button>
               <button onClick={()=>setShowProposal(false)} style={{padding:'13px 18px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:'pointer',letterSpacing:0.5}}>Close</button>
-              <button onClick={()=>{ approveBuild(); setShowProposal(false) }} style={{flex:1,minWidth:200,padding:'13px 20px',background:'#10b981',color:'#fff',border:'none',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 24px rgba(16,185,129,0.3)'}}>✓ Approve & Build it!</button>
+              <button onClick={()=>{ approveBuild(); setShowProposal(false) }} style={{flex:1,minWidth:200,padding:'13px 20px',background:'#10b981',color:'#fff',border:'none',borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 24px rgba(16,185,129,0.3)'}}>Approve & Build it!</button>
             </div>
           </div>
         </div>
@@ -2069,7 +2071,7 @@ RULES:
                 <div style={{padding:'24px 10px',textAlign:'center' as const,fontSize:11,color:'#9a9aac'}}>No apps yet. Build your first one!</div>
               ) : myApps.map(app => (
                 <div key={app.id} onClick={()=>switchToApp(app)} style={{padding:'10px 12px',marginBottom:4,background:currentAppId===app.id?'rgba(16,185,129,0.08)':'#faf9f6',border:`1px solid ${currentAppId===app.id?'rgba(16,185,129,0.3)':'#ececf3'}`,borderRadius:8,cursor:'pointer'}}>
-                  <div style={{fontSize:12,fontWeight:600,color:currentAppId===app.id?'#10b981':'#0a0a18',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{currentAppId===app.id?'● ':''}{app.name}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:currentAppId===app.id?'#10b981':'#0a0a18',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const}}>{currentAppId===app.id?'':''}{app.name}</div>
                   <div style={{fontSize:10,color:'#5a5a72',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,marginBottom:4}}>{app.description?.substring(0,60)}</div>
                   <div style={{fontSize:9,color:'#9a9aac',fontFamily:"'DM Sans',sans-serif"}}>{new Date(app.created_at).toLocaleDateString()} · {app.tokens_used||0} tokens</div>
                 </div>
@@ -2108,9 +2110,9 @@ RULES:
               <div style={{display:'flex',flexWrap:'wrap' as const,gap:4}}>
                 {attachments.map((att,i)=>(
                   <div key={i} style={{position:'relative' as const,background:'#faf9f6',border:'1px solid #e3e3ee',borderRadius:6,padding:'4px 6px',display:'flex',alignItems:'center',gap:4,maxWidth:'100%'}}>
-                    {att.preview ? <img src={att.preview} alt="" style={{width:24,height:24,objectFit:'cover',borderRadius:3}}/> : <span style={{fontSize:14}}>📄</span>}
+                    {att.preview ? <img src={att.preview} alt="" style={{width:24,height:24,objectFit:'cover',borderRadius:3}}/> : <span style={{fontSize:14}}></span>}
                     <span style={{fontSize:10,color:'#5a5a72',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' as const,maxWidth:80}}>{att.name}</span>
-                    <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:11,padding:0,marginLeft:2}}>✕</button>
+                    <button onClick={()=>removeAttachment(i)} style={{background:'none',border:'none',color:'#9a9aac',cursor:'pointer',fontSize:11,padding:0,marginLeft:2}}></button>
                   </div>
                 ))}
               </div>
@@ -2242,7 +2244,7 @@ RULES:
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
                   <div style={{background:'#f7f5ef',border:'1px solid rgba(255,209,102,0.25)',borderRadius:12,padding:16}}>
-                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',marginBottom:14,textTransform:'uppercase' as const,letterSpacing:1.5,display:'flex',alignItems:'center',gap:7}}><span>🔍</span><span>Quick Discovery — pick the closest fit</span></div>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:'#ffd166',marginBottom:14,textTransform:'uppercase' as const,letterSpacing:1.5,display:'flex',alignItems:'center',gap:7}}><Compass size={13}/><span>Quick Discovery — pick the closest fit</span></div>
                     {questions.map((q:any,i:number)=>(
                       <div key={i} style={{marginBottom:16}}>
                         <div style={{fontSize:14,color:'#0a0a18',marginBottom:9,lineHeight:1.5,fontWeight:500}}>{i+1}. {q.q}</div>
@@ -2254,7 +2256,7 @@ RULES:
                       </div>
                     ))}
                     <button onClick={submitAnswers} disabled={!allAnswered} style={{width:'100%',marginTop:8,padding:12,background:allAnswered?'#7b6fff':'#e3e3ee',color:allAnswered?'#fff':'#9a9aac',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,cursor:allAnswered?'pointer':'not-allowed',letterSpacing:0.5,boxShadow:allAnswered?'0 4px 16px rgba(123,111,255,0.25)':'none'}}>
-                      {allAnswered?'Generate Build Proposal →':`Answer all (${Object.keys(qAnswers).length}/${questions.length})`}
+                      {allAnswered?'Generate Build Proposal ':`Answer all (${Object.keys(qAnswers).length}/${questions.length})`}
                     </button>
                   </div>
                 </div>
@@ -2269,7 +2271,7 @@ RULES:
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:10.5,fontFamily:"'DM Sans',sans-serif",color:'#9a9aac',marginBottom:5,letterSpacing:0.5}}>JARVIS · Now</div>
                   <div onClick={()=>setShowProposal(true)} style={{cursor:'pointer',padding:18,background:'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(123,111,255,0.05))',border:'1px solid rgba(16,185,129,0.3)',borderRadius:12,transition:'all 0.15s'}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor='#10b981'}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor='rgba(16,185,129,0.3)'}}>
-                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>📋 Build Proposal · Ready</div>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:8}}>Build Proposal · Ready</div>
                     <div style={{fontSize:17,fontWeight:700,color:'#0a0a18',marginBottom:6,lineHeight:1.3}}>{finalPlan.app_name||'Your App'}</div>
                     <div style={{fontSize:13,color:'#5a5a72',lineHeight:1.5,marginBottom:12}}>{finalPlan.tagline||finalPlan.summary||''}</div>
                     <div style={{display:'flex',gap:14,alignItems:'center',fontSize:12,color:'#5a5a72',marginBottom:12}}>
@@ -2277,7 +2279,7 @@ RULES:
                       <span><span style={{color:'#9a9aac'}}>Cost:</span> <strong style={{color:'#10b981'}}>{finalPlan.est_cost_credits||'1 credit'}</strong></span>
                       <span><span style={{color:'#9a9aac'}}>Complexity:</span> <strong style={{color:'#0a0a18'}}>{finalPlan.complexity||'Medium'}</strong></span>
                     </div>
-                    <button style={{padding:'10px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer',letterSpacing:0.5}}>📖 Read full proposal →</button>
+                    <button style={{padding:'10px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer',letterSpacing:0.5}}>Read full proposal </button>
                   </div>
                 </div>
               </div>
@@ -2336,12 +2338,12 @@ RULES:
                     {/* Features */}
                     <div style={{padding:'14px 18px'}}>
                       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#10b981',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:10,display:'flex',alignItems:'center',gap:6}}>
-                        <span>✓</span><span>What's Included</span>
+                        <Sparkles size={13}/><span>What's Included</span>
                       </div>
                       <div style={{display:'flex',flexDirection:'column',gap:7}}>
                         {(finalPlan.features||[]).map((f:string,i:number)=>(
                           <div key={i} style={{fontSize:12,color:'#3a3a52',display:'flex',gap:9,alignItems:'flex-start',lineHeight:1.5}}>
-                            <span style={{color:'#10b981',fontWeight:700,flexShrink:0,marginTop:1}}>✓</span>
+                            <span style={{color:'#10b981',fontWeight:700,flexShrink:0,marginTop:1}}></span>
                             <span>{f}</span>
                           </div>
                         ))}
@@ -2352,7 +2354,7 @@ RULES:
                     {(finalPlan.approach||finalPlan.note) && (
                       <div style={{padding:'12px 18px 14px',borderTop:'1px solid #ececf3',background:'rgba(123,111,255,0.03)'}}>
                         <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:'#7b6fff',letterSpacing:1.5,textTransform:'uppercase' as const,marginBottom:6,display:'flex',alignItems:'center',gap:6}}>
-                          <span>💡</span><span>JARVIS's Approach</span>
+                          <Wand2 size={13}/><span>JARVIS's Approach</span>
                         </div>
                         <div style={{fontSize:11,color:'#5a5a72',lineHeight:1.6}}>{finalPlan.approach||finalPlan.note}</div>
                       </div>
@@ -2360,15 +2362,15 @@ RULES:
 
                     {/* Action buttons */}
                     <div style={{padding:'14px 18px 16px',borderTop:'1px solid #ececf3',display:'flex',gap:8}}>
-                      <button onClick={rejectPlan} style={{flex:'0 0 auto',padding:'11px 16px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',letterSpacing:0.5,transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.borderColor='#ff6b9d';(e.target as HTMLElement).style.color='#ff6b9d'}} onMouseLeave={e=>{(e.target as HTMLElement).style.borderColor='#e3e3ee';(e.target as HTMLElement).style.color='#5a5a72'}}>✕ Hold on, let me revise</button>
-                      <button onClick={approveBuild} style={{flex:1,padding:'11px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(16,185,129,0.25)',transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.background='#34d399';(e.target as HTMLElement).style.transform='translateY(-1px)'}} onMouseLeave={e=>{(e.target as HTMLElement).style.background='#10b981';(e.target as HTMLElement).style.transform='translateY(0)'}}>✓ Looks great — Build it!</button>
+                      <button onClick={rejectPlan} style={{flex:'0 0 auto',padding:'11px 16px',background:'transparent',color:'#5a5a72',border:'1px solid #e3e3ee',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,cursor:'pointer',letterSpacing:0.5,transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.borderColor='#ff6b9d';(e.target as HTMLElement).style.color='#ff6b9d'}} onMouseLeave={e=>{(e.target as HTMLElement).style.borderColor='#e3e3ee';(e.target as HTMLElement).style.color='#5a5a72'}}>Hold on, let me revise</button>
+                      <button onClick={approveBuild} style={{flex:1,padding:'11px 16px',background:'#10b981',color:'#fff',border:'none',borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer',letterSpacing:0.5,boxShadow:'0 6px 20px rgba(16,185,129,0.25)',transition:'all 0.15s'}} onMouseEnter={e=>{(e.target as HTMLElement).style.background='#34d399';(e.target as HTMLElement).style.transform='translateY(-1px)'}} onMouseLeave={e=>{(e.target as HTMLElement).style.background='#10b981';(e.target as HTMLElement).style.transform='translateY(0)'}}>Looks great — Build it!</button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
             {/* ── v7: MULTI-AGENT BUILD PROGRESS PANEL ──
-                Shows the team working live: Architect → Builder → QA, each with status. */}
+                Shows the team working live: Architect Builder QA, each with status. */}
             {(phase==='building'||phase==='iterating') && (
               <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
                 <div style={{width:32,height:32,borderRadius:8,background:'rgba(16,185,129,0.12)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,flexShrink:0}}>J</div>
@@ -2386,10 +2388,10 @@ RULES:
                   ) : (
                     <div style={{padding:14,background:'#f7f5ef',border:'1px solid rgba(16,185,129,0.2)',borderRadius:11,display:'flex',flexDirection:'column' as const,gap:9}}>
                       {[
-                        { id: 'architect', emoji: '🗺', name: 'Architect', desc: 'Designing data model + components' },
-                        { id: 'designer',  emoji: '🎨', name: 'Designer',  desc: 'Defining colours, fonts, components' },
-                        { id: 'builder',   emoji: '🔨', name: 'Builder',   desc: 'Writing the code from spec' },
-                        { id: 'qa',        emoji: '🔍', name: 'QA Engineer', desc: 'Auditing the build' },
+                        { id: 'architect', icon: Compass, name: 'Architect', desc: 'Designing data model + components' },
+                        { id: 'designer',  icon: Palette, name: 'Designer',  desc: 'Defining colours, fonts, components' },
+                        { id: 'builder',   icon: Hammer,  name: 'Builder',   desc: 'Writing the code from spec' },
+                        { id: 'qa',        icon: Sparkles, name: 'QA Engineer', desc: 'Auditing the build' },
                       ].map(a => {
                         const st = agentStatus[a.id]?.status || 'pending'
                         const note = agentStatus[a.id]?.note
@@ -2401,15 +2403,15 @@ RULES:
                         }[st]
                         return (
                           <div key={a.id} style={{display:'flex',gap:11,alignItems:'center',padding:'9px 11px',background:palette.bg,border:`1px solid ${palette.border}`,borderRadius:9}}>
-                            <div style={{fontSize:18,opacity:st==='pending'?0.4:1}}>{a.emoji}</div>
+                            <div style={{opacity:st==='pending'?0.4:1,display:'grid',placeItems:'center'}}><a.icon size={17} color={palette.dot}/></div>
                             <div style={{flex:1,minWidth:0}}>
                               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
                                 <div style={{fontSize:13,fontWeight:600,color:palette.name}}>{a.name}</div>
                                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:palette.label,letterSpacing:1,textTransform:'uppercase' as const,whiteSpace:'nowrap' as const}}>
-                                  {st==='pending' && '○ Waiting'}
-                                  {st==='working' && '◉ Working'}
-                                  {st==='done' && '✓ Done'}
-                                  {st==='failed' && '✕ Failed'}
+                                  {st==='pending' && 'Waiting'}
+                                  {st==='working' && 'Working'}
+                                  {st==='done' && 'Done'}
+                                  {st==='failed' && 'Failed'}
                                 </div>
                               </div>
                               <div style={{fontSize:11.5,color:'#5a5a72',marginTop:1.5,lineHeight:1.4}}>
@@ -2458,7 +2460,7 @@ RULES:
                       description: (finalPlan?.summary||'') + ' (saved ' + new Date().toLocaleTimeString() + ')'
                     }).eq('id', currentAppId)
                     addLog('App updated.','ok')
-                    addChat('✅ App updated in your dashboard!')
+                    addChat('App updated in your dashboard!')
                   } else {
                     const { data: newRow } = await supabase.from('apps').insert({
                       user_id:user.id,
@@ -2476,7 +2478,7 @@ RULES:
                       setMyApps(prev => [newRow, ...prev])
                     }
                     addLog('App saved to dashboard.','ok')
-                    addChat('✅ App saved to your dashboard!')
+                    addChat('App saved to your dashboard!')
                   }
                 }}
                 disabled={!builtCode}

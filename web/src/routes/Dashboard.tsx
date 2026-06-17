@@ -455,7 +455,7 @@ export default function Dashboard() {
               <button onClick={() => navigate('/builder')} style={{
                 padding:'11px 22px', background:palette.text, color:'#fff', border:'none', borderRadius:theme.radius.button,
                 fontSize:13, fontWeight:600, cursor:'pointer'
-              }}>Build my first app →</button>
+              }}>Build my first app </button>
             </div>
           ) : (
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14}}>

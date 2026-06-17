@@ -4,9 +4,9 @@
 // One web app, three no-code modes on the shared engine. All three stream from the
 // server (SSE) via apiFetch, which attaches the user's Supabase Bearer so RLS
 // resolves to them.
-//   Ask    → /api/agent/chat   (conversation)
-//   Create → /api/agent/cowork (agent + skills → downloadable deliverables)
-//   Build  → /api/build        (agent builds a real app in a sandbox)
+//   Ask    /api/agent/chat   (conversation)
+//   Create /api/agent/cowork (agent + skills downloadable deliverables)
+//   Build  /api/build        (agent builds a real app in a sandbox)
 // ============================================================
 
 import { useState, useRef, useEffect } from "react";
@@ -74,7 +74,7 @@ const C = {
   violetSoft: "rgba(123,111,255,0.10)",
 };
 
-// Minimal SSE reader: POST via apiFetch + stream `data: {json}` lines → onEvent.
+// Minimal SSE reader: POST via apiFetch + stream `data: {json}` lines onEvent.
 // apiFetch attaches the user's access token so server routes resolve RLS to them.
 async function streamPost(
   url: string,
@@ -251,7 +251,7 @@ export default function StudioPage() {
     addLine(
       "user",
       atts.length
-        ? `${text}${text ? "\n" : ""}📎 ${atts.map((a) => a.name).join(", ")}`
+        ? `${text}${text ? "\n" : ""}${atts.map((a) => a.name).join(", ")}`
         : text,
     );
 
@@ -271,7 +271,7 @@ export default function StudioPage() {
                   i === l.length - 1 ? { ...ln, text: asst } : ln,
                 ),
               );
-            } else if (e.type === "error") addLine("log", "⚠ " + e.message);
+            } else if (e.type === "error") addLine("log", "" + e.message);
           },
         );
       } else if (mode === "cowork") {
@@ -285,15 +285,15 @@ export default function StudioPage() {
             } else if (e.type === "tool_use")
               addLine(
                 "log",
-                `🔧 ${String(e.tool).replace(/^mcp__sandbox__/, "")}`,
+                `${String(e.tool).replace(/^mcp__sandbox__/, "")}`,
               );
             else if (e.type === "exec") addLine("log", `$ ${e.command}`);
             else if (e.type === "file_edit") {
-              addLine("log", `📄 ${e.action} ${e.path}`);
+              addLine("log", `${e.action} ${e.path}`);
               setDeliverables((d) => (d.includes(e.path) ? d : [...d, e.path]));
             } else if (e.type === "text" && e.text?.trim())
               addLine("assistant", e.text);
-            else if (e.type === "error") addLine("log", "⚠ " + e.message);
+            else if (e.type === "error") addLine("log", "" + e.message);
           },
         );
       } else {
@@ -315,7 +315,7 @@ export default function StudioPage() {
           if (error || !data) {
             addLine(
               "log",
-              "❌ Could not create project: " + (error?.message || "unknown"),
+              "Could not create project: " + (error?.message || "unknown"),
             );
             setBusy(false);
             return;
@@ -330,14 +330,14 @@ export default function StudioPage() {
             if (e.type === "tool_use")
               addLine(
                 "log",
-                `🔧 ${String(e.tool).replace(/^mcp__sandbox__/, "")}`,
+                `${String(e.tool).replace(/^mcp__sandbox__/, "")}`,
               );
             else if (e.type === "exec") addLine("log", `$ ${e.command}`);
             else if (e.type === "file_edit")
-              addLine("log", `📝 ${e.action} ${e.path}`);
+              addLine("log", `${e.action} ${e.path}`);
             else if (e.type === "text" && e.text?.trim())
               addLine("assistant", e.text);
-            else if (e.type === "error") addLine("log", "⚠ " + e.message);
+            else if (e.type === "error") addLine("log", "" + e.message);
           },
         );
         // pull the live preview URL the build saved
@@ -347,10 +347,10 @@ export default function StudioPage() {
           .eq("id", id)
           .single();
         if (app?.preview_url) setPreviewUrl(app.preview_url);
-        addLine("log", "✅ Build finished.");
+        addLine("log", "Build finished.");
       }
     } catch (err: any) {
-      addLine("log", "❌ " + (err?.message || "failed"));
+      addLine("log", "" + (err?.message || "failed"));
     } finally {
       setBusy(false);
       fetchConvos();
@@ -385,14 +385,14 @@ export default function StudioPage() {
   }[] = [
     {
       id: "chat",
-      label: "💬 Ask",
+      label: "Ask",
       hint: "Chat with Claude — ask anything",
       ph: "Message Claude…",
       empty: "Ask Claude anything — questions, drafts, ideas, explanations.",
     },
     {
       id: "cowork",
-      label: "✨ Create",
+      label: "Create",
       hint: "Make documents, decks, sheets, PDFs — no code",
       ph: "Describe the document/deck/sheet you want…",
       empty:
@@ -400,7 +400,7 @@ export default function StudioPage() {
     },
     {
       id: "build",
-      label: "⚡ Build",
+      label: "Build",
       hint: "Build & launch a real app — no code",
       ph: "Describe the app you want to build…",
       empty:
@@ -468,7 +468,7 @@ export default function StudioPage() {
             )}
             {convos.map((c) => {
               const icon =
-                c.mode === "cowork" ? "✨" : c.mode === "build" ? "⚡" : "💬";
+                c.mode === "cowork" ? "" : c.mode === "build" ? "" : "";
               const active = c.id === conversationId;
               return (
                 <button
@@ -531,7 +531,7 @@ export default function StudioPage() {
               fontSize: 14,
             }}
           >
-            ☰
+            
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <div style={ui.logoMark} />
@@ -580,7 +580,7 @@ export default function StudioPage() {
               title="Your previously built apps (opens in a new tab)"
               style={{ fontSize: 12, color: C.ink, fontWeight: 600, textDecoration: "none", border: `1px solid ${C.borderInput}`, background: "#fff", borderRadius: theme.radius.button, padding: "7px 12px", whiteSpace: "nowrap" }}
             >
-              ▤ My Apps ↗
+              My Apps 
             </a>
             <select
               value={model}
@@ -699,7 +699,7 @@ export default function StudioPage() {
                     padding: 0,
                   }}
                 >
-                  {copiedIdx === i ? "✓ copied" : "⧉ copy"}
+                  {copiedIdx === i ? "copied" : "⧉ copy"}
                 </button>
               )}
             </div>
@@ -708,7 +708,7 @@ export default function StudioPage() {
             <div
               style={{ alignSelf: "flex-start", color: C.teal, fontSize: 12, fontWeight: 600 }}
             >
-              ● working…
+              working…
             </div>
           )}
         </div>
@@ -725,7 +725,7 @@ export default function StudioPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>📦 Files:</span>
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>Files:</span>
             {deliverables.map((d) => (
               <a
                 key={d}
@@ -745,7 +745,7 @@ export default function StudioPage() {
                   padding: "5px 11px",
                 }}
               >
-                ↓ {d}
+                {d}
               </a>
             ))}
           </div>
@@ -761,14 +761,14 @@ export default function StudioPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>⬡ Live preview:</span>
+            <span style={{ fontSize: 12, color: C.dim, fontWeight: 600 }}>Live preview:</span>
             <a
               href={previewUrl}
               target="_blank"
               rel="noreferrer"
               style={{ fontSize: 13, color: C.teal, fontWeight: 600 }}
             >
-              {previewUrl} ↗
+              {previewUrl} 
             </a>
           </div>
         )}
@@ -800,7 +800,7 @@ export default function StudioPage() {
                   alignItems: "center",
                 }}
               >
-                📎 {a.name}
+                {a.name}
                 <button
                   onClick={() =>
                     setAttachments((list) => list.filter((_, j) => j !== i))
@@ -854,7 +854,7 @@ export default function StudioPage() {
               fontSize: 16,
             }}
           >
-            📎
+            
           </button>
           <textarea
             value={input}
@@ -897,7 +897,7 @@ export default function StudioPage() {
               fontSize: 14,
             }}
           >
-            {busy ? "…" : "Send ↑"}
+            {busy ? "…" : "Send "}
           </button>
         </div>
       </div>
