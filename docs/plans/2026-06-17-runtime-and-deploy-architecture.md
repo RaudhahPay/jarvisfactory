@@ -43,6 +43,15 @@ harder but powerful (real apps + Supabase + real go-live). B is the right pick
 *for this product* — the price is that we must build sleep/wake + deploy (this
 plan). Do not reconsider A unless we drop the "real backend" promise.
 
+**Within B, chosen provider = Blaxel** (see §2.A). A managed Firecracker-microVM
+sandbox (TS SDK `@blaxel/core`) that gives **perpetual standby** (auto-pause →
+near-zero idle cost) and **built-in preview URLs** — i.e. it hands us the two
+hardest/most-expensive pieces of option B for free, instead of us building the
+`sandbox-worker` bridge + lifecycle + proxy ourselves. Blaxel = the *sandbox*
+(run/edit, ephemeral). Cloudflare stays the *app shell host* and the *deploy
+target* (static/edge + subdomain, §3). The `SandboxDriver` seam keeps Blaxel
+swappable.
+
 ### Can the engine serve the public? (yes)
 
 The core engine is the **Claude Agent SDK** (Anthropic's official agent loop).
@@ -111,17 +120,38 @@ the driver. This is how we keep the option to move to Fly/Firecracker later.
 ## 2. Workstreams
 
 ### A. Real sandbox execution — "run their webapp here" (CLAUDE.md Stage 4 S2–S4)
-1. Activate `cloudflare-driver` (`SANDBOX_PROVIDER=cloudflare`) against the deployed
-   `sandbox-worker/` bridge (Workers Paid + Containers). Bridge endpoints:
-   `/create`, `/write`, `/exec`, `/start-dev`, `/preview`, `/snapshot`, `/destroy`.
+
+**DECISION (2026-06-17): use Blaxel as the sandbox provider** (`SANDBOX_PROVIDER=blaxel`),
+implemented as a new `lib/sandbox/blaxel-driver.ts` behind the existing
+`SandboxDriver` interface. Rationale: Blaxel (Firecracker microVMs, TS SDK
+`@blaxel/core`) ships the two hardest, most expensive pieces we have **not** built —
+**perpetual standby** (auto-pause after ~15s idle → pay snapshot storage only, near-
+zero idle compute, our #1 cost risk) and **built-in per-port preview URLs** (most of
+Layer 5). Resume <25ms, cold start ~100–125ms, microVM isolation for untrusted AI
+code, SOC2/ISO/HIPAA. The `cloudflare-driver` + `sandbox-worker/` bridge stays as a
+fallback/alt provider but is no longer the primary path. The `SandboxDriver` seam
+keeps us swappable.
+
+Blaxel SDK → `SandboxDriver` mapping:
+- `SandboxInstance.createIfNotExists({ name, image, memory, ports, region })` → `create()`/`resume()`
+- filesystem REST API → `writeFiles()` / `writeFilesBase64()`
+- processes/commands API → `exec()` / `startDevServer()`
+- preview URL per port → `getPreviewUrl()`
+- standby/pause → `suspend()` (near-free idle); snapshot API → `snapshot()`; delete → `destroy()`
+
+Steps:
+1. Add `@blaxel/core`; write `lib/sandbox/blaxel-driver.ts` implementing every
+   `SandboxDriver` method; select via `SANDBOX_PROVIDER=blaxel` in `lib/sandbox/index.ts`.
 2. `AgentRunner`: write the agent's file tree into the sandbox, run install + start
    the dev server; stream tool/edit events to the chat UI.
-3. **Preview proxy:** route `<project>.preview.ezclaude.app` → the sandbox dev
-   server; the Builder iframe points at the real URL (replace `srcDoc`).
+3. **Preview proxy:** use Blaxel's per-port preview URL directly (or front it with
+   `<project>.preview.ezclaude.app`); the Builder iframe points at the real URL
+   (replace `srcDoc`).
 4. **`build_jobs`** run-log table → builds become durable, streamable, resumable.
-5. **Sandbox lifecycle:** idle auto-suspend (main compute cost); snapshot the file
-   tree to Supabase storage on suspend; rehydrate on resume. Sandbox filesystem is
-   the source of truth, **not** `apps.files_json`/`html_code`.
+5. **Sandbox lifecycle:** lean on Blaxel standby for idle cost; still snapshot the
+   file tree to Supabase storage as our own durable source of truth (not vendor-
+   locked). Sandbox filesystem is the source of truth, **not** `apps.files_json`/
+   `html_code`. Meter every model call regardless (§E).
 
 ### B. Free subdomain — "go live", the default (roadmap F3; ship first, lowest effort)
 1. Acquire one apex (e.g. `ezclaude.app`); wildcard DNS `*.ezclaude.app` → an edge
@@ -209,7 +239,9 @@ on a Workers Paid plan; D-B/C need the secrets/encryption work; E is cross-cutti
 and should land alongside A.
 
 ## 6. Risks
-1. **Sandbox compute cost** without idle auto-suspend (A.5) — top $ risk.
+1. **Sandbox compute cost** — largely mitigated by Blaxel perpetual standby
+   (near-zero idle), but still verify real per-second/standby pricing at scale and
+   keep metering (§E). Was the top $ risk; Blaxel is the chosen mitigation.
 2. **Un-metered model calls** (E) — can't price or cap.
 3. **Multi-tenant isolation** — every sandbox/app hostile to every other; no shared
    fs/network/secrets; RLS verified per `app_id`.
