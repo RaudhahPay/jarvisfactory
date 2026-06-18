@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.173",
+    "@blaxel/core": "^0.2.93",
     "@cloudflare/containers": "^0.3.7",
     "@hono/node-server": "^2.0.4",
     "@supabase/ssr": "^0.5.0",
