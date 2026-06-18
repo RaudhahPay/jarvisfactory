@@ -10,6 +10,7 @@ import { CloudPanel } from '@/web/src/app/code/CloudPanel';
 import { PagesPanel } from '@/web/src/app/code/PagesPanel';
 import { PublishDialog } from '@/web/src/app/code/PublishDialog';
 import { getProject, updateProject, slugify, isSlugAvailable, BASE_DOMAIN } from '@/web/src/app/code/projectStore';
+import { getSnapshot, saveSnapshot } from '@/web/src/app/code/buildStore';
 import { DEVICE_WIDTH, type DeviceMode, type ViewMode } from '@/web/src/app/code/workspace';
 import type { BuildEvent, BuildPhase, BuildState, ProjectFile } from '@/web/src/app/code/types';
 
@@ -25,9 +26,16 @@ export function ProjectWorkspace() {
   const { id } = useParams();
   const [project, setProject] = useState(() => (id ? getProject(id) : undefined));
 
-  const [req, setReq] = useState<{ prompt: string; seq: number }>(() => ({ prompt: project?.prompt || '', seq: 0 }));
-  const [build, setBuild] = useState<BuildState>({ status: 'building', phase: 'queued', previewUrl: '', files: [], error: '', seq: 0 });
-  const appFilesRef = useRef<ProjectFile[]>([]);
+  // If we have a saved snapshot, resume (write + dev server, no model call) instead
+  // of re-generating; otherwise this is a first build from the seed prompt.
+  const snapshot = id ? getSnapshot(id) : undefined;
+  const [req, setReq] = useState<{ mode: 'build' | 'run'; prompt: string; seq: number }>(
+    () => ({ mode: snapshot ? 'run' : 'build', prompt: project?.prompt || '', seq: 0 }),
+  );
+  const [build, setBuild] = useState<BuildState>(() => ({
+    status: 'building', phase: 'queued', previewUrl: '', files: snapshot?.files || [], error: '', seq: 0,
+  }));
+  const appFilesRef = useRef<ProjectFile[]>(snapshot?.appFiles || []);
   const [phaseLog, setPhaseLog] = useState<{ phase: BuildPhase; detail?: string }[]>([]);
 
   // Editor chrome state
@@ -51,17 +59,22 @@ export function ProjectWorkspace() {
     if (!project) return;
     let cancelled = false;
 
+    const isRun = req.mode === 'run';
     setBuild((b) => ({ ...b, status: 'building', phase: 'queued', error: '', seq: req.seq }));
-    setPhaseLog([{ phase: 'queued', detail: 'Queued…' }]);
+    setPhaseLog([{ phase: 'queued', detail: isRun ? 'Resuming saved project…' : 'Queued…' }]);
     const ctrl = new AbortController();
 
     (async () => {
       try {
         const token = await getAccessToken();
-        const res = await fetch('/api/code/build', {
+        const res = await fetch(isRun ? '/api/code/run' : '/api/code/build', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ projectId: project.id, prompt: req.prompt, currentFiles: appFilesRef.current }),
+          body: JSON.stringify(
+            isRun
+              ? { projectId: project.id, appFiles: appFilesRef.current }
+              : { projectId: project.id, prompt: req.prompt, currentFiles: appFilesRef.current },
+          ),
           signal: ctrl.signal,
         });
 
@@ -75,6 +88,7 @@ export function ProjectWorkspace() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = '';
+        let latestFiles: ProjectFile[] = build.files;
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -93,9 +107,12 @@ export function ProjectWorkspace() {
               setPhaseLog((l) => [...l, { phase: evt.phase as BuildPhase, detail: (evt as any).detail }]);
             } else if (evt.type === 'files') {
               appFilesRef.current = (evt as any).appFiles;
-              setBuild((b) => ({ ...b, files: (evt as any).files }));
+              latestFiles = (evt as any).files;
+              setBuild((b) => ({ ...b, files: latestFiles }));
             } else if (evt.type === 'done') {
               setBuild((b) => ({ ...b, status: 'ready', phase: 'ready', previewUrl: (evt as any).previewUrl, seq: req.seq }));
+              // Snapshot the source so a reopen resumes via /api/code/run (no model call).
+              saveSnapshot(project.id, appFilesRef.current, latestFiles);
             } else if (evt.type === 'error') {
               setBuild((b) => ({ ...b, status: 'error', phase: 'error', error: (evt as any).error || 'Build failed' }));
             }
@@ -159,7 +176,7 @@ export function ProjectWorkspace() {
               building={build.status === 'building'}
               phase={build.phase}
               phaseLog={phaseLog}
-              onSend={(msg) => setReq((r) => ({ prompt: msg, seq: r.seq + 1 }))}
+              onSend={(msg) => setReq((r) => ({ mode: 'build', prompt: msg, seq: r.seq + 1 }))}
             />
           )}
           <div className="min-w-0 flex-1">

@@ -45,6 +45,56 @@ function estimateCostUsd(model: string, i: number, o: number): number {
   return (i / 1e6) * p.i + (o / 1e6) * p.o;
 }
 
+type File = { path: string; content: string };
+
+/** Merge the fixed base template with generated app source (generated wins). */
+function mergeWithBase(appFiles: File[]): File[] {
+  const merged = new Map<string, string>();
+  for (const [path, content] of Object.entries(BASE)) merged.set(path, content);
+  for (const f of appFiles) merged.set(f.path, f.content);
+  return [...merged.entries()].map(([path, content]) => ({ path, content }));
+}
+
+/**
+ * Write a full file tree into the project sandbox and start the dev server,
+ * emitting writing → installing → starting → ready phases. No model call — used
+ * by both build (after generation) and run (resume from saved files).
+ * Returns the preview URL, or null if it emitted an error.
+ */
+async function writeAndRun(
+  projectId: string,
+  files: File[],
+  emit: (data: Record<string, unknown>) => Promise<void>,
+): Promise<string | null> {
+  const driver = getSandboxDriver();
+
+  await emit({ type: 'phase', phase: 'writing', detail: `Writing ${files.length} files to sandbox…` });
+  const sandbox = await driver.create({ projectId });
+  await sandbox.writeFiles(files);
+
+  if (typeof sandbox.runDevProject !== 'function') {
+    await emit({ type: 'error', error: 'provider_lacks_multifile_run (set SANDBOX_PROVIDER=blaxel)' });
+    return null;
+  }
+
+  await emit({ type: 'phase', phase: 'installing', detail: 'Installing dependencies…' });
+  const installTimeout = setTimeout(() => {
+    void emit({ type: 'phase', phase: 'starting', detail: 'Starting Vite dev server…' }).catch(() => {});
+  }, 15_000);
+
+  try {
+    const dev = await sandbox.runDevProject({
+      installCommand: 'npm install --no-audit --no-fund',
+      devCommand: 'npm run dev',
+      port: PORT,
+      maxInstallMs: 240_000,
+    });
+    return dev.previewUrl;
+  } finally {
+    clearTimeout(installTimeout);
+  }
+}
+
 function parseFiles(text: string): { path: string; content: string }[] {
   let t = text.trim();
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -86,7 +136,6 @@ codeBuildApp.post('/api/code/build', async (c) => {
       // Phase 1: Generate
       await emit({ type: 'phase', phase: 'generating', detail: 'Claude is writing your app…' });
 
-      const driver = getSandboxDriver();
       const model = DEFAULT_MODEL;
       const userContent = currentFiles.length
         ? `Current app source files:\n${JSON.stringify(currentFiles).slice(0, 60000)}\n\nApply this change and return the FULL updated file set (same JSON shape):\n${prompt}`
@@ -102,7 +151,7 @@ codeBuildApp.post('/api/code/build', async (c) => {
 
       const inTok = j?.usage?.input_tokens || 0;
       const outTok = j?.usage?.output_tokens || 0;
-      let appFiles: { path: string; content: string }[];
+      let appFiles: File[];
       try {
         appFiles = parseFiles((j?.content || []).map((b: any) => b?.text || '').join(''));
       } catch (e: any) {
@@ -112,47 +161,13 @@ codeBuildApp.post('/api/code/build', async (c) => {
         await emit({ type: 'error', error: 'Model did not return src/App.jsx' }); return;
       }
 
-      // Merge base + generated
-      const merged = new Map<string, string>();
-      for (const [path, content] of Object.entries(BASE)) merged.set(path, content);
-      for (const f of appFiles) merged.set(f.path, f.content);
-      const files = [...merged.entries()].map(([path, content]) => ({ path, content }));
-
-      // Phase 2: Write files
-      await emit({ type: 'phase', phase: 'writing', detail: `Writing ${files.length} files to sandbox…` });
+      const files = mergeWithBase(appFiles);
       await emit({ type: 'files', files, appFiles });
 
-      const sandbox = await driver.create({ projectId });
-      await sandbox.writeFiles(files);
+      // Phases 2–3: write + install + start (no further model call).
+      const previewUrl = await writeAndRun(projectId, files, emit);
+      if (previewUrl === null) return; // error already emitted
 
-      if (typeof sandbox.runDevProject !== 'function') {
-        await emit({ type: 'error', error: 'provider_lacks_multifile_run (set SANDBOX_PROVIDER=blaxel)' }); return;
-      }
-
-      // Phase 3: Install
-      await emit({ type: 'phase', phase: 'installing', detail: 'Installing dependencies…' });
-
-      // runDevProject handles install + dev start internally; we emit phase markers around it.
-      // Since it's a single call, we emit 'starting' after a brief wait via a race approach.
-      // For now, runDevProject is atomic — we emit 'starting' optimistically partway through.
-      const installTimeout = setTimeout(async () => {
-        try { await emit({ type: 'phase', phase: 'starting', detail: 'Starting Vite dev server…' }); } catch {}
-      }, 15_000);
-
-      let previewUrl: string;
-      try {
-        const dev = await sandbox.runDevProject({
-          installCommand: 'npm install --no-audit --no-fund',
-          devCommand: 'npm run dev',
-          port: PORT,
-          maxInstallMs: 240_000,
-        });
-        previewUrl = dev.previewUrl;
-      } finally {
-        clearTimeout(installTimeout);
-      }
-
-      // Phase 4: Ready
       await emit({ type: 'phase', phase: 'ready' });
       await emit({ type: 'done', previewUrl, model, inputTokens: inTok, outputTokens: outTok });
 
@@ -160,6 +175,40 @@ codeBuildApp.post('/api/code/build', async (c) => {
       await recordUsage(db, [{ user_id: user.id, model, input_tokens: inTok, output_tokens: outTok, cost_usd: estimateCostUsd(model, inTok, outTok) }]);
     } catch (e: any) {
       await emit({ type: 'error', error: e?.message || 'Build failed' });
+    }
+  });
+});
+
+// POST /api/code/run { projectId, appFiles } — resume a saved project: write the
+// saved source + start the dev server, NO model call (no generation, no metering).
+// This is what reload/resume uses so reopening a project doesn't re-bill the model.
+codeBuildApp.post('/api/code/run', async (c) => {
+  const { user } = await requireUser(c);
+  void user;
+
+  let body: any = {};
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+  const projectId = body?.projectId;
+  if (!projectId) return c.json({ error: 'projectId required' }, 400);
+
+  const appFiles: File[] = Array.isArray(body?.appFiles)
+    ? body.appFiles.filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string')
+    : [];
+  if (!appFiles.some((f) => f.path === 'src/App.jsx')) {
+    return c.json({ error: 'no saved source to run (missing src/App.jsx)' }, 400);
+  }
+
+  return streamSSE(c, async (stream) => {
+    const emit = (data: Record<string, unknown>) => stream.writeSSE({ data: JSON.stringify(data), event: 'build' });
+    try {
+      const files = mergeWithBase(appFiles);
+      await emit({ type: 'files', files, appFiles });
+      const previewUrl = await writeAndRun(projectId, files, emit);
+      if (previewUrl === null) return;
+      await emit({ type: 'phase', phase: 'ready' });
+      await emit({ type: 'done', previewUrl, model: '', inputTokens: 0, outputTokens: 0 });
+    } catch (e: any) {
+      await emit({ type: 'error', error: e?.message || 'Resume failed' });
     }
   });
 });

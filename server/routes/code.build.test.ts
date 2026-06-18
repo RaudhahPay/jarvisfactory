@@ -75,4 +75,33 @@ describe('POST /api/code/build', () => {
     expect(done.previewUrl).toMatch(/^https?:\/\//);
     expect(events.some((e) => e.type === 'error')).toBe(false);
   });
+
+  it('POST /api/code/run resumes saved files WITHOUT calling the model', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy); // any model call would blow up the test
+
+    const res = await codeBuildApp.request('/api/code/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', appFiles: [{ path: 'src/App.jsx', content: 'export default ()=>null' }] }),
+    });
+    expect(res.status).toBe(200);
+
+    const events = (await res.text())
+      .split('\n').filter((l) => l.startsWith('data:')).map((l) => JSON.parse(l.slice(5).trim()));
+    const phases = events.filter((e) => e.type === 'phase').map((e) => e.phase);
+    expect(phases).not.toContain('generating'); // no model phase on resume
+    expect(phases).toContain('ready');
+    expect(events.find((e) => e.type === 'done').previewUrl).toMatch(/^https?:\/\//);
+    expect(fetchSpy).not.toHaveBeenCalled(); // proves no Anthropic call
+  });
+
+  it('POST /api/code/run 400s when there is no saved source', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
+    const res = await codeBuildApp.request('/api/code/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', appFiles: [] }),
+    });
+    expect(res.status).toBe(400);
+  });
 });
