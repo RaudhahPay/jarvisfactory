@@ -1,3 +1,8 @@
+// Load .env for local/dev (server-side SUPABASE_*, ANTHROPIC_API_KEY, etc.).
+// No-op in production: the Cloudflare Container injects env directly and ships no
+// .env file, so this import simply finds nothing and continues. Must be first so
+// env is populated before any route reads it.
+import 'dotenv/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
