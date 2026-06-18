@@ -12,6 +12,12 @@ import { ChatView } from './app/ChatView';
 import { CoworkView } from './app/CoworkView';
 import { CodeLanding } from './app/code/CodeLanding';
 import { ProjectWorkspace } from './app/code/ProjectWorkspace';
+import { SettingsLayout } from './app/settings/SettingsLayout';
+import { GeneralPanel } from './app/settings/GeneralPanel';
+import { DomainsPanel } from './app/settings/DomainsPanel';
+import { ConnectorsPanel } from './app/settings/ConnectorsPanel';
+import { BillingPanel } from './app/settings/BillingPanel';
+import { MembersPanel } from './app/settings/MembersPanel';
 
 export default function App() {
   return (
@@ -32,7 +38,17 @@ export default function App() {
         <Route path="cowork" element={<CoworkView />} />
         <Route path="cowork/:id" element={<CoworkView />} />
         <Route path="code" element={<CodeLanding />} />
-        <Route path="code/:id" element={<ProjectWorkspace />} />
+      </Route>
+      {/* Project editor is its own full-screen page (own top bar, not the shell). */}
+      <Route path="/app/code/:id" element={<ProjectWorkspace />} />
+      {/* Settings — full-page layout with persistent left nav. */}
+      <Route path="/settings" element={<SettingsLayout />}>
+        <Route index element={<Navigate to="general" replace />} />
+        <Route path="general" element={<GeneralPanel />} />
+        <Route path="domains" element={<DomainsPanel />} />
+        <Route path="connectors" element={<ConnectorsPanel />} />
+        <Route path="billing" element={<BillingPanel />} />
+        <Route path="members" element={<MembersPanel />} />
       </Route>
     </Routes>
   );

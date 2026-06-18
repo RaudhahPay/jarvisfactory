@@ -47,19 +47,32 @@ describe('POST /api/code/build', () => {
     expect(res.status).toBe(400);
   });
 
-  it('generates HTML, runs it, returns a preview URL', async () => {
+  it('streams build phases, generates files, returns a preview URL', async () => {
     getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
     const res = await codeBuildApp.request('/api/code/build', {
       method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
       body: JSON.stringify({ projectId: 'p1', prompt: 'a todo app with add and delete' }),
     });
     expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.ok).toBe(true);
-    expect(json.previewUrl).toMatch(/^https?:\/\//);
-    // Merged tree includes base template + generated app source.
-    expect(json.files.some((f: any) => f.path === 'src/App.jsx')).toBe(true);
-    expect(json.files.some((f: any) => f.path === 'package.json')).toBe(true);
-    expect(json.provider).toBe('stub');
+
+    // Parse the SSE stream into build events.
+    const text = await res.text();
+    const events = text
+      .split('\n')
+      .filter((l) => l.startsWith('data:'))
+      .map((l) => JSON.parse(l.slice(5).trim()));
+
+    const phases = events.filter((e) => e.type === 'phase').map((e) => e.phase);
+    expect(phases).toContain('generating');
+    expect(phases).toContain('installing');
+    expect(phases).toContain('ready');
+
+    const filesEvt = events.find((e) => e.type === 'files');
+    expect(filesEvt.files.some((f: any) => f.path === 'src/App.jsx')).toBe(true);
+    expect(filesEvt.files.some((f: any) => f.path === 'package.json')).toBe(true);
+
+    const done = events.find((e) => e.type === 'done');
+    expect(done.previewUrl).toMatch(/^https?:\/\//);
+    expect(events.some((e) => e.type === 'error')).toBe(false);
   });
 });
