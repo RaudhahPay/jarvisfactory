@@ -17,22 +17,31 @@ import type { SandboxDriver } from './types'
 export function runSandboxDriverConformance(
   makeDriver: () => SandboxDriver,
   label?: string,
+  // Real providers spin up VMs (cold start) + dev servers — far slower than the
+  // in-memory stub. A generous per-test timeout keeps the stub fast and lets live
+  // providers finish.
+  timeout = 60_000,
 ) {
   describe(`SandboxDriver conformance${label ? ` — ${label}` : ''}`, () => {
     const PID = 'proj_conformance'
+    // A command that actually opens the port, so providers that wait for the port
+    // to come up (e.g. Blaxel waitForPorts) return promptly. The stub ignores it.
+    const DEV_CMD = `node -e "require('http').createServer((_,r)=>r.end('ok')).listen(3000)"`
+    // Apply the per-test timeout uniformly.
+    const t = (name: string, fn: () => any) => it(name, fn, timeout)
 
-    it('exposes a provider name', () => {
+    t('exposes a provider name', () => {
       expect(typeof makeDriver().provider).toBe('string')
     })
 
-    it('create() returns a handle bound to the project', async () => {
+    t('create() returns a handle bound to the project', async () => {
       const h = await makeDriver().create({ projectId: PID })
       expect(h.id).toBeTruthy()
       expect(h.projectId).toBe(PID)
       expect(await h.status()).toBe('running')
     })
 
-    it('seeds initial files and reads them back', async () => {
+    t('seeds initial files and reads them back', async () => {
       const h = await makeDriver().create({
         projectId: PID,
         files: [{ path: 'index.html', content: '<h1>hi</h1>' }],
@@ -41,20 +50,20 @@ export function runSandboxDriverConformance(
       expect(await h.listFiles()).toContain('index.html')
     })
 
-    it('writeFiles then readFile round-trips', async () => {
+    t('writeFiles then readFile round-trips', async () => {
       const h = await makeDriver().create({ projectId: PID })
       await h.writeFiles([{ path: 'app/page.tsx', content: 'export default 1' }])
       expect(await h.readFile('app/page.tsx')).toBe('export default 1')
     })
 
-    it('writeFilesBase64 decodes to utf-8', async () => {
+    t('writeFilesBase64 decodes to utf-8', async () => {
       const h = await makeDriver().create({ projectId: PID })
       const b64 = Buffer.from('héllo', 'utf-8').toString('base64')
       await h.writeFilesBase64([{ path: 'a.txt', content: b64 }])
       expect(await h.readFile('a.txt')).toBe('héllo')
     })
 
-    it('deleteFile removes the file', async () => {
+    t('deleteFile removes the file', async () => {
       const h = await makeDriver().create({
         projectId: PID,
         files: [{ path: 'gone.txt', content: 'x' }],
@@ -63,23 +72,23 @@ export function runSandboxDriverConformance(
       expect(await h.listFiles()).not.toContain('gone.txt')
     })
 
-    it('exec resolves with an exit code and stdout', async () => {
+    t('exec resolves with an exit code and stdout', async () => {
       const h = await makeDriver().create({ projectId: PID })
       const r = await h.exec('echo hi')
       expect(typeof r.exitCode).toBe('number')
       expect(typeof r.stdout).toBe('string')
     })
 
-    it('startDevServer + getPreviewUrl return an http(s) URL', async () => {
+    t('startDevServer + getPreviewUrl return an http(s) URL', async () => {
       const h = await makeDriver().create({ projectId: PID })
-      const dev = await h.startDevServer('npm run dev', 3000)
+      const dev = await h.startDevServer(DEV_CMD, 3000)
       expect(dev.port).toBe(3000)
       expect(dev.previewUrl).toMatch(/^https?:\/\//)
       expect(await h.getPreviewUrl(3000)).toMatch(/^https?:\/\//)
       await dev.stop()
     })
 
-    it('snapshot captures the file tree for the project', async () => {
+    t('snapshot captures the file tree for the project', async () => {
       const h = await makeDriver().create({
         projectId: PID,
         files: [{ path: 'index.html', content: '<h1>snap</h1>' }],
@@ -89,7 +98,7 @@ export function runSandboxDriverConformance(
       expect(snap.files.find(f => f.path === 'index.html')?.content).toBe('<h1>snap</h1>')
     })
 
-    it('resume() rehydrates a snapshot into a new running handle', async () => {
+    t('resume() rehydrates a snapshot into a new running handle', async () => {
       const driver = makeDriver()
       const h1 = await driver.create({
         projectId: PID,
@@ -101,13 +110,13 @@ export function runSandboxDriverConformance(
       expect(await h2.readFile('keep.txt')).toBe('persisted')
     })
 
-    it('suspend() moves the sandbox out of running (cost control)', async () => {
+    t('suspend() moves the sandbox out of running (cost control)', async () => {
       const h = await makeDriver().create({ projectId: PID })
       await h.suspend()
       expect(await h.status()).toBe('suspended')
     })
 
-    it('destroy() marks the sandbox destroyed', async () => {
+    t('destroy() marks the sandbox destroyed', async () => {
       const h = await makeDriver().create({ projectId: PID })
       await h.destroy()
       expect(await h.status()).toBe('destroyed')

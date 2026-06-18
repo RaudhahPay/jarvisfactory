@@ -21,7 +21,10 @@ import type {
 
 // Working root inside the sandbox. All project paths are relative to this.
 const WORKDIR = '/blaxel/app'
-const DEFAULT_IMAGE = process.env.BLAXEL_SANDBOX_IMAGE || 'blaxel/prod-base:latest'
+// Supported Blaxel images: base-image, ts-app, node, py-app, nextjs, vite, expo.
+// Node default fits any npm dev server (Vite/React/etc.); override per-build via
+// opts.template or BLAXEL_SANDBOX_IMAGE.
+const DEFAULT_IMAGE = process.env.BLAXEL_SANDBOX_IMAGE || 'blaxel/node:latest'
 
 // Blaxel sandbox names must be stable + safe. One sandbox per project.
 function sandboxName(projectId: string): string {
@@ -161,6 +164,7 @@ export class BlaxelSandboxDriver implements SandboxDriver {
     const inst = await SandboxInstance.createIfNotExists({
       name: sandboxName(projectId),
       image: opts?.template || DEFAULT_IMAGE,
+      region: process.env.BL_REGION || 'us-pdx-1',
       envs: opts?.envVars ? Object.entries(opts.envVars).map(([name, value]) => ({ name, value })) : undefined,
       ports: [{ target: 3000, protocol: 'HTTP' }],
     } as any)
