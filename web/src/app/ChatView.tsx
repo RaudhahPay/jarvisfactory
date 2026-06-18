@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { cn } from '@/web/src/lib/cn';
 import { Button } from '@/web/src/app/ui/button';
@@ -6,20 +7,23 @@ import { ScrollArea } from '@/web/src/app/ui/scroll-area';
 
 type Msg = { role: 'user' | 'assistant'; text: string };
 
+const GREETING: Msg = { role: 'assistant', text: 'Hi! Ask me anything, or describe what you want to build.' };
+
 export function ChatView() {
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', text: 'Hi! Ask me anything, or describe what you want to build.' },
-  ]);
+  const { id } = useParams();
+  const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
+
+  // Reset the thread when the conversation id changes (deep-linked /app/chat/:id).
+  useEffect(() => { setMessages([GREETING]); setInput(''); }, [id]);
 
   function send() {
     const text = input.trim();
     if (!text) return;
     setMessages((m) => [...m, { role: 'user', text }]);
     setInput('');
-    // TODO: wire to POST /api/agent/chat (SSE stream) once auth/session is in /app.
-    // For now the shell echoes a placeholder so the UI flow is complete.
+    // TODO: wire to POST /api/agent/chat (SSE stream) once /app carries a session.
     setTimeout(() => {
       setMessages((m) => [...m, { role: 'assistant', text: 'Got it — (the live agent response will stream here once /api/agent/chat is wired into this shell).' }]);
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -30,7 +34,7 @@ export function ChatView() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 items-center border-b border-border px-6">
-        <h1 className="text-sm font-semibold">Chat</h1>
+        <h1 className="text-sm font-semibold">{id ? `Chat · ${id}` : 'New chat'}</h1>
       </header>
 
       <ScrollArea className="flex-1">
@@ -42,7 +46,7 @@ export function ChatView() {
                   'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
                   m.role === 'user'
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-card-foreground border border-border',
+                    : 'border border-border bg-card text-card-foreground',
                 )}
               >
                 {m.text}

@@ -1,11 +1,13 @@
+import { useParams } from 'react-router-dom';
 import { Sparkles, FileText, Table, Presentation } from 'lucide-react';
 import { Button } from '@/web/src/app/ui/button';
 
 export function CoworkView() {
+  const { id } = useParams();
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 items-center border-b border-border px-6">
-        <h1 className="text-sm font-semibold">Cowork</h1>
+        <h1 className="text-sm font-semibold">{id ? `Cowork · ${id}` : 'Cowork'}</h1>
       </header>
       <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8 text-center">
         <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10">

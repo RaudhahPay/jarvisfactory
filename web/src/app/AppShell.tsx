@@ -1,35 +1,25 @@
+import { Outlet } from 'react-router-dom';
 import { TooltipProvider } from '@/web/src/app/ui/tooltip';
 import { Sidebar } from '@/web/src/app/Sidebar';
-import { ChatView } from '@/web/src/app/ChatView';
-import { CoworkView } from '@/web/src/app/CoworkView';
-import { CodeView } from '@/web/src/app/CodeView';
-import { useAppState } from '@/web/src/app/useAppState';
+import { useSidebar } from '@/web/src/app/useAppState';
 
 /**
- * ezClaude desktop-style shell — two panes (collapsible sidebar + main content),
- * Chat / Cowork / Code tabs that swap the right pane with no page reload. Active
- * tab and sidebar collapse persist across reloads (useAppState). Built with shadcn
- * primitives + Tailwind, scoped under `.ezc-app` so legacy inline-style pages are
- * untouched.
+ * ezClaude desktop-style shell — shared layout (collapsible sidebar + main pane).
+ * Each section (Chat / Cowork / Code) is its own route under /app, rendered into
+ * the <Outlet/>; the active section is derived from the URL (see Sidebar), and
+ * specific chats/projects open via id routes (/app/chat/:id, /app/code/:id).
+ * Sidebar collapse persists across reloads. Scoped under `.ezc-app` so the legacy
+ * inline-style pages are untouched.
  */
 export default function AppShell() {
-  const { tab, setTab, collapsed, toggleCollapsed, hasProject, setHasProject } = useAppState();
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="ezc-app flex h-screen w-full overflow-hidden bg-background text-foreground">
-        <Sidebar
-          tab={tab}
-          setTab={setTab}
-          collapsed={collapsed}
-          toggleCollapsed={toggleCollapsed}
-          hasProject={hasProject}
-          setHasProject={setHasProject}
-        />
+        <Sidebar collapsed={collapsed} toggleCollapsed={toggleCollapsed} />
         <main className="min-w-0 flex-1">
-          {tab === 'chat' && <ChatView />}
-          {tab === 'cowork' && <CoworkView />}
-          {tab === 'code' && <CodeView hasProject={hasProject} setHasProject={setHasProject} />}
+          <Outlet />
         </main>
       </div>
     </TooltipProvider>
