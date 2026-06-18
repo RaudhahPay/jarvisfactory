@@ -1,6 +1,10 @@
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+
+// ESM equivalent of __dirname (the project is "type": "module").
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // `web/` is the SPA root. `@/` maps to the REPO ROOT (two levels up) to mirror
 // `vitest.config.ts` and `web/tsconfig.json`, so ported files keep their

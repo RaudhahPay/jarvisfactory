@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn-style tokens — neutral Claude-Desktop aesthetic (light + dark). */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 8%;
+    --card: 40 20% 99%;
+    --card-foreground: 240 10% 8%;
+    --primary: 240 10% 8%;          /* ink — primary buttons */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 14% 96%;
+    --secondary-foreground: 240 10% 8%;
+    --muted: 40 14% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 160 84% 39%;          /* ezclaude teal */
+    --accent-foreground: 0 0% 100%;
+    --border: 240 6% 92%;
+    --input: 240 6% 90%;
+    --ring: 160 84% 39%;
+    --radius: 0.6rem;
+  }
+
+  .dark {
+    --background: 240 10% 8%;
+    --foreground: 0 0% 96%;
+    --card: 240 8% 11%;
+    --card-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 240 10% 8%;
+    --secondary: 240 6% 16%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 6% 16%;
+    --muted-foreground: 240 5% 60%;
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+    --border: 240 5% 18%;
+    --input: 240 5% 20%;
+    --ring: 160 84% 39%;
+  }
+
+  /* Scoped resets for the /app shell only (preflight is disabled globally), so the
+     inline-style legacy pages are untouched. */
+  .ezc-app, .ezc-app * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: hsl(var(--border)); }
+  .ezc-app { font-family: theme('fontFamily.sans'); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
+  .ezc-app button { font: inherit; cursor: pointer; background: none; }
+  .ezc-app h1, .ezc-app h2, .ezc-app h3, .ezc-app p { margin: 0; }
+  .ezc-app input, .ezc-app textarea { font: inherit; color: inherit; }
+}
