@@ -18,6 +18,7 @@ import { conversationsApp } from './routes/conversations';
 import { githubOauthApp } from './routes/github.oauth';
 import { githubPullApp } from './routes/github.pull';
 import { githubSaveApp } from './routes/github.save';
+import { sandboxApp } from './routes/sandbox';
 
 const DIST_ROOT = 'web/dist';
 const INDEX_HTML = resolve(process.cwd(), DIST_ROOT, 'index.html');
@@ -49,6 +50,7 @@ app.route('/', buildApp);
 app.route('/', githubSaveApp);
 app.route('/', githubPullApp);
 app.route('/', githubOauthApp);
+app.route('/', sandboxApp);
 
 // ─── Static assets + SPA fallback (must stay last) ──────────────────────────
 // Serve built assets (JS/CSS/etc.) from web/dist. Missing files fall through.

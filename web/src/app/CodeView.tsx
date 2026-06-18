@@ -37,7 +37,7 @@ export function CodeView({
         <Button variant="ghost" size="sm" onClick={() => setHasProject(false)}>Close project</Button>
       </header>
       <div className="min-h-0 flex-1">
-        <SandboxRunner />
+        <SandboxRunner projectId="my-app" />
       </div>
     </div>
   );
