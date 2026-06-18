@@ -76,6 +76,13 @@ class StubSandboxHandle implements SandboxHandle {
     return `https://stub-${this.id.slice(0, 8)}-${port}.preview.local`
   }
 
+  async runDevProject(opts: { installCommand?: string; devCommand: string; port: number; onLog?: (c: string) => void }): Promise<DevServer> {
+    if (opts.installCommand) opts.onLog?.(`$ ${opts.installCommand}\n`)
+    opts.onLog?.(`$ ${opts.devCommand}\n`)
+    const previewUrl = `https://stub-${this.id.slice(0, 8)}-${opts.port}.preview.local`
+    return { port: opts.port, previewUrl, stop: async () => {} }
+  }
+
   async snapshot(): Promise<SandboxSnapshot> {
     return {
       projectId: this.projectId,

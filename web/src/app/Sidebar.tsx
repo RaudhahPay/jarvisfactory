@@ -54,7 +54,7 @@ export function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; to
       <div className={cn('flex h-14 items-center gap-2 px-3', collapsed && 'justify-center px-0')}>
         <button onClick={() => navigate('/app')} className="h-6 w-6 shrink-0 rounded-md bg-gradient-to-br from-accent to-[#7b6fff] shadow-sm" aria-label="ezclaude home" />
         {!collapsed && <span className="flex-1 text-[15px] font-bold tracking-tight">ezclaude</span>}
-        <Button variant="ghost" size="iconSm" onClick={toggleCollapsed} title={collapsed ? 'Expand' : 'Collapse'}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleCollapsed} title={collapsed ? 'Expand' : 'Collapse'}>
           <PanelLeft className="h-4 w-4 text-muted-foreground" />
         </Button>
       </div>
@@ -94,7 +94,7 @@ export function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; to
             </span>
             <Button
               variant="ghost"
-              size="iconSm"
+              size="icon" className="h-8 w-8"
               title={active === 'code' ? 'New project' : active === 'cowork' ? 'New workspace' : 'New chat'}
               onClick={onNew}
             >

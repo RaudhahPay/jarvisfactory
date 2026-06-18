@@ -16,11 +16,11 @@ vi.mock('@/lib/metering', () => ({
 
 import { codeBuildApp } from './code.build';
 
-const HTML = '<!doctype html><html><body><h1>Todo</h1></body></html>';
+const APP_JSON = JSON.stringify({ files: [{ path: 'src/App.jsx', content: 'export default function App(){return <h1>Todo</h1>}' }] });
 
 function mockAnthropic() {
   vi.stubGlobal('fetch', vi.fn(async () => new Response(
-    JSON.stringify({ content: [{ type: 'text', text: HTML }], usage: { input_tokens: 10, output_tokens: 20 } }),
+    JSON.stringify({ content: [{ type: 'text', text: APP_JSON }], usage: { input_tokens: 10, output_tokens: 20 } }),
     { status: 200, headers: { 'content-type': 'application/json' } },
   )));
 }
@@ -57,7 +57,9 @@ describe('POST /api/code/build', () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.previewUrl).toMatch(/^https?:\/\//);
-    expect(json.html).toContain('<!doctype html>');
+    // Merged tree includes base template + generated app source.
+    expect(json.files.some((f: any) => f.path === 'src/App.jsx')).toBe(true);
+    expect(json.files.some((f: any) => f.path === 'package.json')).toBe(true);
     expect(json.provider).toBe('stub');
   });
 });

@@ -136,6 +136,33 @@ class BlaxelHandle implements SandboxHandle {
     return preview?.spec?.url || ''
   }
 
+  // Multi-file run: npm install (non-blocking + poll, beyond the 60s exec cap) then
+  // start the dev server (keepAlive, wait for the port) and resolve the preview URL.
+  async runDevProject(opts: {
+    installCommand?: string
+    devCommand: string
+    port: number
+    maxInstallMs?: number
+    onLog?: (chunk: string) => void
+  }): Promise<DevServer> {
+    const { installCommand, devCommand, port, maxInstallMs = 240_000, onLog } = opts
+    if (installCommand) {
+      onLog?.(`$ ${installCommand}\n`)
+      await this.inst.process.exec({ name: 'install', command: installCommand, workingDir: WORKDIR, waitForCompletion: false } as any)
+      await this.inst.process.wait('install', { maxWait: maxInstallMs, interval: 4000 })
+      const info: any = await this.inst.process.get('install')
+      if (info && typeof info.exitCode === 'number' && info.exitCode !== 0) {
+        const logs = await this.inst.process.logs('install', 'all').catch(() => '')
+        throw new Error(`install failed (exit ${info.exitCode})\n${String(logs).slice(-1500)}`)
+      }
+      onLog?.('install complete\n')
+    }
+    onLog?.(`$ ${devCommand}\n`)
+    await this.inst.process.exec({ name: `dev-${port}`, command: devCommand, workingDir: WORKDIR, keepAlive: true, waitForCompletion: false, waitForPorts: [port] } as any)
+    const previewUrl = await this.getPreviewUrl(port)
+    return { port, previewUrl, stop: async () => { try { await this.inst.process.kill(`dev-${port}`) } catch { /* gone */ } } }
+  }
+
   // ── Lifecycle ──
   async snapshot(): Promise<SandboxSnapshot> {
     const paths = await this.listFiles()

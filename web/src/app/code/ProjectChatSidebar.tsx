@@ -13,8 +13,8 @@ type Msg = { role: 'user' | 'assistant'; text: string };
  * send re-triggers the preview via onRebuild().
  */
 export function ProjectChatSidebar({
-  name, prompt, onSend,
-}: { name: string; prompt: string; onSend: (message: string) => void }) {
+  name, prompt, onSend, building = false,
+}: { name: string; prompt: string; onSend: (message: string) => void; building?: boolean }) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([
     { role: 'user', text: prompt },
@@ -27,7 +27,7 @@ export function ProjectChatSidebar({
 
   function send() {
     const text = input.trim();
-    if (!text) return;
+    if (!text || building) return;
     setMessages((m) => [...m, { role: 'user', text }, { role: 'assistant', text: 'On it — applying your changes and rebuilding…' }]);
     setInput('');
     onSend(text); // becomes the next build request (agent regenerates the app)
@@ -36,7 +36,7 @@ export function ProjectChatSidebar({
   return (
     <div className="flex h-full w-80 shrink-0 flex-col border-r border-border bg-card">
       <header className="flex h-14 items-center gap-2 border-b border-border px-3">
-        <Button variant="ghost" size="iconSm" title="All projects" onClick={() => navigate('/app/code')}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="All projects" onClick={() => navigate('/app/code')}>
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
         </Button>
         <span className="truncate text-sm font-semibold">{name}</span>
@@ -66,11 +66,12 @@ export function ProjectChatSidebar({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Ask for changes…"
+            placeholder={building ? 'Building…' : 'Ask for changes…'}
             rows={1}
-            className="max-h-32 flex-1 resize-none bg-transparent px-1 py-1 text-sm outline-none"
+            disabled={building}
+            className="max-h-32 flex-1 resize-none bg-transparent px-1 py-1 text-sm outline-none disabled:opacity-60"
           />
-          <Button size="iconSm" onClick={send} disabled={!input.trim()} className="rounded-lg">
+          <Button size="icon" onClick={send} disabled={!input.trim() || building} className="h-8 w-8 rounded-lg">
             <ArrowUp className="h-4 w-4" />
           </Button>
         </div>

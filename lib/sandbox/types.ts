@@ -90,6 +90,16 @@ export interface SandboxHandle {
   // ── Dev server + preview ──
   startDevServer(command: string, port: number): Promise<DevServer>
   getPreviewUrl(port: number): Promise<string>
+  // Multi-file project run: install deps (long-running, beyond the exec cap) then
+  // start the dev server and resolve the preview URL. Optional so simple/stub
+  // providers can omit it; the multi-file build path requires it.
+  runDevProject?(opts: {
+    installCommand?: string
+    devCommand: string
+    port: number
+    maxInstallMs?: number
+    onLog?: (chunk: string) => void
+  }): Promise<DevServer>
 
   // ── Lifecycle ──
   snapshot(): Promise<SandboxSnapshot> // export the full tree for persistence
