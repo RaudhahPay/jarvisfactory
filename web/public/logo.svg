@@ -1,0 +1,13 @@
+<svg viewBox="0 0 128 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ezClaude">
+  <defs>
+    <linearGradient id="ez" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5b6cf0" />
+      <stop offset="48%" stop-color="#b14fe0" />
+      <stop offset="78%" stop-color="#e0589f" />
+      <stop offset="100%" stop-color="#ff7a59" />
+    </linearGradient>
+  </defs>
+  <text x="50%" y="52%" text-anchor="middle" dominant-baseline="central"
+        font-family="'Plus Jakarta Sans','DM Sans',system-ui,sans-serif"
+        font-weight="800" font-size="64" letter-spacing="-3" fill="url(#ez)">ez</text>
+</svg>

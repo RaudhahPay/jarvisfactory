@@ -10,7 +10,8 @@ import GithubCallback from './routes/GithubCallback';
 import AppShell from './app/AppShell';
 import { ChatView } from './app/ChatView';
 import { CoworkView } from './app/CoworkView';
-import { CodeView } from './app/CodeView';
+import { CodeLanding } from './app/code/CodeLanding';
+import { ProjectWorkspace } from './app/code/ProjectWorkspace';
 
 export default function App() {
   return (
@@ -30,8 +31,8 @@ export default function App() {
         <Route path="chat/:id" element={<ChatView />} />
         <Route path="cowork" element={<CoworkView />} />
         <Route path="cowork/:id" element={<CoworkView />} />
-        <Route path="code" element={<CodeView />} />
-        <Route path="code/:id" element={<CodeView />} />
+        <Route path="code" element={<CodeLanding />} />
+        <Route path="code/:id" element={<ProjectWorkspace />} />
       </Route>
     </Routes>
   );

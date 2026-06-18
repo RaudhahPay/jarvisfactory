@@ -21,19 +21,28 @@ const PREVIEW_COMMAND =
   `http.createServer((q,r)=>{r.setHeader('content-type','text/html');` +
   `r.end(fs.readFileSync('/blaxel/app/index.html','utf-8'))}).listen(${PREVIEW_PORT})"`;
 
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+}
+
 // Minimal but real running app shown until the agent writes the user's project.
-const DEMO_INDEX = `<!doctype html><html><head><meta charset="utf-8"/>
+// The requested prompt is surfaced so the live preview reflects what was asked.
+function demoIndex(prompt?: string): string {
+  const ask = prompt ? escapeHtml(prompt.slice(0, 160)) : '';
+  return `<!doctype html><html><head><meta charset="utf-8"/>
 <title>ezClaude sandbox</title><style>
   body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0;background:#faf9f6;color:#0a0a18}
-  .card{text-align:center}.count{font-size:64px;font-weight:800;margin:16px 0}
+  .card{text-align:center;max-width:560px;padding:24px}.count{font-size:64px;font-weight:800;margin:16px 0}
   button{font:inherit;padding:10px 18px;border-radius:10px;border:1px solid #e3e3ee;background:#0a0a18;color:#fff;cursor:pointer;margin:0 4px}
-  .sub{color:#5a5a72;font-size:14px}
+  .sub{color:#5a5a72;font-size:14px}.ask{margin-top:22px;font-size:13px;color:#7a7a8c}.ask b{color:#0a0a18}
 </style></head><body><div class="card">
   <div class="sub">Running live in a Blaxel sandbox</div>
   <div class="count" id="c">0</div>
   <button onclick="window.c.textContent=+window.c.textContent+1">+1</button>
   <button onclick="window.c.textContent=+window.c.textContent-1">-1</button>
+  ${ask ? `<div class="ask">You asked for: <b>${ask}</b><br/>(starter preview — agent code-gen wiring comes next)</div>` : ''}
 </div></body></html>`;
+}
 
 sandboxApp.post('/api/sandbox/start', async (c) => {
   await requireUser(c); // identity required; sandbox compute is gated to signed-in users
@@ -45,7 +54,7 @@ sandboxApp.post('/api/sandbox/start', async (c) => {
 
   const files = Array.isArray(body?.files) && body.files.length
     ? body.files
-    : [{ path: 'index.html', content: DEMO_INDEX }];
+    : [{ path: 'index.html', content: demoIndex(body?.prompt) }];
 
   const driver = getSandboxDriver();
   try {

@@ -5,6 +5,7 @@ import { Button } from '@/web/src/app/ui/button';
 import { ScrollArea } from '@/web/src/app/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/web/src/app/ui/tooltip';
 import type { AppTab } from '@/web/src/app/useAppState';
+import { listProjects } from '@/web/src/app/code/projectStore';
 
 const TABS: { id: AppTab; label: string; icon: LucideIcon }[] = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
@@ -33,6 +34,14 @@ export function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; to
   // Active section + open id from the URL: /app/<section>/<id?>
   const [, , section, openId] = pathname.split('/'); // ['', 'app', section, id]
   const active = (section as AppTab) || 'chat';
+
+  // Code projects come from the real registry; chat/cowork stay demo for now.
+  const items = active === 'code'
+    ? listProjects().map((p) => ({ id: p.id, name: p.name }))
+    : ITEMS[active];
+
+  // "+" — Code opens the landing form (describe → build); others open a new id.
+  const onNew = () => navigate(active === 'code' ? '/app/code' : `/app/${active}/${newId()}`);
 
   return (
     <aside
@@ -87,14 +96,19 @@ export function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; to
               variant="ghost"
               size="iconSm"
               title={active === 'code' ? 'New project' : active === 'cowork' ? 'New workspace' : 'New chat'}
-              onClick={() => navigate(`/app/${active}/${newId()}`)}
+              onClick={onNew}
             >
               <Plus className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
           </div>
           <ScrollArea className="min-h-0 flex-1 px-2">
             <div className="flex flex-col gap-1 pb-3">
-              {ITEMS[active].map((it) => {
+              {items.length === 0 && (
+                <p className="px-3 py-2 text-sm text-muted-foreground">
+                  {active === 'code' ? 'No projects yet.' : 'Nothing here yet.'}
+                </p>
+              )}
+              {items.map((it) => {
                 const open = openId === it.id;
                 return (
                   <button
