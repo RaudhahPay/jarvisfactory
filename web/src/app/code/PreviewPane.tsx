@@ -4,16 +4,22 @@ import { apiFetch } from '@/web/src/lib/api';
 import { PreviewLoadingState } from '@/web/src/app/code/PreviewLoadingState';
 
 type Status = 'building' | 'ready' | 'error';
+export type BuildReq = { prompt: string; seq: number };
 
 /**
- * Right pane of the project workspace. Boots the project's Blaxel sandbox via
- * POST /api/sandbox/start and renders the live dev-server URL in an iframe. Shows
- * a loading state while building/reloading; re-runs when `buildNonce` changes
- * (e.g. the user edits via chat).
+ * Right pane: generate the app from the prompt via the agent (/api/code/build),
+ * which writes the generated index.html into the project's Blaxel sandbox, runs it,
+ * and returns the live preview URL — rendered in the iframe. Each new build request
+ * (initial prompt, then chat edits) re-runs and shows the loading state.
  */
 export function PreviewPane({
-  projectId, prompt, buildNonce,
-}: { projectId: string; prompt: string; buildNonce: number }) {
+  projectId, req, getCurrentHtml, onBuilt,
+}: {
+  projectId: string;
+  req: BuildReq;
+  getCurrentHtml: () => string | undefined;
+  onBuilt: (html: string) => void;
+}) {
   const [status, setStatus] = useState<Status>('building');
   const [previewUrl, setPreviewUrl] = useState('');
   const [error, setError] = useState('');
@@ -24,10 +30,10 @@ export function PreviewPane({
     setError('');
     (async () => {
       try {
-        const res = await apiFetch('/api/sandbox/start', {
+        const res = await apiFetch('/api/code/build', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId, prompt }),
+          body: JSON.stringify({ projectId, prompt: req.prompt, currentHtml: getCurrentHtml() }),
         });
         const text = await res.text();
         let json: any = {};
@@ -35,16 +41,19 @@ export function PreviewPane({
         if (cancelled) return;
         if (!text) throw new Error('API server not reachable — is the backend (port 3000) running? Try `bun run dev`.');
         if (!res.ok || !json.previewUrl) throw new Error(json.error || `HTTP ${res.status}`);
-        setPreviewUrl(json.previewUrl + (json.previewUrl.includes('?') ? '&' : '?') + 'v=' + buildNonce);
+        if (json.html) onBuilt(json.html);
+        // Cache-bust the iframe so each rebuild reloads the new output.
+        setPreviewUrl(json.previewUrl + (json.previewUrl.includes('?') ? '&' : '?') + 'v=' + req.seq);
         setStatus('ready');
       } catch (e: any) {
         if (cancelled) return;
-        setError(e?.message || 'Failed to start sandbox');
+        setError(e?.message || 'Build failed');
         setStatus('error');
       }
     })();
     return () => { cancelled = true; };
-  }, [projectId, buildNonce]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, req.seq]);
 
   return (
     <div className="flex h-full flex-col">
@@ -69,16 +78,16 @@ export function PreviewPane({
         )}
         {status === 'building' && (
           <PreviewLoadingState
-            label={buildNonce > 0 ? 'Reloading preview…' : 'Building…'}
-            detail="Running your app in a Blaxel sandbox. First boot can take a few seconds."
+            label={req.seq > 0 ? 'Applying your changes…' : 'Building your app…'}
+            detail="ezClaude is generating the code and running it in a Blaxel sandbox. This can take ~10–30s."
           />
         )}
         {status === 'error' && (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm font-medium">Couldn't start the sandbox</p>
+            <p className="text-sm font-medium">Couldn't build the app</p>
             <p className="max-w-md text-xs text-muted-foreground">{error}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <RefreshCw className="h-3.5 w-3.5" /> Edit in chat or retry to rebuild.
+              <RefreshCw className="h-3.5 w-3.5" /> Ask for changes in the chat to rebuild.
             </div>
           </div>
         )}

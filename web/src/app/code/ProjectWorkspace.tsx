@@ -1,36 +1,38 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { ProjectChatSidebar } from '@/web/src/app/code/ProjectChatSidebar';
-import { PreviewPane } from '@/web/src/app/code/PreviewPane';
+import { PreviewPane, type BuildReq } from '@/web/src/app/code/PreviewPane';
 import { getProject } from '@/web/src/app/code/projectStore';
 
 /**
- * Two-pane project workspace for /app/code/:id — chat (left) + live Blaxel preview
- * (right). The route param is the source of truth. Unknown ids redirect back to
- * /app/code (the landing form).
+ * Two-pane project workspace for /app/code/:id — chat (left) + live preview (right).
+ * The route param is the source of truth; unknown ids redirect to /app/code.
+ * The initial build uses the project's seed prompt; each chat message becomes the
+ * next build request, and the last generated HTML is fed back so edits are applied
+ * incrementally.
  */
 export function ProjectWorkspace() {
   const { id } = useParams();
   const project = id ? getProject(id) : undefined;
-  // A bump here re-triggers the preview build (initial seed + each chat edit).
-  const [buildNonce, setBuildNonce] = useState(0);
+  const [req, setReq] = useState<BuildReq>(() => ({ prompt: project?.prompt || '', seq: 0 }));
+  const htmlRef = useRef<string | undefined>(undefined);
 
-  if (!id) return <Navigate to="/app/code" replace />;
-  if (!project) {
-    // Unknown project id — send the user back to the landing form.
-    return <Navigate to="/app/code" replace />;
-  }
+  if (!id || !project) return <Navigate to="/app/code" replace />;
 
   return (
     <div className="flex h-full">
       <ProjectChatSidebar
-        projectId={project.id}
         name={project.name}
         prompt={project.prompt}
-        onRebuild={() => setBuildNonce((n) => n + 1)}
+        onSend={(msg) => setReq((r) => ({ prompt: msg, seq: r.seq + 1 }))}
       />
       <div className="min-w-0 flex-1">
-        <PreviewPane projectId={project.id} prompt={project.prompt} buildNonce={buildNonce} />
+        <PreviewPane
+          projectId={project.id}
+          req={req}
+          getCurrentHtml={() => htmlRef.current}
+          onBuilt={(html) => { htmlRef.current = html; }}
+        />
       </div>
     </div>
   );

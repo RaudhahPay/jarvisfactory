@@ -13,33 +13,24 @@ type Msg = { role: 'user' | 'assistant'; text: string };
  * send re-triggers the preview via onRebuild().
  */
 export function ProjectChatSidebar({
-  projectId, name, prompt, onRebuild,
-}: { projectId: string; name: string; prompt: string; onRebuild: () => void }) {
+  name, prompt, onSend,
+}: { name: string; prompt: string; onSend: (message: string) => void }) {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: 'user', text: prompt },
+    { role: 'assistant', text: 'Building your app — the live preview will appear on the right.' },
+  ]);
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
-
-  // Seed from the project prompt + trigger the first build (once per project).
-  useEffect(() => {
-    setMessages([
-      { role: 'user', text: prompt },
-      { role: 'assistant', text: 'Building your app — the live preview will appear on the right.' },
-    ]);
-    onRebuild();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   function send() {
     const text = input.trim();
     if (!text) return;
-    setMessages((m) => [...m, { role: 'user', text }, { role: 'assistant', text: 'On it — rebuilding the preview…' }]);
+    setMessages((m) => [...m, { role: 'user', text }, { role: 'assistant', text: 'On it — applying your changes and rebuilding…' }]);
     setInput('');
-    // TODO: send to the agent (/api/agent/build) to regenerate files; for now this
-    // re-triggers the sandbox preview so the iterate-via-chat loop is wired.
-    onRebuild();
+    onSend(text); // becomes the next build request (agent regenerates the app)
   }
 
   return (
