@@ -41,11 +41,13 @@
     --ring: 160 84% 39%;
   }
 
-  /* Scoped resets for the /app shell only (preflight is disabled globally), so the
-     inline-style legacy pages are untouched. */
-  .ezc-app, .ezc-app * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: hsl(var(--border)); }
+  /* Scoped resets for the /app shell only (preflight is disabled globally, so the
+     inline-style legacy pages are untouched). Wrapped in :where() so they have ZERO
+     specificity and always lose to Tailwind utilities (e.g. bg-primary) — otherwise
+     a class-scoped reset would override utility backgrounds. */
   .ezc-app { font-family: theme('fontFamily.sans'); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
-  .ezc-app button { font: inherit; cursor: pointer; background: none; }
-  .ezc-app h1, .ezc-app h2, .ezc-app h3, .ezc-app p { margin: 0; }
-  .ezc-app input, .ezc-app textarea { font: inherit; color: inherit; }
+  :where(.ezc-app, .ezc-app *) { box-sizing: border-box; border-width: 0; border-style: solid; border-color: hsl(var(--border)); }
+  :where(.ezc-app button) { font: inherit; cursor: pointer; background-color: transparent; background-image: none; }
+  :where(.ezc-app h1, .ezc-app h2, .ezc-app h3, .ezc-app p) { margin: 0; }
+  :where(.ezc-app input, .ezc-app textarea) { font: inherit; color: inherit; }
 }

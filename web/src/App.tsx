@@ -7,6 +7,7 @@ import Studio from './routes/Studio';
 import Builder from './routes/Builder';
 import Dashboard from './routes/Dashboard';
 import GithubCallback from './routes/GithubCallback';
+import AppShell from './app/AppShell';
 
 export default function App() {
   return (
@@ -18,6 +19,8 @@ export default function App() {
       <Route path="/builder" element={<RequireAuth><Builder /></RequireAuth>} />
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+      {/* New desktop-style shell (Chat/Cowork/Code). Public for now. */}
+      <Route path="/app" element={<AppShell />} />
     </Routes>
   );
 }
