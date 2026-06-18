@@ -27,8 +27,13 @@ export function SandboxRunner({ projectId }: { projectId: string }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ projectId }),
         });
-        const json = await res.json();
+        // Parse defensively: an empty body (dead API proxy) must not throw a cryptic
+        // "Unexpected end of JSON input" — surface a clear, actionable message.
+        const text = await res.text();
+        let json: any = {};
+        try { json = text ? JSON.parse(text) : {}; } catch { /* non-JSON body */ }
         if (cancelled) return;
+        if (!text) throw new Error('API server not reachable — is the backend (port 3000) running? Try `bun run dev`.');
         if (!res.ok || !json.previewUrl) throw new Error(json.error || `HTTP ${res.status}`);
         setPreviewUrl(json.previewUrl);
         setStatus('ready');
