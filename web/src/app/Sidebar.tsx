@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageSquare, Sparkles, Code2, PanelLeft, Plus, type LucideIcon } from 'lucide-react';
 import { cn } from '@/web/src/lib/cn';
@@ -35,10 +36,15 @@ export function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; to
   const [, , section, openId] = pathname.split('/'); // ['', 'app', section, id]
   const active = (section as AppTab) || 'chat';
 
-  // Code projects come from the real registry; chat/cowork stay demo for now.
-  const items = active === 'code'
-    ? listProjects().map((p) => ({ id: p.id, name: p.name }))
-    : ITEMS[active];
+  // Code projects come from the durable server registry; chat/cowork stay demo.
+  const [codeProjects, setCodeProjects] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    if (active !== 'code') return;
+    let live = true;
+    listProjects().then((ps) => { if (live) setCodeProjects(ps.map((p) => ({ id: p.id, name: p.name }))); }).catch(() => {});
+    return () => { live = false; };
+  }, [active, openId]); // refresh when navigating between code projects
+  const items = active === 'code' ? codeProjects : ITEMS[active];
 
   // "+" — Code opens the landing form (describe → build); others open a new id.
   const onNew = () => navigate(active === 'code' ? '/app/code' : `/app/${active}/${newId()}`);

@@ -1,94 +1,98 @@
-// Local project registry (until a real backend table backs it). The route param
-// project_id is the source of truth for which project is open; this store records
-// which ids exist + their seed prompt, so /app/code/:id can detect unknown ids and
-// the sidebar can list real projects.
+// Durable Code-section projects, backed by the server (`code_projects` table,
+// RLS-scoped per user) via /api/code/projects. Replaces the old localStorage
+// registry — projects + their generated source now survive reloads and follow the
+// user across devices. The generated source (appFiles) lives on the project itself
+// (project.appFiles), so reopening resumes via /api/code/run with no model call.
+
+import { apiFetch } from '@/web/src/lib/api';
+import type { ProjectFile } from '@/web/src/app/code/types';
 
 export type Project = {
   id: string;
   name: string;
   prompt: string;
   createdAt: number;
-  slug?: string;        // publish slug ({slug}.{BASE_DOMAIN})
+  slug?: string;
   published?: boolean;
   publishedUrl?: string;
   starred?: boolean;
+  appFiles?: ProjectFile[]; // only present on the single-project fetch
 };
 
-/** Display base domain for published apps. Real deploy target is a follow-up;
- *  change this one constant when the production host lands. */
+/** Display base domain for published apps. Real deploy target is a follow-up. */
 export const BASE_DOMAIN = 'ezclaude.app';
 
-const KEY = 'ezc.projects';
-
-/** Slug rules: lowercase letters, digits, hyphens; no leading/trailing/double hyphen. */
+// ── Pure slug helpers (client-side format validation; uniqueness is server-enforced) ──
 export function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 63);
+  return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 63);
 }
-
 export function isValidSlug(slug: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length >= 3 && slug.length <= 63;
 }
 
-/** True if no OTHER project already owns this slug. */
-export function isSlugAvailable(slug: string, exceptId?: string): boolean {
-  return !readAll().some((p) => p.slug === slug && p.id !== exceptId);
+// ── Row → client shape ──
+function toProject(r: any): Project {
+  return {
+    id: r.id,
+    name: r.name,
+    prompt: r.prompt || '',
+    createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
+    slug: r.slug || undefined,
+    published: !!r.published,
+    publishedUrl: r.published_url || undefined,
+    starred: !!r.starred,
+    appFiles: Array.isArray(r.app_files) ? r.app_files : undefined,
+  };
 }
 
-function readAll(): Project[] {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || '[]') as Project[];
-  } catch {
-    return [];
+export async function listProjects(): Promise<Project[]> {
+  const res = await apiFetch('/api/code/projects');
+  if (!res.ok) return [];
+  const { projects } = await res.json();
+  return (projects || []).map(toProject);
+}
+
+export async function getProject(id: string): Promise<Project | undefined> {
+  const res = await apiFetch(`/api/code/projects/${id}`);
+  if (!res.ok) return undefined;
+  const { project } = await res.json();
+  return project ? toProject(project) : undefined;
+}
+
+export async function createProject(prompt: string): Promise<Project> {
+  const res = await apiFetch('/api/code/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({}));
+    throw new Error(error || `Failed to create project (HTTP ${res.status})`);
   }
+  const { project } = await res.json();
+  return toProject(project);
 }
 
-function writeAll(list: Project[]) {
-  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch { /* ignore quota */ }
-}
+/** Patch fields. Client keys map to server columns. Throws on 409 (slug taken). */
+export async function updateProject(
+  id: string,
+  patch: Partial<Pick<Project, 'name' | 'slug' | 'starred' | 'published' | 'publishedUrl' | 'appFiles'>>,
+): Promise<Project | undefined> {
+  const body: Record<string, unknown> = {};
+  if (patch.name !== undefined) body.name = patch.name;
+  if (patch.slug !== undefined) body.slug = patch.slug;
+  if (patch.starred !== undefined) body.starred = patch.starred;
+  if (patch.published !== undefined) body.published = patch.published;
+  if (patch.publishedUrl !== undefined) body.published_url = patch.publishedUrl;
+  if (patch.appFiles !== undefined) body.app_files = patch.appFiles;
 
-export function listProjects(): Project[] {
-  return readAll().sort((a, b) => b.createdAt - a.createdAt);
-}
-
-export function getProject(id: string): Project | undefined {
-  return readAll().find((p) => p.id === id);
-}
-
-function nameFromPrompt(prompt: string): string {
-  const t = prompt.trim().replace(/\s+/g, ' ');
-  return t.length <= 40 ? (t || 'Untitled app') : t.slice(0, 40) + '…';
-}
-
-/** Generate a unique slug from a seed string. */
-function uniqueSlug(seed: string): string {
-  const base = slugify(seed) || 'app';
-  if (isSlugAvailable(base)) return base;
-  for (let i = 2; i < 1000; i++) {
-    const cand = `${base}-${i}`.slice(0, 63);
-    if (isSlugAvailable(cand)) return cand;
-  }
-  return `${base}-${Date.now().toString(36)}`;
-}
-
-export function createProject(prompt: string): Project {
-  const id = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)).slice(0, 8);
-  const name = nameFromPrompt(prompt);
-  const project: Project = { id, name, prompt, createdAt: Date.now(), slug: uniqueSlug(name) };
-  writeAll([project, ...readAll()]);
-  return project;
-}
-
-/** Patch a project in place. Returns the updated project (or undefined if not found). */
-export function updateProject(id: string, patch: Partial<Project>): Project | undefined {
-  const list = readAll();
-  const i = list.findIndex((p) => p.id === id);
-  if (i < 0) return undefined;
-  list[i] = { ...list[i], ...patch };
-  writeAll(list);
-  return list[i];
+  const res = await apiFetch(`/api/code/projects/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 409) throw new Error('That URL is already taken');
+  if (!res.ok) return undefined;
+  const { project } = await res.json();
+  return project ? toProject(project) : undefined;
 }

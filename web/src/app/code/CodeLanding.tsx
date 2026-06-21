@@ -14,6 +14,8 @@ export function CodeLanding() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState('');
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -25,11 +27,17 @@ export function CodeLanding() {
     taRef.current?.focus();
   }, []);
 
-  function submit() {
+  async function submit() {
     const text = prompt.trim();
-    if (!text) return;
-    const project = createProject(text);
-    navigate(`/app/code/${project.id}`);
+    if (!text || creating) return;
+    setCreating(true); setError('');
+    try {
+      const project = await createProject(text);
+      navigate(`/app/code/${project.id}`);
+    } catch (e: any) {
+      setError(e?.message || 'Could not create the project.');
+      setCreating(false);
+    }
   }
 
   return (
@@ -55,12 +63,13 @@ export function CodeLanding() {
               className="w-full resize-none bg-transparent px-2 py-1.5 text-base outline-none"
             />
             <div className="flex justify-end">
-              <Button onClick={submit} disabled={!prompt.trim()} className="rounded-xl">
-                Build it
+              <Button onClick={submit} disabled={!prompt.trim() || creating} className="rounded-xl">
+                {creating ? 'Creating…' : 'Build it'}
                 <ArrowUp className="h-4 w-4" />
               </Button>
             </div>
           </div>
+          {error && <p className="mt-2 text-center text-xs text-red-500">{error}</p>}
           <p className="mt-3 text-center text-xs text-muted-foreground">
             ezClaude will create a project and start building it live in a sandbox.
           </p>

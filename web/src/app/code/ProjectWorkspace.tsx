@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { getAccessToken } from '@/web/src/auth/session';
 import { TooltipProvider } from '@/web/src/app/ui/tooltip';
 import { WorkspaceTopBar } from '@/web/src/app/code/WorkspaceTopBar';
@@ -9,8 +10,7 @@ import { CodeExplorer } from '@/web/src/app/code/CodeExplorer';
 import { CloudPanel } from '@/web/src/app/code/CloudPanel';
 import { PagesPanel } from '@/web/src/app/code/PagesPanel';
 import { PublishDialog } from '@/web/src/app/code/PublishDialog';
-import { getProject, updateProject, slugify, isSlugAvailable, BASE_DOMAIN } from '@/web/src/app/code/projectStore';
-import { getSnapshot, saveSnapshot } from '@/web/src/app/code/buildStore';
+import { getProject, updateProject, BASE_DOMAIN, type Project } from '@/web/src/app/code/projectStore';
 import { DEVICE_WIDTH, type DeviceMode, type ViewMode } from '@/web/src/app/code/workspace';
 import type { BuildEvent, BuildPhase, BuildState, ProjectFile } from '@/web/src/app/code/types';
 
@@ -24,18 +24,15 @@ const STATUS_TEXT: Record<BuildState['status'], string> = {
 
 export function ProjectWorkspace() {
   const { id } = useParams();
-  const [project, setProject] = useState(() => (id ? getProject(id) : undefined));
 
-  // If we have a saved snapshot, resume (write + dev server, no model call) instead
-  // of re-generating; otherwise this is a first build from the seed prompt.
-  const snapshot = id ? getSnapshot(id) : undefined;
-  const [req, setReq] = useState<{ mode: 'build' | 'run'; prompt: string; seq: number }>(
-    () => ({ mode: snapshot ? 'run' : 'build', prompt: project?.prompt || '', seq: 0 }),
-  );
-  const [build, setBuild] = useState<BuildState>(() => ({
-    status: 'building', phase: 'queued', previewUrl: '', files: snapshot?.files || [], error: '', seq: 0,
-  }));
-  const appFilesRef = useRef<ProjectFile[]>(snapshot?.appFiles || []);
+  const [project, setProject] = useState<Project | undefined>(undefined);
+  const [load, setLoad] = useState<'loading' | 'ready' | 'notfound'>('loading');
+
+  // The build/run trigger. mode 'run' = resume saved source (no model call);
+  // 'build' = (re)generate. Set after the project loads, bumped on each chat send.
+  const [req, setReq] = useState<{ mode: 'build' | 'run'; prompt: string; seq: number }>({ mode: 'build', prompt: '', seq: 0 });
+  const [build, setBuild] = useState<BuildState>({ status: 'building', phase: 'queued', previewUrl: '', files: [], error: '', seq: 0 });
+  const appFilesRef = useRef<ProjectFile[]>([]); // generated source for incremental edits + resume
   const [phaseLog, setPhaseLog] = useState<{ phase: BuildPhase; detail?: string }[]>([]);
 
   // Editor chrome state
@@ -45,21 +42,30 @@ export function ProjectWorkspace() {
   const [publishOpen, setPublishOpen] = useState(false);
   const [refreshSeq, setRefreshSeq] = useState(0);
 
-  // Backfill a slug for projects created before publish existed.
+  // 1) Load the project from the server. Decide resume vs first build from whether
+  //    it already has saved source.
   useEffect(() => {
-    if (project && !project.slug) {
-      let base = slugify(project.name) || 'app';
-      if (!isSlugAvailable(base, project.id)) base = `${base}-${project.id}`;
-      const updated = updateProject(project.id, { slug: base });
-      if (updated) setProject(updated);
-    }
-  }, [project?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!id) { setLoad('notfound'); return; }
+    let live = true;
+    setLoad('loading');
+    getProject(id).then((p) => {
+      if (!live) return;
+      if (!p) { setLoad('notfound'); return; }
+      setProject(p);
+      appFilesRef.current = p.appFiles || [];
+      setBuild((b) => ({ ...b, files: p.appFiles || [] }));
+      setReq({ mode: (p.appFiles && p.appFiles.length ? 'run' : 'build'), prompt: p.prompt, seq: 0 });
+      setLoad('ready');
+    }).catch(() => { if (live) setLoad('notfound'); });
+    return () => { live = false; };
+  }, [id]);
 
+  // 2) Run the build/resume whenever the trigger changes.
   useEffect(() => {
-    if (!project) return;
+    if (load !== 'ready' || !project) return;
     let cancelled = false;
-
     const isRun = req.mode === 'run';
+
     setBuild((b) => ({ ...b, status: 'building', phase: 'queued', error: '', seq: req.seq }));
     setPhaseLog([{ phase: 'queued', detail: isRun ? 'Resuming saved project…' : 'Queued…' }]);
     const ctrl = new AbortController();
@@ -111,8 +117,9 @@ export function ProjectWorkspace() {
               setBuild((b) => ({ ...b, files: latestFiles }));
             } else if (evt.type === 'done') {
               setBuild((b) => ({ ...b, status: 'ready', phase: 'ready', previewUrl: (evt as any).previewUrl, seq: req.seq }));
-              // Snapshot the source so a reopen resumes via /api/code/run (no model call).
-              saveSnapshot(project.id, appFilesRef.current, latestFiles);
+              // Persist the generated source so a reopen resumes via /api/code/run.
+              // Only on (re)generation — resume already matches what's stored.
+              if (!isRun) void updateProject(project.id, { appFiles: appFilesRef.current }).catch(() => {});
             } else if (evt.type === 'error') {
               setBuild((b) => ({ ...b, status: 'error', phase: 'error', error: (evt as any).error || 'Build failed' }));
             }
@@ -125,24 +132,31 @@ export function ProjectWorkspace() {
     })();
 
     return () => { cancelled = true; ctrl.abort(); };
-  }, [project?.id, req.seq]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, project?.id, req.seq]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!id || !project) return <Navigate to="/app/code" replace />;
+  if (load === 'loading') {
+    return (
+      <div className="ezc-app flex h-screen w-full items-center justify-center bg-background text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading project…
+      </div>
+    );
+  }
+  if (load === 'notfound' || !project) return <Navigate to="/app/code" replace />;
 
-  function handleRename() {
+  async function handleRename() {
     const next = window.prompt('Rename project', project!.name);
     if (next && next.trim()) {
-      const updated = updateProject(project!.id, { name: next.trim() });
+      const updated = await updateProject(project!.id, { name: next.trim() }).catch(() => undefined);
       if (updated) setProject(updated);
     }
   }
-  function handleToggleStar() {
-    const updated = updateProject(project!.id, { starred: !project!.starred });
+  async function handleToggleStar() {
+    const updated = await updateProject(project!.id, { starred: !project!.starred }).catch(() => undefined);
     if (updated) setProject(updated);
   }
-  function handlePublish(slug: string): string {
+  async function handlePublish(slug: string): Promise<string> {
     const url = build.previewUrl || `https://${slug}.${BASE_DOMAIN}`;
-    const updated = updateProject(project!.id, { slug, published: true, publishedUrl: url });
+    const updated = await updateProject(project!.id, { slug, published: true, publishedUrl: url });
     if (updated) setProject(updated);
     return url;
   }

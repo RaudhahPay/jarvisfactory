@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Globe, Plus, Pencil, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 import { SectionHeader, Card } from '@/web/src/app/settings/parts';
 import { Button } from '@/web/src/app/ui/button';
@@ -10,7 +10,7 @@ import {
   type CustomDomain, type DomainStatus,
 } from '@/web/src/app/settings/domainsStore';
 import {
-  listProjects, updateProject, isValidSlug, isSlugAvailable, BASE_DOMAIN,
+  listProjects, updateProject, isValidSlug, BASE_DOMAIN, type Project,
 } from '@/web/src/app/code/projectStore';
 
 const STATUS_BADGE: Record<DomainStatus, { label: string; cls: string }> = {
@@ -21,18 +21,34 @@ const STATUS_BADGE: Record<DomainStatus, { label: string; cls: string }> = {
 
 function DefaultDomainCard() {
   // Edit the slug of the most-recent project as the "default domain".
-  const project = listProjects()[0];
-  const [slug, setSlug] = useState(project?.slug || '');
+  const [project, setProject] = useState<Project | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [slug, setSlug] = useState('');
   const [editing, setEditing] = useState(false);
-  const trimmed = slug.trim().toLowerCase();
-  const err = !project ? '' : !isValidSlug(trimmed) ? 'Invalid slug' : !isSlugAvailable(trimmed, project.id) ? 'Already taken' : '';
+  const [saveErr, setSaveErr] = useState('');
 
-  function save() {
-    if (!project || err) return;
-    updateProject(project.id, { slug: trimmed });
-    setEditing(false);
+  useEffect(() => {
+    let live = true;
+    listProjects().then((ps) => {
+      if (!live) return;
+      setProject(ps[0]); setSlug(ps[0]?.slug || ''); setLoading(false);
+    }).catch(() => { if (live) setLoading(false); });
+    return () => { live = false; };
+  }, []);
+
+  const trimmed = slug.trim().toLowerCase();
+  const err = !project ? '' : !isValidSlug(trimmed) ? 'Invalid slug' : saveErr;
+
+  async function save() {
+    setEditing(false); setSaveErr('');
+    if (!project || !isValidSlug(trimmed) || trimmed === project.slug) return;
+    try {
+      const updated = await updateProject(project.id, { slug: trimmed });
+      if (updated) setProject(updated);
+    } catch (e: any) { setSaveErr(e?.message || 'Could not save'); }
   }
 
+  if (loading) return <Card><p className="text-sm text-muted-foreground">Loading…</p></Card>;
   if (!project) return <Card><p className="text-sm text-muted-foreground">Create a project to get a default domain.</p></Card>;
 
   return (

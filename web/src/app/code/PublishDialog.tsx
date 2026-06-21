@@ -6,7 +6,7 @@ import {
 } from '@/web/src/app/ui/dialog';
 import { Button } from '@/web/src/app/ui/button';
 import { Input } from '@/web/src/app/ui/input';
-import { BASE_DOMAIN, isValidSlug, isSlugAvailable } from '@/web/src/app/code/projectStore';
+import { BASE_DOMAIN, isValidSlug } from '@/web/src/app/code/projectStore';
 
 type Phase = 'idle' | 'publishing' | 'published';
 
@@ -24,30 +24,32 @@ export function PublishDialog({
   projectId: string;
   slug: string;
   previewUrl: string;
-  onPublish: (slug: string) => string; // returns the published URL
+  onPublish: (slug: string) => Promise<string>; // persists + returns the published URL
 }) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(slug);
   const [phase, setPhase] = useState<Phase>('idle');
   const [publishedUrl, setPublishedUrl] = useState('');
+  const [saveError, setSaveError] = useState('');
+  void projectId;
 
   const trimmed = draft.trim().toLowerCase();
-  const slugError = !isValidSlug(trimmed)
-    ? '3–63 chars, lowercase letters, numbers and hyphens'
-    : !isSlugAvailable(trimmed, projectId)
-      ? 'That URL is already taken'
-      : '';
+  // Format-only validation here; uniqueness is enforced by the server on save.
+  const slugError = !isValidSlug(trimmed) ? '3–63 chars, lowercase letters, numbers and hyphens' : '';
   const canContinue = !slugError && phase === 'idle';
 
   async function handleContinue() {
     if (!canContinue) return;
-    setPhase('publishing');
-    // Simulated deploy latency; swap for the real deploy call at the seam.
-    await new Promise((r) => setTimeout(r, 1200));
-    const url = onPublish(trimmed);
-    setPublishedUrl(url);
-    setPhase('published');
+    setPhase('publishing'); setSaveError('');
+    try {
+      const url = await onPublish(trimmed); // server save (may 409 on taken slug)
+      setPublishedUrl(url);
+      setPhase('published');
+    } catch (e: any) {
+      setSaveError(e?.message || 'Could not publish.');
+      setPhase('idle');
+    }
   }
 
   return (
@@ -96,7 +98,7 @@ export function PublishDialog({
                   <Pencil className="h-3.5 w-3.5" />
                 </button>
               </div>
-              {slugError && <p className="mt-1 text-xs text-red-500">{slugError}</p>}
+              {(slugError || saveError) && <p className="mt-1 text-xs text-red-500">{slugError || saveError}</p>}
             </div>
 
             <button
