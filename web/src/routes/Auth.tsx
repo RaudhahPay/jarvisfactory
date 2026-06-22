@@ -34,14 +34,14 @@ export default function AuthPage() {
           onboarded: false,
           created_at: new Date().toISOString()
         })
-        navigate('/studio')
+        navigate('/app')
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) { setError(error.message); setLoading(false); return }
       // Check if onboarded
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) navigate('/studio')
+      if (user) navigate('/app')
     }
     setLoading(false)
   }
