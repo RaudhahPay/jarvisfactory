@@ -1,21 +1,29 @@
 // JarvisFactory v2 — multi-file agent build + live run (Lovable-style)
-// POST /api/code/build { projectId, prompt, currentFiles? }
-// Returns an SSE stream with phase updates so the UI shows live progress.
+//
+// ENGINE: the real Claude Agent SDK loop (lib/agent ClaudeAgentRunner) — the agent
+// writes/edits files and runs commands INSIDE the Blaxel sandbox via policy-gated
+// tools, iterating and self-correcting (not a one-shot generation). After it
+// finishes we snapshot the source, run `npm install` + `vite dev`, and stream the
+// live preview URL. Every model call is metered (CLAUDE.md §6).
+//
+//   POST /api/code/build  { projectId, prompt, currentFiles? }  → SSE
+//   POST /api/code/run    { projectId, appFiles }               → SSE (resume, NO model)
 
 import { Hono } from 'hono';
-import { streamSSE } from 'hono/streaming';
 import { requireUser } from '@/server/middleware/auth';
 import { getSandboxDriver } from '@/lib/sandbox';
+import { getAgentRunner } from '@/lib/agent';
+import type { AgentEvent } from '@/lib/agent/types';
 import { checkQuota, recordUsage } from '@/lib/metering';
 import { validatePrompt } from '@/lib/agent/policy';
 import { DEFAULT_MODEL } from '@/lib/models';
 
 const codeBuildApp = new Hono();
 
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const PORT = 3000;
 
-// ── Fixed base template (Vite + React + Tailwind). The agent never edits these. ──
+// ── Fixed base template (Vite + React + Tailwind). Seeded into the sandbox so the
+//    agent edits a working project instead of scaffolding the toolchain itself. ──
 const BASE: Record<string, string> = {
   'package.json': JSON.stringify({
     name: 'app', private: true, type: 'module', scripts: { dev: 'vite' },
@@ -30,24 +38,24 @@ const BASE: Record<string, string> = {
   'src/main.jsx': `import React from 'react';\nimport { createRoot } from 'react-dom/client';\nimport App from './App.jsx';\nimport './index.css';\ncreateRoot(document.getElementById('root')).render(<React.StrictMode><App/></React.StrictMode>);\n`,
 };
 
-const SYSTEM = `You generate the SOURCE of a React + Vite + Tailwind CSS single-page app for non-technical users.
-Output ONLY JSON (no markdown, no prose): {"files":[{"path":"src/App.jsx","content":"..."}]}.
-Rules:
-- Always include src/App.jsx with a default-exported root component.
-- Use .jsx files only. Style EXCLUSIVELY with Tailwind utility classes (Tailwind is preconfigured).
-- You MAY add more files under src/ (e.g. src/components/Foo.jsx) and import them with relative paths.
-- Do NOT emit package.json, vite.config, tailwind/postcss config, index.html, src/main.jsx or src/index.css — they already exist.
-- Use ONLY react + your own files. No other npm packages. No external CDN.
-- Persist data with localStorage where sensible. Make it genuinely usable and visually polished, not a stub.`;
+const BRIEFING = `You are an expert React web app builder working in an EXISTING Vite + React + Tailwind CSS project. Build (or modify) the app from the user's request using ONLY the provided sandbox tools (write_file, read_file, exec, list_files).
 
-function estimateCostUsd(model: string, i: number, o: number): number {
-  const p = model.includes('opus') ? { i: 15, o: 75 } : model.includes('haiku') ? { i: 1, o: 5 } : { i: 3, o: 15 };
-  return (i / 1e6) * p.i + (o / 1e6) * p.o;
-}
+ALREADY SCAFFOLDED — do NOT recreate these (they exist and are configured):
+  package.json, vite.config.js, tailwind.config.js, postcss.config.js, index.html, src/main.jsx, src/index.css
+
+RULES:
+- App code lives under src/. The root component MUST be src/App.jsx with a default export.
+- Use .jsx + Tailwind utility classes (Tailwind is preconfigured). Split UI into components under src/components/ where sensible.
+- You MAY add npm packages when genuinely needed by running: exec with "npm install <pkg>". Prefer the standard library + React.
+- Do NOT start the dev server or run "npm run dev" / "vite" — the platform starts it for preview.
+- When editing an existing app, read the relevant files FIRST and make minimal, correct changes.
+- Persist user data with localStorage where it makes sense. Ship something complete, polished and responsive — never placeholders or TODOs.
+
+When finished, write one short sentence describing what you built or changed.`;
 
 type File = { path: string; content: string };
 
-/** Merge the fixed base template with generated app source (generated wins). */
+/** Merge the fixed base template with app source (app wins on conflict). */
 function mergeWithBase(appFiles: File[]): File[] {
   const merged = new Map<string, string>();
   for (const [path, content] of Object.entries(BASE)) merged.set(path, content);
@@ -55,33 +63,20 @@ function mergeWithBase(appFiles: File[]): File[] {
   return [...merged.entries()].map(([path, content]) => ({ path, content }));
 }
 
-/**
- * Write a full file tree into the project sandbox and start the dev server,
- * emitting writing → installing → starting → ready phases. No model call — used
- * by both build (after generation) and run (resume from saved files).
- * Returns the preview URL, or null if it emitted an error.
- */
-async function writeAndRun(
-  projectId: string,
-  files: File[],
-  emit: (data: Record<string, unknown>) => Promise<void>,
-): Promise<string | null> {
-  const driver = getSandboxDriver();
+/** Source paths worth persisting/showing — drop installed deps, vcs, build output. */
+function isSource(path: string): boolean {
+  return !/^(node_modules|\.git|dist|\.vite)\//.test(path) && !path.includes('/node_modules/');
+}
 
-  await emit({ type: 'phase', phase: 'writing', detail: `Writing ${files.length} files to sandbox…` });
-  const sandbox = await driver.create({ projectId });
-  await sandbox.writeFiles(files);
-
+/** Install deps + start Vite, emitting installing → starting phases. Returns the
+ *  preview URL, or null if it emitted an error. Shared by build + run. */
+async function startDev(sandbox: any, emit: (d: Record<string, unknown>) => void): Promise<string | null> {
   if (typeof sandbox.runDevProject !== 'function') {
-    await emit({ type: 'error', error: 'provider_lacks_multifile_run (set SANDBOX_PROVIDER=blaxel)' });
+    emit({ type: 'error', error: 'provider_lacks_multifile_run (set SANDBOX_PROVIDER=blaxel)' });
     return null;
   }
-
-  await emit({ type: 'phase', phase: 'installing', detail: 'Installing dependencies…' });
-  const installTimeout = setTimeout(() => {
-    void emit({ type: 'phase', phase: 'starting', detail: 'Starting Vite dev server…' }).catch(() => {});
-  }, 15_000);
-
+  emit({ type: 'phase', phase: 'installing', detail: 'Installing dependencies…' });
+  const t = setTimeout(() => emit({ type: 'phase', phase: 'starting', detail: 'Starting Vite dev server…' }), 15_000);
   try {
     const dev = await sandbox.runDevProject({
       installCommand: 'npm install --no-audit --no-fund',
@@ -91,22 +86,21 @@ async function writeAndRun(
     });
     return dev.previewUrl;
   } finally {
-    clearTimeout(installTimeout);
+    clearTimeout(t);
   }
 }
 
-function parseFiles(text: string): { path: string; content: string }[] {
-  let t = text.trim();
-  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fence) t = fence[1].trim();
-  const s = t.indexOf('{');
-  const e = t.lastIndexOf('}');
-  if (s >= 0 && e > s) t = t.slice(s, e + 1);
-  const obj = JSON.parse(t);
-  const files = Array.isArray(obj?.files) ? obj.files : [];
-  return files
-    .filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string')
-    .map((f: any) => ({ path: f.path.replace(/^\/+/, ''), content: f.content }));
+/** Build an SSE ReadableStream. `run` gets a synchronous, ordered emit(). */
+function sse(c: any, run: (emit: (d: Record<string, unknown>) => void) => Promise<void>) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const emit = (d: Record<string, unknown>) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(d)}\n\n`));
+      try { await run(emit); } catch (e: any) { emit({ type: 'error', error: e?.message || 'failed' }); }
+      finally { controller.close(); }
+    },
+  });
+  return c.body(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive' } });
 }
 
 codeBuildApp.post('/api/code/build', async (c) => {
@@ -123,65 +117,66 @@ codeBuildApp.post('/api/code/build', async (c) => {
 
   const quota = await checkQuota(db, user.id);
   if (!quota.ok) return c.json({ error: quota.reason }, 402);
+  if (!process.env.ANTHROPIC_API_KEY) return c.json({ error: 'Server missing ANTHROPIC_API_KEY' }, 500);
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return c.json({ error: 'Server missing ANTHROPIC_API_KEY' }, 500);
+  const currentFiles: File[] = Array.isArray(body?.currentFiles)
+    ? body.currentFiles.filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string')
+    : [];
+  const isEdit = currentFiles.length > 0;
 
-  const currentFiles: { path: string; content: string }[] = Array.isArray(body?.currentFiles) ? body.currentFiles : [];
+  return sse(c, async (emit) => {
+    const model = DEFAULT_MODEL;
+    const usageRows: any[] = [];
+    let inTok = 0, outTok = 0;
 
-  return streamSSE(c, async (stream) => {
-    const emit = (data: Record<string, unknown>) => stream.writeSSE({ data: JSON.stringify(data), event: 'build' });
+    // Seed the sandbox with the base template (+ prior source on an edit) so the
+    // agent works on a real, runnable project.
+    emit({ type: 'phase', phase: 'generating', detail: isEdit ? 'Applying your changes…' : 'Starting the agent…' });
+    const driver = getSandboxDriver();
+    const sandbox = await driver.create({ projectId, files: mergeWithBase(currentFiles) });
 
-    try {
-      // Phase 1: Generate
-      await emit({ type: 'phase', phase: 'generating', detail: 'Claude is writing your app…' });
-
-      const model = DEFAULT_MODEL;
-      const userContent = currentFiles.length
-        ? `Current app source files:\n${JSON.stringify(currentFiles).slice(0, 60000)}\n\nApply this change and return the FULL updated file set (same JSON shape):\n${prompt}`
-        : `Build this app:\n${prompt}`;
-
-      const r = await fetch(ANTHROPIC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: 16000, system: SYSTEM, messages: [{ role: 'user', content: userContent }] }),
-      });
-      const j: any = await r.json();
-      if (!r.ok) { await emit({ type: 'error', error: j?.error?.message || `Anthropic ${r.status}` }); return; }
-
-      const inTok = j?.usage?.input_tokens || 0;
-      const outTok = j?.usage?.output_tokens || 0;
-      let appFiles: File[];
-      try {
-        appFiles = parseFiles((j?.content || []).map((b: any) => b?.text || '').join(''));
-      } catch (e: any) {
-        await emit({ type: 'error', error: 'Failed to parse generated files: ' + (e?.message || 'unknown') }); return;
+    // Stream the agent's real activity into the chat + drive metering.
+    const onEvent = (e: AgentEvent) => {
+      if (e.type === 'usage') {
+        inTok += e.inputTokens; outTok += e.outputTokens;
+        usageRows.push({ user_id: user.id, model: e.model, input_tokens: e.inputTokens, output_tokens: e.outputTokens, cost_usd: e.costUsd });
+      } else if (e.type === 'file_edit') {
+        emit({ type: 'phase', phase: 'generating', detail: `${e.action === 'create' ? 'Creating' : e.action === 'edit' ? 'Editing' : 'Deleting'} ${e.path}` });
+        emit({ type: 'agent', kind: 'file_edit', path: e.path, action: e.action });
+      } else if (e.type === 'exec') {
+        emit({ type: 'phase', phase: 'generating', detail: `$ ${e.command}` });
+        emit({ type: 'agent', kind: 'exec', text: e.command });
+      } else if (e.type === 'text' && e.text.trim()) {
+        emit({ type: 'agent', kind: 'text', text: e.text });
+      } else if (e.type === 'error') {
+        emit({ type: 'agent', kind: 'error', text: e.message });
       }
-      if (!appFiles.some((f) => f.path === 'src/App.jsx')) {
-        await emit({ type: 'error', error: 'Model did not return src/App.jsx' }); return;
-      }
+    };
 
-      const files = mergeWithBase(appFiles);
-      await emit({ type: 'files', files, appFiles });
+    const userPrompt = `${BRIEFING}\n\n--- USER REQUEST ---\n${prompt}`;
+    const runner = await getAgentRunner();
+    await runner.start(sandbox, { projectId, userId: user.id, model, prompt: userPrompt, onEvent });
 
-      // Phases 2–3: write + install + start (no further model call).
-      const previewUrl = await writeAndRun(projectId, files, emit);
-      if (previewUrl === null) return; // error already emitted
-
-      await emit({ type: 'phase', phase: 'ready' });
-      await emit({ type: 'done', previewUrl, model, inputTokens: inTok, outputTokens: outTok });
-
-      // Meter (best-effort)
-      await recordUsage(db, [{ user_id: user.id, model, input_tokens: inTok, output_tokens: outTok, cost_usd: estimateCostUsd(model, inTok, outTok) }]);
-    } catch (e: any) {
-      await emit({ type: 'error', error: e?.message || 'Build failed' });
+    // Snapshot the source the agent produced (exclude installed deps / build output).
+    const snap = await sandbox.snapshot();
+    const appFiles = (snap.files || []).filter((f: File) => isSource(f.path));
+    if (!appFiles.some((f: File) => f.path === 'src/App.jsx')) {
+      emit({ type: 'error', error: 'The agent did not produce src/App.jsx — try rephrasing your request.' });
+      return;
     }
+    emit({ type: 'files', files: appFiles, appFiles });
+
+    const previewUrl = await startDev(sandbox, emit);
+    if (previewUrl === null) return; // error already emitted
+
+    emit({ type: 'phase', phase: 'ready' });
+    emit({ type: 'done', previewUrl, model, inputTokens: inTok, outputTokens: outTok });
+    await recordUsage(db, usageRows);
   });
 });
 
-// POST /api/code/run { projectId, appFiles } — resume a saved project: write the
-// saved source + start the dev server, NO model call (no generation, no metering).
-// This is what reload/resume uses so reopening a project doesn't re-bill the model.
+// Resume a saved project: write the saved source + start the dev server. NO model
+// call, no metering — reopening a project must not re-bill or re-think.
 codeBuildApp.post('/api/code/run', async (c) => {
   const { user } = await requireUser(c);
   void user;
@@ -198,18 +193,15 @@ codeBuildApp.post('/api/code/run', async (c) => {
     return c.json({ error: 'no saved source to run (missing src/App.jsx)' }, 400);
   }
 
-  return streamSSE(c, async (stream) => {
-    const emit = (data: Record<string, unknown>) => stream.writeSSE({ data: JSON.stringify(data), event: 'build' });
-    try {
-      const files = mergeWithBase(appFiles);
-      await emit({ type: 'files', files, appFiles });
-      const previewUrl = await writeAndRun(projectId, files, emit);
-      if (previewUrl === null) return;
-      await emit({ type: 'phase', phase: 'ready' });
-      await emit({ type: 'done', previewUrl, model: '', inputTokens: 0, outputTokens: 0 });
-    } catch (e: any) {
-      await emit({ type: 'error', error: e?.message || 'Resume failed' });
-    }
+  return sse(c, async (emit) => {
+    const files = mergeWithBase(appFiles);
+    emit({ type: 'files', files, appFiles });
+    emit({ type: 'phase', phase: 'writing', detail: `Writing ${files.length} files to sandbox…` });
+    const sandbox = await getSandboxDriver().create({ projectId, files });
+    const previewUrl = await startDev(sandbox, emit);
+    if (previewUrl === null) return;
+    emit({ type: 'phase', phase: 'ready' });
+    emit({ type: 'done', previewUrl, model: '', inputTokens: 0, outputTokens: 0 });
   });
 });
 
