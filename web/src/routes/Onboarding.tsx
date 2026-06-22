@@ -77,7 +77,7 @@ export default function Onboarding() {
     // Mark onboarded
     await supabase.from('profiles').update({ onboarded: true, jarvis_name: jName }).eq('id', user.id)
 
-    navigate('/dashboard')
+    navigate('/app')
   }
 
   const c: Record<string, React.CSSProperties> = {

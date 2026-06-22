@@ -3,7 +3,6 @@ import RequireAuth from './auth/RequireAuth';
 import Landing from './routes/Landing';
 import Auth from './routes/Auth';
 import Onboarding from './routes/Onboarding';
-import Studio from './routes/Studio';
 import Builder from './routes/Builder';
 import Dashboard from './routes/Dashboard';
 import GithubCallback from './routes/GithubCallback';
@@ -25,7 +24,13 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/github/callback" element={<GithubCallback />} />
-      <Route path="/studio" element={<RequireAuth><Studio /></RequireAuth>} />
+      {/* /studio retired → converged onto /app/chat (Agent SDK engine). Kept as a
+          redirect so old links/bookmarks still resolve. Studio.tsx remains in the
+          tree as legacy but is no longer routed. */}
+      <Route path="/studio" element={<Navigate to="/app/chat" replace />} />
+      {/* /builder + /dashboard remain as legacy: Dashboard deep-links carry v1
+          `apps`-table IDs (open/edit/PDF) not yet migrated to code_projects. No live
+          user flow reaches them — Auth and Onboarding now land on /app. */}
       <Route path="/builder" element={<RequireAuth><Builder /></RequireAuth>} />
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
