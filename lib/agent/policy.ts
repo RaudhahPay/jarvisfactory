@@ -19,13 +19,30 @@ export interface PolicyResult {
 
 const ALLOW: PolicyResult = { decision: 'allow' }
 
+// `rm` with a recursive flag (-r/-R/--recursive, alone or combined with other
+// short flags like -rf/-fr/-Rf) is denied REGARDLESS OF TARGET. A target-based
+// check (only deny `rm -rf /`, `~`, `$HOME`, `/*`, `..`) was bypassable via
+// `rm -rf .`, `rm -rf ./`, `rm -rf *`, or any relative directory — recursive
+// delete alone is enough to wipe the sandbox workspace; -f only suppresses
+// confirmation, it isn't what makes this dangerous. The agent's build flow never
+// needs recursive delete (npm/vite installs manage their own state), so there is
+// no legitimate case to preserve.
+function commandHasRecursiveRm(cmd: string): boolean {
+  const statements = cmd.split(/[;&|\n]+/)
+  for (const stmt of statements) {
+    const tokens = stmt.trim().split(/\s+/)
+    const rmIdx = tokens.findIndex(t => t === 'rm')
+    if (rmIdx === -1) continue
+    for (const tok of tokens.slice(rmIdx + 1)) {
+      if (tok === '--recursive') return true
+      if (/^-[a-zA-Z]+$/.test(tok) && /[rR]/.test(tok.slice(1))) return true
+    }
+  }
+  return false
+}
+
 // Genuinely destructive / exfil / deploy patterns — deny outright.
 const DENY: { re: RegExp; reason: string; category: string }[] = [
-  {
-    re: /\brm\s+-[a-z]*r[a-z]*f?\s+(\/(?!\w)|~|\$HOME|\/\*|\.\.)/i,
-    reason: 'recursive delete of root/home/parent',
-    category: 'destructive-fs',
-  },
   {
     re: /\b(mkfs|fdisk)\b/i,
     reason: 'disk format',
@@ -72,6 +89,14 @@ const DENY: { re: RegExp; reason: string; category: string }[] = [
     category: 'exfil',
   },
   {
+    // Closes the bypass in the rule above: no pipe is needed when the secret file
+    // is referenced directly as a network-tool argument, e.g. `curl -d @.env`,
+    // `curl --data-binary @/workspace/.env`, `wget --post-file=.env`.
+    re: /\b(curl|wget|nc|ncat|netcat)\b[^\n;&|]*(?:\.env(?:\.[\w.-]+)?|\.npmrc|\.git-credentials|id_rsa\w*|\.pem|\.p12|\.pfx|credentials(?:\.json)?|secrets?\.\w+|\.ssh\/[\w.-]+|\.aws\/credentials)/i,
+    reason: 'network tool references a secret/credential file directly (no pipe needed)',
+    category: 'exfil',
+  },
+  {
     re: /\bsudo\b/i,
     reason: 'privilege escalation is not permitted in the sandbox',
     category: 'privilege',
@@ -82,6 +107,8 @@ const DENY: { re: RegExp; reason: string; category: string }[] = [
 export function evaluateCommand(command: string): PolicyResult {
   const cmd = String(command || '').slice(0, 4000) // bound regex work
   if (!cmd.trim()) return { decision: 'deny', reason: 'empty command', category: 'invalid' }
+  if (commandHasRecursiveRm(cmd))
+    return { decision: 'deny', reason: 'recursive delete (rm -r/-R, any target)', category: 'destructive-fs' }
   for (const p of DENY) {
     if (p.re.test(cmd)) return { decision: 'deny', reason: p.reason, category: p.category }
   }
