@@ -28,6 +28,19 @@ vi.mock('@/lib/agent', () => ({ getAgentRunner: async () => ({ start: runnerStar
 
 import { codeBuildApp } from './code.build';
 
+// A code_projects row owned by 'u1'; owner is 'u1' unless overridden.
+function makeDb(project: { id: string; user_id: string } | null = { id: 'p1', user_id: 'u1' }) {
+  return {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(() => Promise.resolve({ data: project, error: null })),
+        })),
+      })),
+    })),
+  };
+}
+
 function sseEvents(text: string) {
   return text.split('\n').filter((l) => l.startsWith('data:')).map((l) => JSON.parse(l.slice(5).trim()));
 }
@@ -54,8 +67,28 @@ describe('POST /api/code/build (Agent SDK engine)', () => {
     expect(res.status).toBe(400);
   });
 
+  it('404 when the project does not exist', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb(null) });
+    const res = await codeBuildApp.request('/api/code/build', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', prompt: 'a todo app' }),
+    });
+    expect(res.status).toBe(404);
+    expect(runnerStart).not.toHaveBeenCalled();
+  });
+
+  it('403 when the project belongs to another user', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb({ id: 'p1', user_id: 'someone-else' }) });
+    const res = await codeBuildApp.request('/api/code/build', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', prompt: 'a todo app' }),
+    });
+    expect(res.status).toBe(403);
+    expect(runnerStart).not.toHaveBeenCalled();
+  });
+
   it('drives the agent, streams its activity, then runs the dev server', async () => {
-    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb() });
     const res = await codeBuildApp.request('/api/code/build', {
       method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
       body: JSON.stringify({ projectId: 'p1', prompt: 'a todo app with add and delete' }),
@@ -88,7 +121,7 @@ describe('POST /api/code/run (resume — no model)', () => {
   beforeEach(() => { getAuthedDb.mockReset(); runnerStart.mockClear(); });
 
   it('resumes saved files WITHOUT invoking the agent', async () => {
-    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb() });
     const res = await codeBuildApp.request('/api/code/run', {
       method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
       body: JSON.stringify({ projectId: 'p1', appFiles: [{ path: 'src/App.jsx', content: 'export default ()=>null' }] }),
@@ -104,11 +137,29 @@ describe('POST /api/code/run (resume — no model)', () => {
   });
 
   it('400s when there is no saved source', async () => {
-    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: {} });
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb() });
     const res = await codeBuildApp.request('/api/code/run', {
       method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
       body: JSON.stringify({ projectId: 'p1', appFiles: [] }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it('404 when the project does not exist', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb(null) });
+    const res = await codeBuildApp.request('/api/code/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', appFiles: [{ path: 'src/App.jsx', content: 'export default ()=>null' }] }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it('403 when the project belongs to another user', async () => {
+    getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db: makeDb({ id: 'p1', user_id: 'someone-else' }) });
+    const res = await codeBuildApp.request('/api/code/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', authorization: 'Bearer t' },
+      body: JSON.stringify({ projectId: 'p1', appFiles: [{ path: 'src/App.jsx', content: 'export default ()=>null' }] }),
+    });
+    expect(res.status).toBe(403);
   });
 });

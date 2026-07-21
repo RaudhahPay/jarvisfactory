@@ -119,6 +119,13 @@ codeBuildApp.post('/api/code/build', async (c) => {
   if (!quota.ok) return c.json({ error: quota.reason }, 402);
   if (!process.env.ANTHROPIC_API_KEY) return c.json({ error: 'Server missing ANTHROPIC_API_KEY' }, 500);
 
+  // projectId keys a live sandbox — verify it's a code_projects row this caller
+  // owns before using it, matching the ownership check every other project/app
+  // route does (build.ts, agent.cowork.ts, agent.file.ts).
+  const { data: project } = await db.from('code_projects').select('id, user_id').eq('id', projectId).maybeSingle();
+  if (!project) return c.json({ error: 'Project not found' }, 404);
+  if (project.user_id !== user.id) return c.json({ error: 'Forbidden' }, 403);
+
   const currentFiles: File[] = Array.isArray(body?.currentFiles)
     ? body.currentFiles.filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string')
     : [];
@@ -178,13 +185,17 @@ codeBuildApp.post('/api/code/build', async (c) => {
 // Resume a saved project: write the saved source + start the dev server. NO model
 // call, no metering — reopening a project must not re-bill or re-think.
 codeBuildApp.post('/api/code/run', async (c) => {
-  const { user } = await requireUser(c);
-  void user;
+  const { user, db } = await requireUser(c);
 
   let body: any = {};
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const projectId = body?.projectId;
   if (!projectId) return c.json({ error: 'projectId required' }, 400);
+
+  // Same ownership check as /api/code/build — projectId keys a live sandbox.
+  const { data: project } = await db.from('code_projects').select('id, user_id').eq('id', projectId).maybeSingle();
+  if (!project) return c.json({ error: 'Project not found' }, 404);
+  if (project.user_id !== user.id) return c.json({ error: 'Forbidden' }, 403);
 
   const appFiles: File[] = Array.isArray(body?.appFiles)
     ? body.appFiles.filter((f: any) => typeof f?.path === 'string' && typeof f?.content === 'string')
