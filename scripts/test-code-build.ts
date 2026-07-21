@@ -1,6 +1,6 @@
 // Live smoke for /api/code/build: real Claude generation -> write into Blaxel ->
 // run -> fetch the preview. Run: set -a; . ./.env; set +a; npx tsx scripts/test-code-build.ts
-import { getSandboxDriver } from '../lib/sandbox/index.ts';
+import { getSandboxDriver } from '../lib/sandbox/index';
 
 const PORT = 3000;
 const CMD =

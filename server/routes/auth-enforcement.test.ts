@@ -46,7 +46,7 @@ const prevRunner = process.env.AGENT_RUNNER;
 
 type RouteCase = {
   name: string;
-  load: () => Promise<{ app: { request: (...a: any[]) => Promise<Response> } }>;
+  load: () => Promise<{ app: { request: (...a: any[]) => Response | Promise<Response> } }>;
   request: (app: any) => Promise<Response>;
 };
 

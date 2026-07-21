@@ -1,6 +1,6 @@
 // Live smoke: replicate /api/sandbox/start against the real provider and fetch the
 // preview URL. Run: set -a; . ./.env; set +a; npx tsx scripts/test-sandbox-preview.ts
-import { getSandboxDriver } from '../lib/sandbox/index.ts';
+import { getSandboxDriver } from '../lib/sandbox/index';
 
 const PORT = 3000;
 const CMD =

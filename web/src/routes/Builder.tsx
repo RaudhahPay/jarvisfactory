@@ -18,6 +18,7 @@ import {
   Bot, ArrowUp, Save, MessageSquare, Sparkles, Compass, Hammer,
   Target, Users, Globe, Star, Plug, Languages as LanguagesIcon, Smartphone,
   DollarSign, MessageCircle, LayoutGrid, Database, AlertTriangle, Lightbulb, Map,
+  X, RefreshCw,
 } from 'lucide-react'
 
 export default function Builder() {

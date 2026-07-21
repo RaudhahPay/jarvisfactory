@@ -1,7 +1,7 @@
 // Live smoke for the multi-file build path: Claude JSON file-map -> merge base ->
 // Blaxel writeFiles + runDevProject (npm install + vite) -> fetch preview.
 // Run: set -a; . ./.env; set +a; npx tsx scripts/test-multifile-build.ts
-import { getSandboxDriver } from '../lib/sandbox/index.ts';
+import { getSandboxDriver } from '../lib/sandbox/index';
 
 const PORT = 3000;
 const BASE: Record<string, string> = {

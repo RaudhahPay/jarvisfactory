@@ -14,11 +14,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+      # The repo's committed lockfile is bun.lock (Dockerfile also builds with bun) —
+      # `npm ci` here had no matching package-lock.json and would fail on a clean
+      # checkout. Install with bun so CI matches how the app is actually built.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
       - name: Typecheck
         run: npx tsc --noEmit
-      - name: Unit + smoke tests
+      - name: Unit tests (vitest)
+        run: npx vitest run
+      - name: Smoke tests
         run: |
           npx -y tsx scripts/test-policy.mjs
           npx -y tsx scripts/test-metering.mjs

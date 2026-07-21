@@ -36,7 +36,7 @@ describe('POST /api/github/oauth/exchange', () => {
   });
 
   it('200 { ok, username } on the happy path and upserts the connection', async () => {
-    const upsert = vi.fn(() => Promise.resolve({ error: null }));
+    const upsert = vi.fn((_row: any, _opts: any) => Promise.resolve({ error: null }));
     const db = { from: vi.fn(() => ({ upsert })) };
     getAuthedDb.mockResolvedValue({ user: { id: 'u1' }, db });
 
